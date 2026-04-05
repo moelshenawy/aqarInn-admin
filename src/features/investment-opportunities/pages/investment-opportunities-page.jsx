@@ -1,90 +1,114 @@
-import { Plus, Rocket } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useMemo, useState } from 'react'
 
-import { Badge } from '@/components/ui/badge'
+import { DashboardOpportunityCard } from '@/features/dashboard/components/dashboard-opportunity-card'
+import { DashboardPagination } from '@/features/investment-opportunities/components/dashboard-pagination'
+import { InvestmentLocationChips } from '@/features/investment-opportunities/components/investment-location-chips'
+import { InvestmentOpportunitySkeletonGrid } from '@/features/investment-opportunities/components/investment-opportunity-skeleton-grid'
+import { InvestmentOpportunitiesToolbar } from '@/features/investment-opportunities/components/investment-opportunities-toolbar'
 import {
-  APP_ACTIONS,
-  APP_RESOURCES,
-  createPermission,
-} from '@/lib/permissions/constants'
-import { Can } from '@/lib/permissions/can'
-import { AppButton } from '@/shared/components/app-button'
-import { DataTableShell } from '@/shared/components/data-table-shell'
-import { ModulePlaceholderPage } from '@/shared/components/module-placeholder-page'
-import { INVESTMENT_STATUS_OPTIONS } from '@/shared/constants/investment-status-options'
-
-const rows = [
-  {
-    id: 'RES-RUH-001',
-    title: 'Riyadh Residences Alpha',
-    sharesAmount: 5000,
-    capitalRaised: '74%',
-    status: 'published',
-  },
-  {
-    id: 'COM-DMM-523',
-    title: 'Dammam Commerce Park',
-    sharesAmount: 2400,
-    capitalRaised: '31%',
-    status: 'draft',
-  },
-]
+  investmentActions,
+  investmentLoadingDelayMs,
+  investmentLocationFilters,
+  investmentOpportunities,
+  investmentPageSize,
+} from '@/features/investment-opportunities/constants/investment-opportunities-ui'
 
 export default function InvestmentOpportunitiesPage() {
-  const { t } = useTranslation('common')
-  const columns = [
-    { key: 'id', header: 'ID' },
-    { key: 'title', header: 'Title' },
-    { key: 'sharesAmount', header: 'Shares' },
-    { key: 'capitalRaised', header: 'Raised' },
-    {
-      key: 'status',
-      header: t('status'),
-      cell: (row) => {
-        const status = INVESTMENT_STATUS_OPTIONS.find(
-          (item) => item.code === row.status,
-        )
-        return <Badge variant="outline">{status?.label ?? row.status}</Badge>
-      },
-    },
-  ]
+  const [selectedFilter, setSelectedFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const filteredOpportunities = useMemo(() => {
+    if (selectedFilter === 'all') {
+      return investmentOpportunities
+    }
+
+    const activeFilter = investmentLocationFilters.find(
+      (filter) => filter.key === selectedFilter,
+    )
+
+    return investmentOpportunities.filter(
+      (opportunity) => opportunity.city === activeFilter?.label,
+    )
+  }, [selectedFilter])
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredOpportunities.length / investmentPageSize),
+  )
+
+  const paginatedOpportunities = useMemo(() => {
+    const startIndex = (currentPage - 1) * investmentPageSize
+
+    return filteredOpportunities.slice(
+      startIndex,
+      startIndex + investmentPageSize,
+    )
+  }, [currentPage, filteredOpportunities])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setIsLoading(false)
+    }, investmentLoadingDelayMs)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [currentPage, selectedFilter])
+
+  const handleFilterChange = (filterKey) => {
+    setSelectedFilter(filterKey)
+    setCurrentPage(1)
+    setIsLoading(true)
+  }
+
+  const handlePageChange = (page) => {
+    if (page < 1 || page > totalPages || page === currentPage) {
+      return
+    }
+
+    setCurrentPage(page)
+    setIsLoading(true)
+  }
 
   return (
-    <ModulePlaceholderPage
-      titleKey="navigation:investmentOpportunities"
-      description={t('placeholderMessage')}
-      actions={
-        <div className="flex flex-wrap gap-2">
-          <Can
-            allOf={[
-              createPermission(
-                APP_RESOURCES.investmentOpportunities,
-                APP_ACTIONS.create,
-              ),
-            ]}
+    <div className="space-y-6" dir="rtl">
+      {isLoading ? (
+        <InvestmentOpportunitySkeletonGrid />
+      ) : (
+        <>
+          <div className="flex flex-col items-stretch gap-5">
+            <div className="flex justify-start">
+              <InvestmentOpportunitiesToolbar />
+            </div>
+            <InvestmentLocationChips
+              filters={investmentLocationFilters}
+              selectedFilter={selectedFilter}
+              onSelect={handleFilterChange}
+            />
+          </div>
+
+          <section
+            aria-label="بطاقات الفرص الاستثمارية"
+            className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
           >
-            <AppButton>
-              <Plus className="size-4" />
-              Add opportunity
-            </AppButton>
-          </Can>
-          <Can
-            allOf={[
-              createPermission(
-                APP_RESOURCES.investmentOpportunities,
-                APP_ACTIONS.publish,
-              ),
-            ]}
-          >
-            <AppButton variant="outline">
-              <Rocket className="size-4" />
-              Publish ready items
-            </AppButton>
-          </Can>
-        </div>
-      }
-    >
-      <DataTableShell columns={columns} data={rows} />
-    </ModulePlaceholderPage>
+            {paginatedOpportunities.map((opportunity) => (
+              <DashboardOpportunityCard
+                key={opportunity.id}
+                {...opportunity}
+              />
+            ))}
+          </section>
+
+          <DashboardPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            nextLabel={investmentActions.nextLabel}
+            previousLabel={investmentActions.previousLabel}
+          />
+        </>
+      )}
+    </div>
   )
 }

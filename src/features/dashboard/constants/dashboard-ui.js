@@ -32,13 +32,16 @@ export const dashboardBrand = {
   typo: logoTypo,
 }
 
-export const dashboardTopbar = {
-  title: 'لوحة المعلومات',
-  user: {
-    name: 'عمر مجدي',
-    role: 'مدير النظام',
-    avatar: avatarImage,
-  },
+export const dashboardTopbarUser = {
+  name: 'عمر مجدي',
+  role: 'مدير النظام',
+  avatar: avatarImage,
+}
+
+export const dashboardRouteTitles = {
+  dashboard: 'لوحة المعلومات',
+  'investment-opportunities': 'الفرص الاستثمارية',
+  users: 'ادارة المستخدمين',
 }
 
 export const dashboardActions = {
@@ -122,7 +125,7 @@ export const dashboardMetrics = [
 export const investmentStatusRows = [
   { key: 'draft', label: 'مسودة', count: 23, progress: 45 },
   { key: 'published', label: 'منشور', count: 58, progress: 88 },
-  { key: 'funded', label: 'ممول', count: 34, progress: 60 },
+  { key: 'funded', label: 'ممّول', count: 34, progress: 60 },
   { key: 'closed', label: 'مغلق', count: 17, progress: 38 },
   { key: 'cancelled', label: 'ملغي', count: 5, progress: 18 },
 ]

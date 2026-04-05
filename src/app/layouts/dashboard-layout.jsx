@@ -19,8 +19,9 @@ import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topba
 import {
   dashboardActions,
   dashboardNavItems,
+  dashboardRouteTitles,
   dashboardSettingsItem,
-  dashboardTopbar,
+  dashboardTopbarUser,
 } from '@/features/dashboard/constants/dashboard-ui'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import { canAccessRoute } from '@/lib/permissions/helpers'
@@ -93,6 +94,9 @@ export function DashboardLayout() {
     return <Navigate to={ROUTE_PATHS.unauthorized} replace />
   }
 
+  const pageTitle =
+    dashboardRouteTitles[activeRoute?.handle?.key] ?? dashboardRouteTitles.dashboard
+
   const sidebar = (
     <DashboardSidebar
       pathname={location.pathname}
@@ -109,8 +113,8 @@ export function DashboardLayout() {
 
         <main className="min-w-0">
           <DashboardTopbar
-            title={dashboardTopbar.title}
-            user={dashboardTopbar.user}
+            title={pageTitle}
+            user={dashboardTopbarUser}
             onOpenSidebar={() => setSidebarOpen(true)}
           />
           <div className="pt-[31px]">
