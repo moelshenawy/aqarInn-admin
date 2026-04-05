@@ -1,0 +1,11 @@
+{
+  "dashboard": "الرئيسية",
+  "users": "إدارة المستخدمين",
+  "investmentOpportunities": "الفرص الاستثمارية",
+  "profitDistributions": "توزيعات الأرباح",
+  "activityLogs": "سجل النشاطات",
+  "notifications": "الإشعارات",
+  "login": "تسجيل الدخول",
+  "forgotPassword": "نسيت كلمة المرور",
+  "resetPassword": "إعادة تعيين كلمة المرور"
+}

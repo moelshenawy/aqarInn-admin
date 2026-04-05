@@ -1,0 +1,11 @@
+{
+  "required": "This field is required.",
+  "invalidEmail": "Enter a valid email address.",
+  "minCharacters": "Must be at least {{count}} characters.",
+  "networkError": "Network request failed. Please try again.",
+  "unexpectedError": "Something went wrong. Please try again.",
+  "sessionExpired": "Your session has expired. Please sign in again.",
+  "forbidden": "You do not have permission to perform this action.",
+  "invalidSubmission": "The submitted data is invalid.",
+  "passwordConfirmation": "Passwords must match."
+}

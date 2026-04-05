@@ -1,0 +1,25 @@
+{
+  "roles": {
+    "super_admin": "مشرف عام",
+    "operations_admin": "مسؤول العمليات",
+    "investment_manager": "مدير الاستثمار",
+    "read_only_viewer": "مستخدم عرض فقط"
+  },
+  "actions": {
+    "view": "عرض",
+    "create": "إنشاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "publish": "نشر",
+    "distribute_profits": "توزيع الأرباح"
+  },
+  "resources": {
+    "dashboard": "الرئيسية",
+    "users": "المستخدمون",
+    "investment_opportunities": "الفرص الاستثمارية",
+    "profit_distributions": "توزيعات الأرباح",
+    "activity_logs": "سجل النشاطات",
+    "notifications": "الإشعارات",
+    "auth": "المصادقة"
+  }
+}

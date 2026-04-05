@@ -1,0 +1,11 @@
+{
+  "dashboard": "Dashboard",
+  "users": "Users Management",
+  "investmentOpportunities": "Investment Opportunities",
+  "profitDistributions": "Profit Distributions",
+  "activityLogs": "Activity Logs",
+  "notifications": "Notifications",
+  "login": "Login",
+  "forgotPassword": "Forgot password",
+  "resetPassword": "Reset password"
+}

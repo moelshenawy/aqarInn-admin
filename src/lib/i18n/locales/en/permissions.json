@@ -1,0 +1,25 @@
+{
+  "roles": {
+    "super_admin": "Super Admin",
+    "operations_admin": "Operations Admin",
+    "investment_manager": "Investment Manager",
+    "read_only_viewer": "Read-Only Viewer"
+  },
+  "actions": {
+    "view": "View",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "publish": "Publish",
+    "distribute_profits": "Distribute profits"
+  },
+  "resources": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "investment_opportunities": "Investment Opportunities",
+    "profit_distributions": "Profit Distributions",
+    "activity_logs": "Activity Logs",
+    "notifications": "Notifications",
+    "auth": "Authentication"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "appName": "عقار إن",
+  "backofficeLabel": "لوحة التحكم الداخلية",
+  "shellReady": "الهيكل الأساسي جاهز لإضافة الوحدات والواجهات البرمجية وسير العمل لاحقاً.",
+  "navigation": "التنقل",
+  "openNavigation": "فتح التنقل",
+  "backToDashboard": "العودة إلى الرئيسية",
+  "unauthorizedTitle": "ليس لديك صلاحية",
+  "unauthorizedDescription": "الدور الحالي لا يملك صلاحية الوصول إلى هذه الصفحة.",
+  "notFoundTitle": "الصفحة غير موجودة",
+  "notFoundDescription": "الصفحة المطلوبة غير موجودة أو لم يتم ربطها بعد.",
+  "language": "اللغة",
+  "english": "English",
+  "arabic": "العربية",
+  "search": "بحث",
+  "cancel": "إلغاء",
+  "close": "إغلاق",
+  "save": "حفظ",
+  "continue": "متابعة",
+  "comingSoon": "قريباً",
+  "placeholderMessage": "هذه الوحدة خفيفة عمداً الآن. سيتم تنفيذ الواجهة والمنطق لاحقاً.",
+  "actions": "الإجراءات",
+  "status": "الحالة",
+  "overview": "نظرة عامة",
+  "filters": "الفلاتر",
+  "emptyTitle": "لا توجد بيانات بعد",
+  "emptyDescription": "اربط الواجهة البرمجية أو أضف واجهة الوحدة عند بدء مرحلة التنفيذ.",
+  "table": {
+    "rows": "الصفوف"
+  },
+  "themeNote": "تم تفعيل دعم الاتجاه واللغة من طبقة الأساس."
+}
