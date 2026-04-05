@@ -1,18 +1,11 @@
 import { Building2, Globe2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 
-import { ROUTE_PATHS } from '@/app/router/route-paths'
-import { useAuth } from '@/features/auth/context/auth-provider'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 
 export function AuthLayout() {
   const { t } = useTranslation(['auth', 'common'])
-  const { isAuthenticated } = useAuth()
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTE_PATHS.dashboard} replace />
-  }
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.08),_transparent_35%),linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-10">

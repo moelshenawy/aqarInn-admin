@@ -1,13 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Menu } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import {
-  Link,
-  Navigate,
-  Outlet,
-  useLocation,
-  useMatches,
-} from 'react-router-dom'
+import { Link, Navigate, Outlet, useMatches } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -27,22 +21,15 @@ import { UserMenu } from '@/shared/components/user-menu'
 
 export function DashboardLayout() {
   const { t } = useTranslation('common')
-  const location = useLocation()
   const matches = useMatches()
   const { dir } = useDirection()
-  const { isAuthenticated, role } = useAuth()
+  const { role } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const activeRoute = useMemo(
     () => [...matches].reverse().find((match) => match.handle?.key),
     [matches],
   )
-
-  if (!isAuthenticated) {
-    return (
-      <Navigate to={ROUTE_PATHS.login} replace state={{ from: location }} />
-    )
-  }
 
   if (
     activeRoute?.handle &&
