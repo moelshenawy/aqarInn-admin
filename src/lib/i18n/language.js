@@ -1,5 +1,5 @@
 export const SUPPORTED_LANGUAGES = ['en', 'ar']
-export const DEFAULT_LANGUAGE = 'en'
+export const DEFAULT_LANGUAGE = 'ar'
 export const LANGUAGE_STORAGE_KEY = 'aqarinn.backoffice.language'
 
 export function getInitialLanguage() {

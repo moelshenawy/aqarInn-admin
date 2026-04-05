@@ -14,7 +14,7 @@ export function AppDirectionProvider({ children }) {
 
   return (
     <DirectionContext.Provider value={value}>
-      <div dir={value.dir} className="min-h-screen">
+      <div dir={'rtl'} className="min-h-screen">
         {children}
       </div>
     </DirectionContext.Provider>

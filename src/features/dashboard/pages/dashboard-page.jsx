@@ -1,64 +1,57 @@
+import { DashboardMetricCard } from '@/features/dashboard/components/dashboard-metric-card'
+import { DashboardOpportunityCard } from '@/features/dashboard/components/dashboard-opportunity-card'
+import { DashboardProgressTable } from '@/features/dashboard/components/dashboard-progress-table'
+import { DashboardSectionHeader } from '@/features/dashboard/components/dashboard-section-header'
+import { DashboardSummaryCard } from '@/features/dashboard/components/dashboard-summary-card'
 import {
-  Building2,
-  ChartNoAxesColumn,
-  ShieldCheck,
-  WalletCards,
-} from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageHeader } from '@/shared/components/page-header'
-
-const METRICS = [
-  { icon: Building2, label: 'Active modules', value: '6' },
-  { icon: ChartNoAxesColumn, label: 'Query client', value: 'Ready' },
-  { icon: ShieldCheck, label: 'Permissions', value: 'Role-based' },
-  { icon: WalletCards, label: 'API client', value: 'Intercepted' },
-]
+  dashboardMetrics,
+  investmentStatusRows,
+  topOpportunities,
+  transactionOverview,
+} from '@/features/dashboard/constants/dashboard-ui'
 
 export default function DashboardPage() {
-  const { t } = useTranslation('common')
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        titleKey="navigation:dashboard"
-        description={t('shellReady')}
-      />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {METRICS.map((metric) => {
-          const Icon = metric.icon
-          return (
-            <Card
-              key={metric.label}
-              className="border-border/70 rounded-3xl shadow-sm"
+    <div className="space-y-[30px]" dir="rtl">
+      <DashboardSectionHeader title="ملخص مؤشرات الأداء الرئيسية" />
+
+      <section
+        aria-label="بطاقات مؤشرات الأداء"
+        className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3"
+      >
+        {dashboardMetrics.map((metric) => (
+          <DashboardMetricCard key={metric.key} {...metric} />
+        ))}
+      </section>
+
+      <DashboardProgressTable rows={investmentStatusRows} />
+
+      <section className="space-y-6">
+        <h2 className="text-right text-lg font-semibold leading-7 text-[#181927]">
+          أفضل فرص الاستثمار حسب المبلغ الممول
+        </h2>
+        <div className="grid grid-cols-1 gap-[14px] lg:grid-cols-6">
+          {topOpportunities.map((opportunity, index) => (
+            <div
+              key={opportunity.key}
+              className={index < 3 ? 'lg:col-span-2' : 'lg:col-span-3'}
             >
-              <CardHeader className="flex flex-row items-center justify-between gap-4 pb-2">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  {metric.label}
-                </CardTitle>
-                <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-2xl">
-                  <Icon className="size-5" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground text-2xl font-semibold tracking-tight">
-                  {metric.value}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-      <Card className="border-border/70 rounded-3xl shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Foundation notes</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground space-y-3 text-sm leading-6">
-          <p>{t('placeholderMessage')}</p>
-          <p>{t('themeNote')}</p>
-        </CardContent>
-      </Card>
+              <DashboardOpportunityCard {...opportunity} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-6">
+        <h2 className="text-right text-lg font-semibold leading-7 text-[#181927]">
+          نظرة عامة على المعاملات
+        </h2>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {transactionOverview.map((item) => (
+            <DashboardSummaryCard key={item.key} {...item} />
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

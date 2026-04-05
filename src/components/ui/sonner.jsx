@@ -14,7 +14,7 @@ export function Toaster(props) {
 
   return (
     <Sonner
-      dir={dir}
+      dir={'rtl'}
       icons={{
         success: <CircleCheckIcon className="size-4" />,
         info: <InfoIcon className="size-4" />,

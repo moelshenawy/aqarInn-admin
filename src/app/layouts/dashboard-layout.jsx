@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Menu } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { Link, Navigate, Outlet, useMatches } from 'react-router-dom'
+import {
+  Link,
+  Navigate,
+  Outlet,
+  useLocation,
+  useMatches,
+} from 'react-router-dom'
 
-import { Button } from '@/components/ui/button'
 import {
   Sheet,
   SheetContent,
@@ -11,18 +14,70 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
+import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
+import {
+  dashboardActions,
+  dashboardNavItems,
+  dashboardSettingsItem,
+  dashboardTopbar,
+} from '@/features/dashboard/constants/dashboard-ui'
 import { useAuth } from '@/features/auth/context/auth-provider'
-import { useDirection } from '@/lib/i18n/direction-provider'
 import { canAccessRoute } from '@/lib/permissions/helpers'
-import { AppBreadcrumbs } from '@/shared/components/app-breadcrumbs'
-import { LanguageSwitcher } from '@/shared/components/language-switcher'
-import { SidebarNav } from '@/shared/components/sidebar-nav'
-import { UserMenu } from '@/shared/components/user-menu'
+
+function DashboardBrand() {
+  return (
+    <Link
+      to={ROUTE_PATHS.dashboard}
+      className="flex items-center justify-between"
+    >
+      <div className="relative h-[41px] w-[109px]">
+        <img
+          src={'/assets/Logo.svg'}
+          alt="عقار إن"
+          className="absolute top-0 left-0 h-[41px] w-auto"
+        />
+      </div>
+
+      <div className="size-8">
+        <img
+          src={'/assets/icons/window.svg'}
+          alt="عقار إن"
+          className="h-[41px] w-auto"
+        />
+      </div>
+    </Link>
+  )
+}
+
+function DashboardSidebar({ pathname, onNavigate }) {
+  return (
+    <div className="flex h-full flex-col rounded-[10px] bg-[color:var(--dashboard-surface)] px-5 py-6 shadow-[var(--dashboard-shadow)]">
+      <DashboardBrand />
+      <div className="mt-16 flex-1 space-y-5">
+        {dashboardNavItems.map((item) => (
+          <DashboardSidebarItem
+            key={item.key}
+            icon={item.icon}
+            label={item.label}
+            to={item.path}
+            active={pathname === item.path}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
+      <DashboardSidebarItem
+        icon={dashboardSettingsItem.icon}
+        label={dashboardSettingsItem.label}
+        disabled
+      />
+    </div>
+  )
+}
 
 export function DashboardLayout() {
-  const { t } = useTranslation('common')
   const matches = useMatches()
-  const { dir } = useDirection()
+  const location = useLocation()
   const { role } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -39,69 +94,38 @@ export function DashboardLayout() {
   }
 
   const sidebar = (
-    <div className="flex h-full flex-col">
-      <div className="border-border/70 border-b px-5 py-6">
-        <Link to={ROUTE_PATHS.dashboard} className="block">
-          <p className="text-foreground text-lg font-semibold tracking-tight">
-            {t('appName')}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            {t('backofficeLabel')}
-          </p>
-        </Link>
-      </div>
-      <div className="flex-1 overflow-y-auto px-3 py-4">
-        <SidebarNav onNavigate={() => setSidebarOpen(false)} />
-      </div>
-    </div>
+    <DashboardSidebar
+      pathname={location.pathname}
+      onNavigate={() => setSidebarOpen(false)}
+    />
   )
 
   return (
-    <div className="bg-muted/30 min-h-screen">
-      <div className="mx-auto flex min-h-screen max-w-[1600px]">
-        <aside className="border-border/70 bg-background sticky top-0 hidden h-screen w-72 border-e lg:block">
+    <div className="min-h-screen bg-[color:var(--dashboard-bg)] p-4 sm:p-5">
+      <div className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-[1440px] grid-cols-1 gap-5 lg:grid-cols-[266px_minmax(0,1fr)]">
+        <aside className="hidden h-[calc(100vh-2.5rem)] min-h-[992px] lg:block">
           {sidebar}
         </aside>
-        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-          <header className="border-border/70 bg-background/95 sticky top-0 z-20 border-b backdrop-blur">
-            <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 xl:px-8">
-              <div className="flex min-w-0 items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="lg:hidden"
-                  onClick={() => setSidebarOpen(true)}
-                >
-                  <Menu className="size-4" />
-                  <span className="sr-only">{t('openNavigation')}</span>
-                </Button>
-                <div className="min-w-0 space-y-1">
-                  <AppBreadcrumbs />
-                  <p className="text-muted-foreground truncate text-sm">
-                    {activeRoute?.handle?.descriptionKey
-                      ? t(activeRoute.handle.descriptionKey)
-                      : t('shellReady')}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <LanguageSwitcher />
-                <UserMenu />
-              </div>
-            </div>
-          </header>
-          <main className="flex-1 px-4 py-6 sm:px-6 xl:px-8">
+
+        <main className="min-w-0">
+          <DashboardTopbar
+            title={dashboardTopbar.title}
+            user={dashboardTopbar.user}
+            onOpenSidebar={() => setSidebarOpen(true)}
+          />
+          <div className="pt-[31px]">
             <Outlet />
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
+
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
         <SheetContent
-          side={dir === 'rtl' ? 'right' : 'left'}
-          className="border-border/70 bg-background w-full max-w-xs border-s p-0"
+          side="right"
+          className="w-full max-w-[290px] border-none bg-[color:var(--dashboard-bg)] p-4"
         >
           <SheetHeader className="sr-only">
-            <SheetTitle>{t('navigation')}</SheetTitle>
+            <SheetTitle>{dashboardActions.topbar.settingsLabel}</SheetTitle>
           </SheetHeader>
           {sidebar}
         </SheetContent>
