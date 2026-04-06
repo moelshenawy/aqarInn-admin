@@ -36,6 +36,11 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
 
       <div className="flex h-[69px] min-w-[225px] items-center justify-between rounded-xl bg-[color:var(--dashboard-surface)] px-3 py-[13px] shadow-[var(--dashboard-shadow)]">
         <div className="flex items-center gap-[13px]">
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="size-[41px] rounded-full object-cover"
+          />
           <div className="text-right">
             <p className="text-[14px] leading-5 font-medium text-[color:var(--dashboard-text-soft)]">
               {user.name}
@@ -44,11 +49,6 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
               {user.role}
             </p>
           </div>
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="size-[41px] rounded-full object-cover"
-          />
         </div>
 
         <span className="flex size-5 items-center justify-center text-[color:var(--dashboard-text-soft)]">
