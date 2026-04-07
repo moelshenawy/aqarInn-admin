@@ -9,6 +9,8 @@ export const ROUTE_PATHS = {
   investmentOpportunities: '/app/investment-opportunities',
   investmentOpportunityAdd: '/app/investment-opportunities/add',
   investmentOpportunityDetails: '/app/investment-opportunities/:opportunityId',
+  investmentOpportunityEdit:
+    '/app/investment-opportunities/:opportunityId/edit',
   investmentOpportunityProfitDistributions:
     '/app/investment-opportunities/:opportunityId/profit-distributions',
   profitDistributions: '/app/profit-distributions',
@@ -18,6 +20,10 @@ export const ROUTE_PATHS = {
 
 export function buildInvestmentOpportunityDetailsPath(opportunityId) {
   return `/app/investment-opportunities/${encodeURIComponent(opportunityId)}`
+}
+
+export function buildInvestmentOpportunityEditPath(opportunityId) {
+  return `${buildInvestmentOpportunityDetailsPath(opportunityId)}/edit`
 }
 
 export function buildInvestmentOpportunityProfitDistributionsPath(opportunityId) {

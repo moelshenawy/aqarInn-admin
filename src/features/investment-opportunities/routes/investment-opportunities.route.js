@@ -46,6 +46,19 @@ export const investmentOpportunityDetailsRouteMeta = {
   ],
 }
 
+export const investmentOpportunityEditRouteMeta = {
+  key: 'investment-opportunity-edit',
+  path: ROUTE_PATHS.investmentOpportunityEdit,
+  titleKey: 'navigation.investmentOpportunities',
+  breadcrumbKey: 'navigation.investmentOpportunities',
+  descriptionKey: 'placeholderMessage',
+  showInNav: false,
+  icon: BriefcaseBusiness,
+  requiredPermissions: [
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.edit),
+  ],
+}
+
 export const investmentOpportunityProfitDistributionsRouteMeta = {
   key: 'investment-opportunity-profit-distributions',
   path: ROUTE_PATHS.investmentOpportunityProfitDistributions,
@@ -79,6 +92,18 @@ export const investmentOpportunityDetailsRoute = {
     return {
       Component: module.default,
       handle: investmentOpportunityDetailsRouteMeta,
+    }
+  },
+}
+
+export const investmentOpportunityEditRoute = {
+  path: 'investment-opportunities/:opportunityId/edit',
+  async lazy() {
+    const module =
+      await import('@/features/investment-opportunities/pages/investment-opportunity-edit-page')
+    return {
+      Component: module.default,
+      handle: investmentOpportunityEditRouteMeta,
     }
   },
 }

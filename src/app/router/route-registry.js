@@ -7,6 +7,7 @@ import {
   investmentOpportunitiesRoute,
   investmentOpportunityAddRoute,
   investmentOpportunityDetailsRoute,
+  investmentOpportunityEditRoute,
   investmentOpportunityProfitDistributionsRoute,
 } from '@/features/investment-opportunities/routes/investment-opportunities.route'
 import { notificationsRoute } from '@/features/notifications/routes/notifications.route'
@@ -24,6 +25,7 @@ export const protectedRoutes = [
   investmentOpportunitiesRoute,
   investmentOpportunityAddRoute,
   investmentOpportunityDetailsRoute,
+  investmentOpportunityEditRoute,
   investmentOpportunityProfitDistributionsRoute,
   profitDistributionsRoute,
   activityLogsRoute,
