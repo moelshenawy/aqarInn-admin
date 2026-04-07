@@ -547,6 +547,51 @@ describe('InvestmentOpportunitiesPage route', () => {
     })
   })
 
+  it('opens and closes the distribution details modal from the eye action', async () => {
+    const profitDistributionsPath =
+      buildInvestmentOpportunityProfitDistributionsPath(
+        'investment-riyadh-001',
+      )
+    const { router } = renderInvestmentOpportunitiesRoute({
+      initialEntries: [profitDistributionsPath],
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'عرض توزيع عبد العزيز أحمد سالم الهاشمي',
+      }),
+    )
+
+    const detailsDialog = await screen.findByRole('dialog', {
+      name: 'تفاصيل التوزيع',
+    })
+    expect(
+      within(detailsDialog).getByText(
+        'جميع تفاصيل التوزيع التي تُمكّنك من مراجعة صافي الربح، تاريخ التوزيع، منفّذ العملية، وقائمة المستثمرين مع أرباحهم المستحقة في مكان واحد لسهولة المتابعة والرقابة.',
+      ),
+    ).toBeInTheDocument()
+    expect(within(detailsDialog).getByText('125,430.75')).toBeInTheDocument()
+    expect(within(detailsDialog).getByText('2026-04-15')).toBeInTheDocument()
+    expect(within(detailsDialog).getAllByText('1,200')).not.toHaveLength(0)
+    expect(within(detailsDialog).getByText('بيانات المنفّذ')).toBeInTheDocument()
+    expect(within(detailsDialog).getByText('U-2048')).toBeInTheDocument()
+    expect(
+      within(detailsDialog).getByText('قائمة المستثمرين في هذا التوزيع'),
+    ).toBeInTheDocument()
+    expect(within(detailsDialog).getByText('10 مستثمر')).toBeInTheDocument()
+
+    fireEvent.click(
+      within(detailsDialog).getByRole('button', {
+        name: 'إغلاق تفاصيل التوزيع',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    expect(router.state.location.pathname).toBe(profitDistributionsPath)
+  })
+
   it('renders the profit distributions id page with mock rows and pagination', () => {
     renderInvestmentOpportunitiesRoute({
       initialEntries: [

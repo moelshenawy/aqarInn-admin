@@ -112,6 +112,44 @@ const distributionNames = [
   'هند طلال عبد العزيز العتيبي',
 ]
 
+const distributionInvestorNames = [
+  'محمد عبد الله العتيبي',
+  'ليلى حسن علي الغامدي',
+  'ريم عبد الرحمن سعود البلوي',
+  'منى فيصل حمد السبيعي',
+  'عبير سعد مبارك الدوسري',
+  'نورة خالد فهد الرويلي',
+  'فهد عبد الله مبارك العتيبي',
+  'محمد إبراهيم حسن العسيري',
+  'سالم علي محمد الناصر',
+  'هند طلال عبد العزيز العتيبي',
+]
+
+export const investmentOpportunityDistributionDetailDefaults = {
+  title: 'تفاصيل التوزيع',
+  description:
+    'جميع تفاصيل التوزيع التي تُمكّنك من مراجعة صافي الربح، تاريخ التوزيع، منفّذ العملية، وقائمة المستثمرين مع أرباحهم المستحقة في مكان واحد لسهولة المتابعة والرقابة.',
+  netProfit: '125,430.75',
+  executionDate: '2026-04-15',
+  shareCount: '1,200',
+  executorSectionTitle: 'بيانات المنفّذ',
+  executor: {
+    nameAr: 'أحمد خالد السبيعي',
+    nameEn: 'Abdulaziz Ahmed Salem Al-Hashimi',
+    userId: 'U-2048',
+  },
+  investorsTitle: 'قائمة المستثمرين في هذا التوزيع',
+  investorsCountLabel: '10 مستثمر',
+  investors: distributionInvestorNames.map((fullName, index) => ({
+    id: `distribution-investor-${index + 1}`,
+    fullName,
+    nationalId: index === 0 ? '1023456789' : '5,540,000',
+    mobile: '966500123456',
+    shares: '1,200',
+    profitAmount: '45,800.25',
+  })),
+}
+
 export const investmentOpportunityDistributionSummary = {
   title: 'جميع توزيعات الارباح',
   countLabel: '243 مجموع التوزيعات',
@@ -125,5 +163,6 @@ export const investmentOpportunityDistributionRows = distributionNames.map(
     userId: 'AQIN001',
     executionDate: '22/1/2026',
     netProfit: '5,540,000',
+    details: investmentOpportunityDistributionDetailDefaults,
   }),
 )

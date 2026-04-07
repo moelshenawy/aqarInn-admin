@@ -39,13 +39,14 @@ function SheetOverlay({ className, ...props }) {
 function SheetContent({
   className,
   children,
+  overlayClassName,
   side = 'right',
   showCloseButton = true,
   ...props
 }) {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Content
         data-slot="sheet-content"
         data-side={side}

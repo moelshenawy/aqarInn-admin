@@ -1,9 +1,15 @@
-import { ArrowLeft, ArrowRight, Eye, MoreVertical, Plus, User } from 'lucide-react'
-
-import { cn } from '@/lib/utils'
 import {
-  investmentActions,
-} from '@/features/investment-opportunities/constants/investment-opportunities-ui'
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  MoreVertical,
+  Plus,
+  User,
+} from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { investmentActions } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
 import {
   investmentOpportunityDistributionRows,
   investmentOpportunityDistributionSummary,
@@ -19,14 +25,17 @@ function UserAvatarIcon() {
   )
 }
 
-export function InvestmentOpportunityDistributionsTable({ onAddDistribution }) {
+export function InvestmentOpportunityDistributionsTable({
+  onAddDistribution,
+  onViewDistribution,
+}) {
   return (
     <section
       dir="rtl"
       aria-label={investmentOpportunityDistributionSummary.title}
       className="overflow-hidden rounded-xl border border-[#eae5d7] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]"
     >
-      <header className="flex h-[77px] items-start border-b border-[#eae5d7] px-6 pt-5">
+      <header className="flex h-[77px] items-start border-b border-[#eae5d7] bg-[#EAE5D7] px-6 pt-5">
         <div className="flex w-full items-center gap-2">
           <MoreVertical
             className="size-5 shrink-0 stroke-[1.8] text-[#9d7e55]"
@@ -41,7 +50,7 @@ export function InvestmentOpportunityDistributionsTable({ onAddDistribution }) {
           <button
             type="button"
             onClick={onAddDistribution}
-            className="me-auto inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#402f28] px-5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+            className="ms-auto inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#402f28] px-5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
           >
             <span>{investmentOpportunityDistributionSummary.addLabel}</span>
             <Plus className="size-5 stroke-[2]" aria-hidden="true" />
@@ -83,13 +92,16 @@ export function InvestmentOpportunityDistributionsTable({ onAddDistribution }) {
                   </div>
                 </td>
                 <td className="px-4">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onViewDistribution?.(row)}
                     aria-label={`عرض توزيع ${row.fullName}`}
-                    className="flex size-8 items-center justify-center rounded-full text-[#6d4f3b] transition hover:bg-[#eae5d7] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+                    className="size-8 rounded-full text-[#6d4f3b] hover:bg-[#eae5d7] hover:text-[#6d4f3b] focus-visible:ring-[#9d7e55]/25"
                   >
                     <Eye className="size-4 stroke-[1.8]" aria-hidden="true" />
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
