@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import opportunityOverlay from '@/assets/dashboard/opportunity-overlay.png'
+import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { cn } from '@/lib/utils'
 
 export function DashboardOpportunityCard({
@@ -38,35 +39,35 @@ export function DashboardOpportunityCard({
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
       </div>
 
-      <div className="flex flex-col gap-3 px-4 pb-[14px] pt-3">
-        <p className="text-right text-lg font-semibold leading-7 text-[#181927]">
+      <div className="flex flex-col gap-3 px-4 pt-3 pb-[14px]">
+        <p className="text-right text-lg leading-7 font-semibold text-[#181927]">
           {title}
         </p>
 
         <div className="flex items-center justify-between gap-3">
-          <span className="rounded-full border border-[color:var(--dashboard-border)] bg-[color:var(--dashboard-bg)] px-2 py-0.5 text-xs font-medium leading-[18px] text-[color:var(--dashboard-text)]">
-            {code}
-          </span>
           <div className="flex items-center gap-2">
             <img src={sharesDot} alt="" className="size-4 shrink-0" />
-            <span className="text-sm font-medium leading-5 text-[#181927]">
+            <span className="text-sm leading-5 font-medium text-[#181927]">
               {soldShares}
             </span>
           </div>
+          <span className="rounded-full border border-[color:var(--dashboard-border)] bg-[color:var(--dashboard-bg)] px-2 py-0.5 text-xs leading-[18px] font-medium text-[color:var(--dashboard-text)]">
+            {code}
+          </span>
         </div>
 
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 text-sm font-medium leading-5 text-[#181927]">
+          <div className="flex items-center gap-1.5 text-sm leading-5 font-medium text-[#181927]">
             <AccentIconComponent className="size-4 stroke-[1.8] text-[color:var(--dashboard-text-soft)]" />
             <span>{status}</span>
           </div>
-          <div className="flex items-center gap-1 text-base font-semibold leading-6 text-black">
-            <span>﷼</span>
+          <div className="flex items-center gap-1 text-base leading-6 font-semibold text-black">
             <span>{price}</span>
+            <RiyalIcon className="" />
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-xs font-medium leading-[18px] text-[color:var(--dashboard-text)]">
+        <div className="flex items-center gap-1 text-xs leading-[18px] font-medium text-[color:var(--dashboard-text)]">
           <span>{progress}%</span>
           <div className="h-0.5 flex-1 rounded-full bg-[#efe8d8]">
             <div
@@ -86,7 +87,7 @@ export function DashboardOpportunityCard({
   return (
     <Link
       to={to}
-      className="block h-full rounded-xl outline-none transition focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25"
+      className="block h-full rounded-xl transition outline-none focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25"
     >
       {card}
     </Link>

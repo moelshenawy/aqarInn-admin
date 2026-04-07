@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import { RiyalIcon } from '@/components/ui/riyal-icon'
 
 const defaultDistributionDate = '22/1/2026'
 const distributionSuccessToast = {
@@ -74,8 +75,8 @@ export function InvestmentOpportunityAddDistributionDialog({
                 dir="ltr"
                 className="flex h-12 min-w-0 flex-1 items-center rounded-lg border border-[#bfab85] bg-[#f8f3e8] text-right shadow-[var(--dashboard-shadow)]"
               >
-                <span className="shrink-0 px-3.5 text-sm leading-5 font-medium text-[#ac9063]">
-                  ريال
+                <span className="shrink-0 px-3.5">
+                  <RiyalIcon className="text-xl text-[#ac9063]" />
                 </span>
                 <input
                   dir="rtl"

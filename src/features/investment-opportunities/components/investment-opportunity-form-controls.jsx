@@ -26,7 +26,15 @@ function InvestmentOpportunityFieldShell({
 }
 
 function InvestmentOpportunityFieldAddon({ children, icon: Icon }) {
-  if (!children && !Icon) {
+  const hasAddon =
+    children !== undefined &&
+    children !== null &&
+    children !== false &&
+    children !== ''
+  const shouldWrapAddon =
+    typeof children === 'string' || typeof children === 'number'
+
+  if (!hasAddon && !Icon) {
     return null
   }
 
@@ -35,9 +43,10 @@ function InvestmentOpportunityFieldAddon({ children, icon: Icon }) {
       {Icon ? (
         <Icon className="size-5 stroke-[1.8]" aria-hidden="true" />
       ) : null}
-      {children ? (
+      {hasAddon && shouldWrapAddon ? (
         <span className="text-base leading-6 font-normal">{children}</span>
       ) : null}
+      {hasAddon && !shouldWrapAddon ? children : null}
     </span>
   )
 }

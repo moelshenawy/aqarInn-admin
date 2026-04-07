@@ -84,6 +84,18 @@ export const dashboardSettingsItem = {
 }
 
 export const dashboardMetrics = [
+    {
+    key: 'users-count',
+    label: 'عدد المستخدمين',
+    value: '2,404',
+    icon: User,
+  },
+    {
+    key: 'verified-users',
+    label: 'المستخدمين الموثقين',
+    value: '1,548',
+    icon: UserCheck,
+  },
   {
     key: 'invested-total',
     label: 'إجمالي المبلغ المستثمر',
@@ -91,18 +103,15 @@ export const dashboardMetrics = [
     icon: Wallet,
     isCurrency: true,
   },
-  {
-    key: 'verified-users',
-    label: 'المستخدمين الموثقين',
-    value: '1,548',
-    icon: UserCheck,
+
+    {
+    key: 'distributed-returns',
+    label: 'إجمالي العوائد الموزعة',
+    value: '1,444,039',
+    icon: Banknote,
+    isCurrency: true,
   },
-  {
-    key: 'users-count',
-    label: 'عدد المستخدمين',
-    value: '2,404',
-    icon: User,
-  },
+
   {
     key: 'paid-withdrawals',
     label: 'إجمالي السحوبات المدفوعة',
@@ -116,13 +125,7 @@ export const dashboardMetrics = [
     value: '10,548',
     icon: CreditCard,
   },
-  {
-    key: 'distributed-returns',
-    label: 'إجمالي العوائد الموزعة',
-    value: '1,444,039',
-    icon: Banknote,
-    isCurrency: true,
-  },
+
 ]
 
 export const investmentStatusRows = [

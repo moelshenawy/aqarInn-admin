@@ -338,7 +338,9 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(
       screen.getByPlaceholderText('قم بإدخال صافي العائد'),
     ).toBeInTheDocument()
-    expect(screen.getByText('ريال')).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('dialog')).getByRole('img', { name: 'ريال' }),
+    ).toBeInTheDocument()
     const distributionDateInput = within(
       screen.getByRole('dialog'),
     ).getByDisplayValue('22/1/2026')

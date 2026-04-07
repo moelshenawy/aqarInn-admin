@@ -6,7 +6,6 @@ import reviewGallery5 from '@/assets/investment-opportunities/review-gallery-5.p
 import reviewChevronIcon from '@/assets/investment-opportunities/review-icon-chevron-up.svg'
 import reviewEditIcon from '@/assets/investment-opportunities/review-icon-edit.svg'
 import reviewMapPinIcon from '@/assets/investment-opportunities/review-icon-map-pin.svg'
-import reviewRiyalIcon from '@/assets/investment-opportunities/review-icon-riyal.svg'
 import reviewTrashIcon from '@/assets/investment-opportunities/review-icon-trash.svg'
 import reviewOperatorLogo from '@/assets/investment-opportunities/review-operator-logo.png'
 import { investmentOpportunities } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
@@ -16,7 +15,6 @@ export const investmentOpportunityDetailsAssets = {
   edit: reviewEditIcon,
   mapPin: reviewMapPinIcon,
   operatorLogo: reviewOperatorLogo,
-  riyal: reviewRiyalIcon,
   trash: reviewTrashIcon,
 }
 

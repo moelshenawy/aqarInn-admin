@@ -1,5 +1,6 @@
 import { Fragment } from 'react'
 
+import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { cn } from '@/lib/utils'
 import { investmentOpportunityDetailsAssets } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
@@ -12,9 +13,10 @@ function SectionHeading({ children }) {
       <img
         src={investmentOpportunityDetailsAssets.chevron}
         alt=""
-        className="size-5"
+        className="h-2 w-4 object-cover"
         aria-hidden="true"
       />
+
       <h3 className="text-lg leading-7 font-semibold text-[#181927]">
         {children}
       </h3>
@@ -30,11 +32,10 @@ function Metric({ label, value, currency = false }) {
       </p>
       {currency ? (
         <div dir="ltr" className="flex items-center justify-end gap-2.5">
-          <img
-            src={investmentOpportunityDetailsAssets.riyal}
+          <RiyalIcon
             alt=""
-            className="h-5 w-[19px]"
             aria-hidden="true"
+            className="text-xl text-[#402f28]"
           />
           <p className="text-xl leading-[30px] font-semibold text-[#402f28]">
             {value}

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { RiyalIcon } from '@/components/ui/riyal-icon'
 import {
   InvestmentOpportunityDropzoneField,
   InvestmentOpportunityFilePickerField,
@@ -248,7 +249,7 @@ export default function InvestmentOpportunityAddPage() {
                 id="propertyPrice"
                 label="سعر العقار"
                 placeholder="قم بإدخال السعر الإجمالي"
-                addon="ريال"
+                addon={<RiyalIcon className="text-xl" />}
                 inputMode="decimal"
                 required
                 {...register('propertyPrice')}
@@ -265,7 +266,7 @@ export default function InvestmentOpportunityAddPage() {
                 id="sharePrice"
                 label="سعر الحصة"
                 placeholder="يتم احتساب سعر الحصة تلقائيًا"
-                addon="ريال"
+                addon={<RiyalIcon className="text-xl" />}
                 inputMode="decimal"
                 required
                 {...register('sharePrice')}
@@ -274,7 +275,7 @@ export default function InvestmentOpportunityAddPage() {
                 id="expectedNetReturn"
                 label="العائد الصافي المتوقع"
                 placeholder="قم بإدخال قيمة العائد الصافي"
-                addon="ريال"
+                addon={<RiyalIcon className="text-xl" />}
                 inputMode="decimal"
                 required
                 {...register('expectedNetReturn')}

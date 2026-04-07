@@ -1,6 +1,15 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@font-face {
+  font-family: 'saudi_riyal';
+  src: url('./assets/fonts/saudi-riyal-font/saudi_riyal.woff2')
+    format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme inline {
   --font-sans:
     'Noto Kufi Arabic',
@@ -62,6 +71,23 @@
   --dashboard-border-strong: #bfab85;
   --dashboard-shadow: 0 1px 2px rgba(64, 47, 40, 0.08);
 }
+
+
+
+::selection {
+  background: var(--card-foreground);
+  color: white;
+  text-shadow: none;
+
+
+}
+
+::-moz-selection {
+  background: #FF0099;
+  color: black;
+  text-shadow: none;
+}
+
 
 * {
   box-sizing: border-box;

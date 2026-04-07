@@ -1,3 +1,5 @@
+import { RiyalIcon } from '@/components/ui/riyal-icon'
+
 export function DashboardSummaryCard({
   icon: Icon,
   label,
@@ -14,9 +16,11 @@ export function DashboardSummaryCard({
           {label}
         </p>
       </div>
-      <div className="mt-auto flex items-end justify-start gap-[10px]">
-        <span className="text-[34px] leading-[1] text-[color:var(--dashboard-text-soft)]">
-          {isCurrency ? '﷼' : ''}
+      <div className="mt-auto flex items-end justify-between gap-[10px]">
+        <span className="flex h-[34px] items-center">
+          {isCurrency ? (
+            <RiyalIcon className="text-[34px] text-[color:var(--dashboard-text-soft)]" />
+          ) : null}
         </span>
         <p className="text-right text-[36px] leading-[44px] font-medium tracking-tight text-[color:var(--dashboard-text)]">
           {value}
