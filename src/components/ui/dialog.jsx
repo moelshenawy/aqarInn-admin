@@ -37,7 +37,7 @@ function DialogOverlay({ className, ...props }) {
 function DialogContent({
   className,
   children,
-  showCloseButton = true,
+  showCloseButton = false,
   ...props
 }) {
   return (
@@ -46,20 +46,32 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          'bg-popover text-popover-foreground ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 text-sm ring-1 duration-100 outline-none sm:max-w-sm',
+          [
+            'fixed top-1/2 left-1/2 z-50',
+            'w-[calc(100%-32px)] max-w-[584px]',
+            '-translate-x-1/2 -translate-y-1/2',
+            'rounded-[20px] bg-[#F5F1E8]',
+            'px-7 pt-6 pb-7',
+            'shadow-[0_20px_60px_rgba(0,0,0,0.12)]',
+            'outline-none',
+            'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+            'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+            'duration-200',
+          ].join(' '),
           className,
         )}
         {...props}
       >
         {children}
+
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-2 right-2"
-              size="icon-sm"
+              className="absolute top-4 left-4 h-9 w-9 rounded-full p-0"
+              size="icon"
             >
-              <XIcon />
+              <XIcon className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>
@@ -68,7 +80,6 @@ function DialogContent({
     </DialogPortal>
   )
 }
-
 function DialogHeader({ className, ...props }) {
   return (
     <div

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
 import { DashboardOpportunityCard } from '@/features/dashboard/components/dashboard-opportunity-card'
 import { DashboardPagination } from '@/features/investment-opportunities/components/dashboard-pagination'
 import { InvestmentLocationChips } from '@/features/investment-opportunities/components/investment-location-chips'
@@ -96,6 +97,7 @@ export default function InvestmentOpportunitiesPage() {
               <DashboardOpportunityCard
                 key={opportunity.id}
                 {...opportunity}
+                to={buildInvestmentOpportunityDetailsPath(opportunity.id)}
               />
             ))}
           </section>

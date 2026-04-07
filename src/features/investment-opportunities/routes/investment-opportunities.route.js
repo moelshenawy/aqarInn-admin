@@ -20,6 +20,45 @@ export const investmentOpportunitiesRouteMeta = {
   ],
 }
 
+export const investmentOpportunityAddRouteMeta = {
+  key: 'investment-opportunity-add',
+  path: ROUTE_PATHS.investmentOpportunityAdd,
+  titleKey: 'navigation.investmentOpportunities',
+  breadcrumbKey: 'navigation.addInvestmentOpportunity',
+  descriptionKey: 'placeholderMessage',
+  showInNav: false,
+  icon: BriefcaseBusiness,
+  requiredPermissions: [
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.create),
+  ],
+}
+
+export const investmentOpportunityDetailsRouteMeta = {
+  key: 'investment-opportunity-details',
+  path: ROUTE_PATHS.investmentOpportunityDetails,
+  titleKey: 'navigation.investmentOpportunities',
+  breadcrumbKey: 'navigation.investmentOpportunities',
+  descriptionKey: 'placeholderMessage',
+  showInNav: false,
+  icon: BriefcaseBusiness,
+  requiredPermissions: [
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
+  ],
+}
+
+export const investmentOpportunityProfitDistributionsRouteMeta = {
+  key: 'investment-opportunity-profit-distributions',
+  path: ROUTE_PATHS.investmentOpportunityProfitDistributions,
+  titleKey: 'navigation.investmentOpportunities',
+  breadcrumbKey: 'navigation.investmentOpportunities',
+  descriptionKey: 'placeholderMessage',
+  showInNav: false,
+  icon: BriefcaseBusiness,
+  requiredPermissions: [
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
+  ],
+}
+
 export const investmentOpportunitiesRoute = {
   path: 'investment-opportunities',
   async lazy() {
@@ -28,6 +67,44 @@ export const investmentOpportunitiesRoute = {
     return {
       Component: module.default,
       handle: investmentOpportunitiesRouteMeta,
+    }
+  },
+}
+
+export const investmentOpportunityDetailsRoute = {
+  path: 'investment-opportunities/:opportunityId',
+  async lazy() {
+    const module =
+      await import('@/features/investment-opportunities/pages/investment-opportunity-details-page')
+    return {
+      Component: module.default,
+      handle: investmentOpportunityDetailsRouteMeta,
+    }
+  },
+}
+
+export const investmentOpportunityProfitDistributionsRoute = {
+  path: 'investment-opportunities/:opportunityId/profit-distributions',
+  async lazy() {
+    const module =
+      await import(
+        '@/features/investment-opportunities/pages/investment-opportunity-profit-distributions-page'
+      )
+    return {
+      Component: module.default,
+      handle: investmentOpportunityProfitDistributionsRouteMeta,
+    }
+  },
+}
+
+export const investmentOpportunityAddRoute = {
+  path: 'investment-opportunities/add',
+  async lazy() {
+    const module =
+      await import('@/features/investment-opportunities/pages/investment-opportunity-add-page')
+    return {
+      Component: module.default,
+      handle: investmentOpportunityAddRouteMeta,
     }
   },
 }

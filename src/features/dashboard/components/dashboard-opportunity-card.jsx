@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import opportunityOverlay from '@/assets/dashboard/opportunity-overlay.png'
 import { cn } from '@/lib/utils'
 
@@ -12,14 +14,15 @@ export function DashboardOpportunityCard({
   sharesDot,
   accentIcon: AccentIcon,
   className,
+  to,
 }) {
   const AccentIconComponent = AccentIcon
 
-  return (
+  const card = (
     <article
       dir="rtl"
       className={cn(
-        'overflow-hidden rounded-xl border border-[color:var(--dashboard-border)] bg-[color:var(--dashboard-bg)] shadow-[var(--dashboard-shadow)]',
+        'h-full overflow-hidden rounded-xl border border-[color:var(--dashboard-border)] bg-[color:var(--dashboard-bg)] shadow-[var(--dashboard-shadow)]',
         className,
       )}
     >
@@ -74,5 +77,18 @@ export function DashboardOpportunityCard({
         </div>
       </div>
     </article>
+  )
+
+  if (!to) {
+    return card
+  }
+
+  return (
+    <Link
+      to={to}
+      className="block h-full rounded-xl outline-none transition focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25"
+    >
+      {card}
+    </Link>
   )
 }

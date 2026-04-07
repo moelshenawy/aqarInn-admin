@@ -2,6 +2,7 @@
   "dashboard": "Dashboard",
   "users": "Users Management",
   "investmentOpportunities": "Investment Opportunities",
+  "addInvestmentOpportunity": "Add investment opportunity",
   "profitDistributions": "Profit Distributions",
   "activityLogs": "Activity Logs",
   "notifications": "Notifications",

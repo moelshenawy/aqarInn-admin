@@ -56,16 +56,21 @@ function DashboardSidebar({ pathname, onNavigate }) {
     <div className="flex h-full flex-col rounded-[10px] bg-[color:var(--dashboard-surface)] px-5 py-6 shadow-[var(--dashboard-shadow)]">
       <DashboardBrand />
       <div className="mt-16 flex-1 space-y-5">
-        {dashboardNavItems.map((item) => (
-          <DashboardSidebarItem
-            key={item.key}
-            icon={item.icon}
-            label={item.label}
-            to={item.path}
-            active={pathname === item.path}
-            onNavigate={onNavigate}
-          />
-        ))}
+        {dashboardNavItems.map((item) => {
+          const isActive =
+            pathname === item.path || pathname.startsWith(`${item.path}/`)
+
+          return (
+            <DashboardSidebarItem
+              key={item.key}
+              icon={item.icon}
+              label={item.label}
+              to={item.path}
+              active={isActive}
+              onNavigate={onNavigate}
+            />
+          )
+        })}
       </div>
       <DashboardSidebarItem
         icon={dashboardSettingsItem.icon}
