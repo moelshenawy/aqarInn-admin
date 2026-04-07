@@ -12,7 +12,10 @@ import {
 } from '@/features/investment-opportunities/routes/investment-opportunities.route'
 import { notificationsRoute } from '@/features/notifications/routes/notifications.route'
 import { profitDistributionsRoute } from '@/features/profit-distributions/routes/profit-distributions.route'
-import { usersRoute } from '@/features/users/routes/users.route'
+import {
+  usersAddRoute,
+  usersRoute,
+} from '@/features/users/routes/users.route'
 
 export const publicRoutes = [
   loginRoute,
@@ -22,6 +25,7 @@ export const publicRoutes = [
 export const protectedRoutes = [
   dashboardRoute,
   usersRoute,
+  usersAddRoute,
   investmentOpportunitiesRoute,
   investmentOpportunityAddRoute,
   investmentOpportunityDetailsRoute,

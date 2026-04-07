@@ -6,6 +6,7 @@ export const ROUTE_PATHS = {
   appRoot: '/app',
   dashboard: '/app/dashboard',
   users: '/app/users',
+  usersAdd: '/app/users/add',
   investmentOpportunities: '/app/investment-opportunities',
   investmentOpportunityAdd: '/app/investment-opportunities/add',
   investmentOpportunityDetails: '/app/investment-opportunities/:opportunityId',

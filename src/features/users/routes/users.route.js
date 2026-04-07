@@ -20,10 +20,31 @@ export const usersRouteMeta = {
   ],
 }
 
+export const usersAddRouteMeta = {
+  key: 'users-add',
+  path: ROUTE_PATHS.usersAdd,
+  titleKey: 'navigation.users',
+  breadcrumbKey: 'navigation.users',
+  descriptionKey: 'placeholderMessage',
+  showInNav: false,
+  icon: Users,
+  requiredPermissions: [
+    createPermission(APP_RESOURCES.users, APP_ACTIONS.create),
+  ],
+}
+
 export const usersRoute = {
   path: 'users',
   async lazy() {
     const module = await import('@/features/users/pages/users-page')
     return { Component: module.default, handle: usersRouteMeta }
+  },
+}
+
+export const usersAddRoute = {
+  path: 'users/add',
+  async lazy() {
+    const module = await import('@/features/users/pages/users-add-page')
+    return { Component: module.default, handle: usersAddRouteMeta }
   },
 }

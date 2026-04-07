@@ -46,6 +46,7 @@ export const dashboardRouteTitles = {
   'investment-opportunity-edit': 'الفرص الاستثمارية',
   'investment-opportunity-profit-distributions': 'الفرص الاستثمارية',
   users: 'ادارة المستخدمين',
+  'users-add': 'ادارة المستخدمين',
 }
 
 export const dashboardActions = {

@@ -10,8 +10,10 @@ import {
   Trash2,
   User,
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { Can } from '@/lib/permissions/can'
 import {
   APP_ACTIONS,
@@ -269,6 +271,7 @@ function UsersPagination({ currentPage, totalPages, onPageChange }) {
 }
 
 function UsersManagementTable() {
+  const navigate = useNavigate()
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.ceil(usersRows.length / USERS_PAGE_SIZE)
   const visibleUsersRows = useMemo(() => {
@@ -304,6 +307,7 @@ function UsersManagementTable() {
               type="button"
               dir="ltr"
               size="lg"
+              onClick={() => navigate(ROUTE_PATHS.usersAdd)}
               className="ms-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
             >
               <span>اضافة مستخدم</span>

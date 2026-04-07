@@ -1,17 +1,22 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { I18nextProvider } from 'react-i18next'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DashboardLayout } from '@/app/layouts/dashboard-layout'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/features/auth/context/auth-provider'
+import UsersAddPage from '@/features/users/pages/users-add-page'
 import UsersPage from '@/features/users/pages/users-page'
-import { usersRouteMeta } from '@/features/users/routes/users.route'
+import {
+  usersAddRouteMeta,
+  usersRouteMeta,
+} from '@/features/users/routes/users.route'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 
-function renderUsersRoute() {
+function renderUsersRoute({ initialEntries = [ROUTE_PATHS.users] } = {}) {
   window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
 
   const router = createMemoryRouter(
@@ -25,11 +30,16 @@ function renderUsersRoute() {
             element: <UsersPage />,
             handle: usersRouteMeta,
           },
+          {
+            path: 'users/add',
+            element: <UsersAddPage />,
+            handle: usersAddRouteMeta,
+          },
         ],
       },
     ],
     {
-      initialEntries: [ROUTE_PATHS.users],
+      initialEntries,
     },
   )
 
@@ -38,6 +48,7 @@ function renderUsersRoute() {
       <AuthProvider>
         <AppDirectionProvider>
           <RouterProvider router={router} />
+          <Toaster richColors closeButton />
         </AppDirectionProvider>
       </AuthProvider>
     </I18nextProvider>,
@@ -47,6 +58,10 @@ function renderUsersRoute() {
 }
 
 describe('UsersPage route', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('renders the users management mock table with pagination', () => {
     const { router } = renderUsersRoute()
 
@@ -102,5 +117,82 @@ describe('UsersPage route', () => {
       screen.getByText('3').closest('button'),
     ).toHaveAttribute('aria-current', 'page')
     expect(screen.getByText('AQIN021')).toBeInTheDocument()
+  })
+
+  it('navigates to the add user page from the users table action', () => {
+    const { router } = renderUsersRoute()
+
+    fireEvent.click(screen.getByRole('button', { name: 'اضافة مستخدم' }))
+
+    expect(router.state.location.pathname).toBe(ROUTE_PATHS.usersAdd)
+    expect(
+      screen.getByRole('heading', { name: 'إضافة مستخدم جديد' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('المستخدمين')).toBeInTheDocument()
+    expect(screen.getByText('قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام')).toBeInTheDocument()
+
+    expect(screen.getByLabelText(/الاسم الكامل بالإنجليزية/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/الاسم الكامل بالعربية/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/البريد الإلكتروني/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/رقم الجوال/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/الدور/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/الحالة/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/قائمة الفرص الاستثمارية/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'اضافة المستخدم' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'الغاء' })).toBeInTheDocument()
+  })
+
+  it('submits the add user happy path locally and shows the success toast', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { router } = renderUsersRoute({
+      initialEntries: [ROUTE_PATHS.usersAdd],
+    })
+
+    fireEvent.change(screen.getByLabelText(/الاسم الكامل بالإنجليزية/), {
+      target: { value: 'Sara Ahmed Alhashmi' },
+    })
+    fireEvent.change(screen.getByLabelText(/الاسم الكامل بالعربية/), {
+      target: { value: 'سارة أحمد سالم الهاشمي' },
+    })
+    fireEvent.change(screen.getByLabelText(/البريد الإلكتروني/), {
+      target: { value: 'sara@AqarInn' },
+    })
+    fireEvent.change(screen.getByLabelText(/رقم الجوال/), {
+      target: { value: '+966 55 555 5555' },
+    })
+    fireEvent.change(screen.getByLabelText(/الدور/), {
+      target: { value: 'operations-manager' },
+    })
+    fireEvent.click(screen.getByLabelText(/الحالة/))
+    fireEvent.change(screen.getByLabelText(/قائمة الفرص الاستثمارية/), {
+      target: { value: 'investment-riyadh-001' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'اضافة المستخدم' }))
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(router.state.location.pathname).toBe(ROUTE_PATHS.users)
+    expect(
+      await screen.findByText('تم اضافة المستخدم بنجاح'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'اغلاق' })).toBeInTheDocument()
+  })
+
+  it('cancels add user without showing a success toast', () => {
+    const { router } = renderUsersRoute({
+      initialEntries: [ROUTE_PATHS.usersAdd],
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'الغاء' }))
+
+    expect(router.state.location.pathname).toBe(ROUTE_PATHS.users)
+    expect(
+      screen.queryByText('تم اضافة المستخدم بنجاح'),
+    ).not.toBeInTheDocument()
   })
 })
