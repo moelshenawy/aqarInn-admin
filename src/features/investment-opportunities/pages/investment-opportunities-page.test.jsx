@@ -24,6 +24,7 @@ import InvestmentOpportunityDetailsPage from '@/features/investment-opportunitie
 import InvestmentOpportunityEditPage from '@/features/investment-opportunities/pages/investment-opportunity-edit-page'
 import InvestmentOpportunityProfitDistributionsPage from '@/features/investment-opportunities/pages/investment-opportunity-profit-distributions-page'
 import InvestmentOpportunitiesPage from '@/features/investment-opportunities/pages/investment-opportunities-page'
+import { investmentLocationFilters } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
 import {
   investmentOpportunitiesRouteMeta,
   investmentOpportunityAddRouteMeta,
@@ -112,8 +113,25 @@ describe('InvestmentOpportunitiesPage route', () => {
     await finishInvestmentLoading()
 
     expect(screen.getAllByText('الفرص الاستثمارية')).not.toHaveLength(0)
+    const actionFilterRow = document.querySelector(
+      '[data-slot="dashboard-action-filter-row"]',
+    )
+    expect(actionFilterRow).not.toBeNull()
     expect(
-      screen.getByRole('button', { name: 'إضافة فرصة استثمارية' }),
+      within(actionFilterRow).getByRole('button', {
+        name: 'إضافة فرصة استثمارية',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      actionFilterRow.querySelector('[data-slot="dashboard-filter-swiper"]'),
+    ).not.toBeNull()
+    expect(
+      actionFilterRow.querySelectorAll('[data-slot="dashboard-filter-slide"]'),
+    ).toHaveLength(investmentLocationFilters.length)
+    expect(
+      within(actionFilterRow).getByText(
+        String(investmentLocationFilters[0].count),
+      ),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /الرياض/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'التالي' })).toBeInTheDocument()
@@ -245,7 +263,9 @@ describe('InvestmentOpportunitiesPage route', () => {
       screen.getByText('Modern Residential Complex in North Riyadh'),
     ).toBeInTheDocument()
     expect(screen.getByText('شركة الأفق العقارية')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'نشر الفرصة' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'نشر الفرصة' }),
+    ).toBeInTheDocument()
   })
 
   it('closes the review dialog without leaving the add page', async () => {
@@ -416,9 +436,7 @@ describe('InvestmentOpportunitiesPage route', () => {
   })
 
   it('shows the unsaved edit modal only after dirty back navigation', async () => {
-    const editPath = buildInvestmentOpportunityEditPath(
-      'investment-riyadh-001',
-    )
+    const editPath = buildInvestmentOpportunityEditPath('investment-riyadh-001')
     const detailsPath = buildInvestmentOpportunityDetailsPath(
       'investment-riyadh-001',
     )
@@ -528,9 +546,7 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getAllByText('AQIN001')).toHaveLength(rowCountBefore)
     expect(
-      await screen.findByText(
-        'تم اضافة توزيعات ارباح المستثمرين بنجاح',
-      ),
+      await screen.findByText('تم اضافة توزيعات ارباح المستثمرين بنجاح'),
     ).toBeInTheDocument()
     expect(
       screen.getByText(
@@ -549,9 +565,7 @@ describe('InvestmentOpportunitiesPage route', () => {
 
   it('opens and closes the distribution details modal from the eye action', async () => {
     const profitDistributionsPath =
-      buildInvestmentOpportunityProfitDistributionsPath(
-        'investment-riyadh-001',
-      )
+      buildInvestmentOpportunityProfitDistributionsPath('investment-riyadh-001')
     const { router } = renderInvestmentOpportunitiesRoute({
       initialEntries: [profitDistributionsPath],
     })
@@ -573,7 +587,9 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(within(detailsDialog).getByText('125,430.75')).toBeInTheDocument()
     expect(within(detailsDialog).getByText('2026-04-15')).toBeInTheDocument()
     expect(within(detailsDialog).getAllByText('1,200')).not.toHaveLength(0)
-    expect(within(detailsDialog).getByText('بيانات المنفّذ')).toBeInTheDocument()
+    expect(
+      within(detailsDialog).getByText('بيانات المنفّذ'),
+    ).toBeInTheDocument()
     expect(within(detailsDialog).getByText('U-2048')).toBeInTheDocument()
     expect(
       within(detailsDialog).getByText('قائمة المستثمرين في هذا التوزيع'),
@@ -614,9 +630,7 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(
       screen.getByRole('button', { name: 'اضافة توزيعات' }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText('عبد العزيز أحمد سالم الهاشمي'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('عبد العزيز أحمد سالم الهاشمي')).toBeInTheDocument()
     expect(screen.getAllByText('AQIN001')).not.toHaveLength(0)
     expect(screen.getByRole('button', { name: 'التالي' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'السابق' })).toBeInTheDocument()
