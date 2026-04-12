@@ -18,6 +18,16 @@ import i18n from '@/lib/i18n'
 
 function renderUsersRoute({ initialEntries = [ROUTE_PATHS.users] } = {}) {
   window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+  window.localStorage.setItem('authToken', 'test-auth-token')
+  window.localStorage.setItem(
+    'authUser',
+    JSON.stringify({
+      id: 'admin-1',
+      email: 'admin@aqarinn.test',
+      full_name_ar: 'مدير النظام',
+      full_name_en: 'System Admin',
+    }),
+  )
 
   const router = createMemoryRouter(
     [
@@ -77,15 +87,11 @@ describe('UsersPage route', () => {
     expect(screen.getByText('الاسم بالكامل')).toBeInTheDocument()
     expect(screen.getByText('الرقم التعريفي')).toBeInTheDocument()
     expect(screen.getByText('الدور الوظيفي')).toBeInTheDocument()
-    expect(
-      screen.getByText('عنوان البريد الإلكتروني'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('عنوان البريد الإلكتروني')).toBeInTheDocument()
     expect(screen.getByText('رقم الهاتف')).toBeInTheDocument()
     expect(screen.getByText('الحالة')).toBeInTheDocument()
 
-    expect(
-      screen.getByText('عبد العزيز أحمد سالم الهاشمي'),
-    ).toBeInTheDocument()
+    expect(screen.getByText('عبد العزيز أحمد سالم الهاشمي')).toBeInTheDocument()
     expect(screen.getAllByText('AQIN001')).not.toHaveLength(0)
     expect(screen.getByText('مدير العمليات')).toBeInTheDocument()
     expect(screen.getAllByText('phoenix@AqarInn')).not.toHaveLength(0)
@@ -106,16 +112,18 @@ describe('UsersPage route', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '2' }))
 
-    expect(
-      screen.getByText('2').closest('button'),
-    ).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByText('2').closest('button')).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     expect(screen.getByText('AQIN011')).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'التالي' }))
 
-    expect(
-      screen.getByText('3').closest('button'),
-    ).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByText('3').closest('button')).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     expect(screen.getByText('AQIN021')).toBeInTheDocument()
   })
 
@@ -129,16 +137,24 @@ describe('UsersPage route', () => {
       screen.getByRole('heading', { name: 'إضافة مستخدم جديد' }),
     ).toBeInTheDocument()
     expect(screen.getByText('المستخدمين')).toBeInTheDocument()
-    expect(screen.getByText('قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام',
+      ),
+    ).toBeInTheDocument()
 
-    expect(screen.getByLabelText(/الاسم الكامل بالإنجليزية/)).toBeInTheDocument()
+    expect(
+      screen.getByLabelText(/الاسم الكامل بالإنجليزية/),
+    ).toBeInTheDocument()
     expect(screen.getByLabelText(/الاسم الكامل بالعربية/)).toBeInTheDocument()
     expect(screen.getByLabelText(/البريد الإلكتروني/)).toBeInTheDocument()
     expect(screen.getByLabelText(/رقم الجوال/)).toBeInTheDocument()
     expect(screen.getByLabelText(/الدور/)).toBeInTheDocument()
     expect(screen.getByLabelText(/الحالة/)).toBeInTheDocument()
     expect(screen.getByLabelText(/قائمة الفرص الاستثمارية/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'اضافة المستخدم' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'اضافة المستخدم' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'الغاء' })).toBeInTheDocument()
   })
 

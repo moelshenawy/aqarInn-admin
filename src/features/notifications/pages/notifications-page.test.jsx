@@ -36,6 +36,16 @@ async function renderNotificationsRoute({
   language = 'en',
 } = {}) {
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+  window.localStorage.setItem('authToken', 'test-auth-token')
+  window.localStorage.setItem(
+    'authUser',
+    JSON.stringify({
+      id: 'admin-1',
+      email: 'admin@aqarinn.test',
+      full_name_ar: 'مدير النظام',
+      full_name_en: 'System Admin',
+    }),
+  )
 
   await act(async () => {
     await i18n.changeLanguage(language)

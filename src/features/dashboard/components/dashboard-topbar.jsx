@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { DashboardUserMenu } from '@/features/dashboard/components/dashboard-user-menu'
 import { dashboardSectionIcons } from '@/features/dashboard/constants/dashboard-ui'
 import { DashboardNotificationsMenu } from '@/features/notifications/components/dashboard-notifications-menu'
 import { useNotifications } from '@/features/notifications/hooks/use-notifications'
@@ -59,34 +60,7 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
         <SettingsIcon className="size-[22px] shrink-0 stroke-[1.8] text-[color:var(--dashboard-text-soft)]" />
       </div>
 
-      <div className="flex h-[69px] min-w-[225px] items-center justify-between rounded-xl bg-[color:var(--dashboard-surface)] px-3 py-[13px] shadow-[var(--dashboard-shadow)]">
-        <div className="flex items-center gap-[13px]">
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="size-[41px] rounded-full object-cover"
-          />
-          <div className="text-right">
-            <p className="text-[14px] leading-5 font-medium text-[color:var(--dashboard-text-soft)]">
-              {user.name}
-            </p>
-            <p className="text-base leading-6 font-semibold text-[color:var(--dashboard-text)]">
-              {user.role}
-            </p>
-          </div>
-        </div>
-
-        <span className="flex size-5 items-center justify-center text-[color:var(--dashboard-text-soft)]">
-          <svg viewBox="0 0 20 20" className="size-5 fill-none stroke-current">
-            <path
-              d="M5 7.5L10 12.5L15 7.5"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
-      </div>
+      <DashboardUserMenu user={user} />
 
       <DashboardNotificationsMenu
         bellIcon={BellIcon}

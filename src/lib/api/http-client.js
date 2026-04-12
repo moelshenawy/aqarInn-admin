@@ -15,7 +15,10 @@ export function registerAccessTokenResolver(resolver) {
 }
 
 export const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://aqarinn.apphub.my.id/api/admin ",
+  baseURL: (
+    import.meta.env.VITE_API_BASE_URL ||
+    'https://aqarinn.apphub.my.id/api/admin'
+  ).trim(),
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -30,6 +33,8 @@ httpClient.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${accessToken}`
   }
 
+  config.headers['Accept-Language'] =
+    i18n?.resolvedLanguage || i18n?.language || 'en'
   config.headers['X-App-Client'] = 'aqarinn-backoffice'
   return config
 })

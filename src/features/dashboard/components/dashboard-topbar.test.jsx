@@ -19,6 +19,8 @@ import {
   buildInvestmentOpportunityDetailsPath,
   ROUTE_PATHS,
 } from '@/app/router/route-paths'
+import { Toaster } from '@/components/ui/sonner'
+import { AuthProvider } from '@/features/auth/context/auth-provider'
 import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
 import { dashboardTopbarUser } from '@/features/dashboard/constants/dashboard-ui'
 import {
@@ -26,6 +28,7 @@ import {
   formatDashboardNotificationDateTime,
 } from '@/features/notifications/constants/dashboard-notifications'
 import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
+import * as authService from '@/features/auth/services/auth-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
@@ -57,6 +60,16 @@ async function renderDashboardTopbar({
   language = 'en',
 } = {}) {
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+  window.localStorage.setItem('authToken', 'test-auth-token')
+  window.localStorage.setItem(
+    'authUser',
+    JSON.stringify({
+      id: 'admin-1',
+      email: 'admin@aqarinn.test',
+      full_name_ar: 'مدير النظام',
+      full_name_en: 'System Admin',
+    }),
+  )
 
   await act(async () => {
     await i18n.changeLanguage(language)
@@ -94,6 +107,10 @@ async function renderDashboardTopbar({
           },
         ],
       },
+      {
+        path: ROUTE_PATHS.login,
+        element: <DestinationPage title="Login page" />,
+      },
     ],
     { initialEntries },
   )
@@ -103,9 +120,12 @@ async function renderDashboardTopbar({
     ...render(
       <I18nextProvider i18n={i18n}>
         <AppDirectionProvider>
-          <NotificationsProvider>
-            <RouterProvider router={router} />
-          </NotificationsProvider>
+          <AuthProvider>
+            <NotificationsProvider>
+              <RouterProvider router={router} />
+              <Toaster richColors closeButton />
+            </NotificationsProvider>
+          </AuthProvider>
         </AppDirectionProvider>
       </I18nextProvider>,
     ),
@@ -144,9 +164,26 @@ async function openNotificationsMenu() {
   return trigger
 }
 
+async function openUserMenu() {
+  const trigger = screen.getByRole('button', {
+    name: i18n.t('openAccountMenu', { ns: 'auth' }),
+  })
+
+  fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false })
+
+  await waitFor(() => {
+    expect(
+      document.querySelector('[data-slot="dashboard-user-menu-content"]'),
+    ).not.toBeNull()
+  })
+
+  return trigger
+}
+
 describe('DashboardTopbar notifications bar', () => {
   afterEach(async () => {
     vi.useRealTimers()
+    vi.restoreAllMocks()
     window.localStorage.clear()
     await act(async () => {
       await i18n.changeLanguage('ar')
@@ -367,5 +404,43 @@ describe('DashboardTopbar notifications bar', () => {
         ),
       ),
     ).toBeInTheDocument()
+  })
+
+  it('opens the account menu, confirms logout, clears session, and redirects to login', async () => {
+    const logoutSpy = vi
+      .spyOn(authService, 'logout')
+      .mockResolvedValue({ message: 'Logged out.', data: null })
+
+    await renderDashboardTopbar({ language: 'en' })
+    await openUserMenu()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: i18n.t('logout', { ns: 'auth' }),
+      }),
+    )
+
+    const dialog = await screen.findByRole('dialog', {
+      name: i18n.t('logoutConfirmTitle', { ns: 'auth' }),
+    })
+
+    fireEvent.click(
+      within(dialog).getByRole('button', {
+        name: i18n.t('logoutConfirmConfirm', { ns: 'auth' }),
+      }),
+    )
+
+    await waitFor(() => {
+      expect(logoutSpy).toHaveBeenCalledWith('test-auth-token')
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Login page' }),
+      ).toBeInTheDocument()
+    })
+
+    expect(window.localStorage.getItem('authToken')).toBeNull()
+    expect(window.localStorage.getItem('authUser')).toBeNull()
   })
 })

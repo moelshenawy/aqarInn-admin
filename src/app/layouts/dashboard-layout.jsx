@@ -153,7 +153,7 @@ function DashboardSidebar({
 export function DashboardLayout() {
   const matches = useMatches()
   const location = useLocation()
-  const { role } = useAuth()
+  const { role, isAuthenticated } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
@@ -163,6 +163,10 @@ export function DashboardLayout() {
     () => [...matches].reverse().find((match) => match.handle?.key),
     [matches],
   )
+
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTE_PATHS.login} replace />
+  }
 
   if (
     activeRoute?.handle &&

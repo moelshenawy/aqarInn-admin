@@ -25,12 +25,29 @@ async function renderDashboardRoute({
   preserveSidebarStorage = false,
   sidebarCollapsed,
   language = 'ar',
+  authenticated = true,
 } = {}) {
   if (!preserveSidebarStorage) {
     window.localStorage.removeItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY)
   }
 
   window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+
+  if (authenticated) {
+    window.localStorage.setItem('authToken', 'test-auth-token')
+    window.localStorage.setItem(
+      'authUser',
+      JSON.stringify({
+        id: 'admin-1',
+        email: 'admin@aqarinn.test',
+        full_name_ar: 'مدير النظام',
+        full_name_en: 'System Admin',
+      }),
+    )
+  } else {
+    window.localStorage.removeItem('authToken')
+    window.localStorage.removeItem('authUser')
+  }
 
   if (sidebarCollapsed === true) {
     window.localStorage.setItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY, 'true')
@@ -47,6 +64,10 @@ async function renderDashboardRoute({
 
   const router = createMemoryRouter(
     [
+      {
+        path: '/login',
+        element: <div>Login page</div>,
+      },
       {
         path: '/app',
         element: <DashboardLayout />,
@@ -227,12 +248,8 @@ describe('DashboardPage route', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText('من تاريخ')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('إلى تاريخ')).not.toBeInTheDocument()
-      expect(
-        screen.queryByText('تاريخ البداية مطلوب.'),
-      ).not.toBeInTheDocument()
-      expect(
-        screen.queryByText('تاريخ النهاية مطلوب.'),
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText('تاريخ البداية مطلوب.')).not.toBeInTheDocument()
+      expect(screen.queryByText('تاريخ النهاية مطلوب.')).not.toBeInTheDocument()
     })
 
     expectPanelSummary('الاستثمارات', { count: '2', amount: '165,000' })
@@ -285,8 +302,12 @@ describe('DashboardPage route', () => {
       ),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Last 7 days' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Last 30 days' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Last 7 days' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Last 30 days' }),
+    ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Custom' })).toBeInTheDocument()
     expect(screen.getByLabelText('IO')).toBeInTheDocument()
     expect(screen.getByLabelText('Status')).toBeInTheDocument()
@@ -505,5 +526,10 @@ describe('DashboardPage route', () => {
     expect(
       within(mobileSidebar).getByText('ادارة المستخدمين'),
     ).toBeInTheDocument()
+  })
+  it('redirects to login when the user is not authenticated', async () => {
+    await renderDashboardRoute({ authenticated: false })
+
+    expect(screen.getByText('Login page')).toBeInTheDocument()
   })
 })

@@ -39,6 +39,16 @@ function renderInvestmentOpportunitiesRoute({
   initialEntries = [ROUTE_PATHS.investmentOpportunities],
 } = {}) {
   window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+  window.localStorage.setItem('authToken', 'test-auth-token')
+  window.localStorage.setItem(
+    'authUser',
+    JSON.stringify({
+      id: 'admin-1',
+      email: 'admin@aqarinn.test',
+      full_name_ar: 'مدير النظام',
+      full_name_en: 'System Admin',
+    }),
+  )
 
   const router = createMemoryRouter(
     [

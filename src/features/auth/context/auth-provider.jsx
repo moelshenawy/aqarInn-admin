@@ -21,13 +21,29 @@ const PREVIEW_USER = {
   name: 'UI Preview',
 }
 
+function normalizeAuthUser(user) {
+  if (!user) {
+    return PREVIEW_USER
+  }
+
+  return {
+    ...user,
+    name:
+      user.name ??
+      user.full_name_ar ??
+      user.full_name_en ??
+      user.email ??
+      PREVIEW_USER.name,
+  }
+}
+
 export function AuthProvider({ children }) {
   const [role, setRole] = useState(APP_ROLES.operationsAdmin)
 
   const [user, setUser] = useState(() => {
     try {
       const raw = localStorage.getItem('authUser')
-      return raw ? JSON.parse(raw) : PREVIEW_USER
+      return raw ? normalizeAuthUser(JSON.parse(raw)) : PREVIEW_USER
     } catch (e) {
       return PREVIEW_USER
     }
@@ -46,14 +62,16 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback(({ token, admin }) => {
+    const nextUser = normalizeAuthUser(admin)
+
     try {
       localStorage.setItem('authToken', token)
-      localStorage.setItem('authUser', JSON.stringify(admin))
+      localStorage.setItem('authUser', JSON.stringify(nextUser))
     } catch (e) {
       // ignore storage errors
     }
 
-    setUser(admin)
+    setUser(nextUser)
     setIsAuthenticated(true)
   }, [])
 
