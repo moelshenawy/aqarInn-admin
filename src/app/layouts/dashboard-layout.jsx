@@ -37,6 +37,8 @@ function DashboardBrand({
   canCollapse = false,
   onToggleCollapse,
 }) {
+  const isExpanded = !collapsed
+
   return (
     <div
       className={cn(
@@ -47,9 +49,19 @@ function DashboardBrand({
       <Link
         to={ROUTE_PATHS.dashboard}
         aria-label="عقار إن"
-        className="flex h-[41px] w-[33px] shrink-0 items-center justify-center"
+        className={cn(
+          'flex h-[41px] shrink-0 items-center overflow-hidden transition-[width] duration-300 ease-in-out',
+          isExpanded ? 'w-[109px] justify-start' : 'w-[33px] justify-center',
+        )}
       >
-        <img src={logoMark} alt="عقار إن" className="h-[41px] w-[33px]" />
+        <img
+          src={isExpanded ? '/assets/Logo.svg' : logoMark}
+          alt="عقار إن"
+          className={cn(
+            'h-[41px] max-w-none transition-[width] duration-300 ease-in-out',
+            isExpanded ? 'w-auto' : 'w-[33px]',
+          )}
+        />
       </Link>
 
       {canCollapse ? (
