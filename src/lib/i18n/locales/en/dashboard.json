@@ -1,0 +1,45 @@
+{
+  "transactionsOverview": {
+    "title": "Transactions Overview",
+    "description": "Track investments, withdrawals, and distributions across time and operational filters.",
+    "rangePresets": {
+      "today": "Today",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "custom": "Custom"
+    },
+    "filters": {
+      "dateRange": "Date range",
+      "io": "IO",
+      "status": "Status",
+      "city": "City",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "all": "All",
+      "ioOptions": {
+        "riyadhResidences": "Riyadh Residences",
+        "jeddahCorniche": "Jeddah Corniche",
+        "dammamHeights": "Dammam Heights"
+      },
+      "statusOptions": {
+        "in_progress": "In Progress",
+        "deposit_made": "Deposit Made"
+      },
+      "cityOptions": {
+        "riyadh": "Riyadh",
+        "jeddah": "Jeddah",
+        "dammam": "Dammam"
+      }
+    },
+    "cards": {
+      "investments": "Investments",
+      "withdrawals": "Withdrawals",
+      "distributions": "Distributions"
+    },
+    "metrics": {
+      "count": "Count",
+      "totalAmount": "Total amount",
+      "statusBreakdown": "By status"
+    }
+  }
+}

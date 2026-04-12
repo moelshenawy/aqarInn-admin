@@ -3,7 +3,6 @@ import {
   Bell,
   CreditCard,
   Grid2x2,
-  HandCoins,
   LayoutDashboard,
   Megaphone,
   RefreshCw,
@@ -198,30 +197,6 @@ export const topOpportunities = [
     image: opportunityFive,
     sharesDot,
     accentIcon: Megaphone,
-  },
-]
-
-export const transactionOverview = [
-  {
-    key: 'distributions',
-    label: 'التوزيعات',
-    value: '89,000',
-    icon: Banknote,
-    isCurrency: true,
-  },
-  {
-    key: 'withdrawals',
-    label: 'طلبات السحب',
-    value: '480,000',
-    icon: HandCoins,
-    isCurrency: true,
-  },
-  {
-    key: 'investments',
-    label: 'الاستثمارات',
-    value: '285,000',
-    icon: Wallet,
-    isCurrency: true,
   },
 ]
 

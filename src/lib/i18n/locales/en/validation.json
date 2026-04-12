@@ -7,5 +7,8 @@
   "sessionExpired": "Your session has expired. Please sign in again.",
   "forbidden": "You do not have permission to perform this action.",
   "invalidSubmission": "The submitted data is invalid.",
-  "passwordConfirmation": "Passwords must match."
+  "passwordConfirmation": "Passwords must match.",
+  "dateRangeStartRequired": "Start date is required.",
+  "dateRangeEndRequired": "End date is required.",
+  "dateRangeInvalidOrder": "End date must be on or after the start date."
 }

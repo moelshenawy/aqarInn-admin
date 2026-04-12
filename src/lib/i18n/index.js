@@ -6,11 +6,13 @@ import { getInitialLanguage, persistLanguage } from '@/lib/i18n/language'
 
 import arAuth from '@/lib/i18n/locales/ar/auth.json'
 import arCommon from '@/lib/i18n/locales/ar/common.json'
+import arDashboard from '@/lib/i18n/locales/ar/dashboard.json'
 import arNavigation from '@/lib/i18n/locales/ar/navigation.json'
 import arPermissions from '@/lib/i18n/locales/ar/permissions.json'
 import arValidation from '@/lib/i18n/locales/ar/validation.json'
 import enAuth from '@/lib/i18n/locales/en/auth.json'
 import enCommon from '@/lib/i18n/locales/en/common.json'
+import enDashboard from '@/lib/i18n/locales/en/dashboard.json'
 import enNavigation from '@/lib/i18n/locales/en/navigation.json'
 import enPermissions from '@/lib/i18n/locales/en/permissions.json'
 import enValidation from '@/lib/i18n/locales/en/validation.json'
@@ -19,6 +21,7 @@ const resources = {
   en: {
     auth: enAuth,
     common: enCommon,
+    dashboard: enDashboard,
     navigation: enNavigation,
     permissions: enPermissions,
     validation: enValidation,
@@ -26,6 +29,7 @@ const resources = {
   ar: {
     auth: arAuth,
     common: arCommon,
+    dashboard: arDashboard,
     navigation: arNavigation,
     permissions: arPermissions,
     validation: arValidation,
@@ -40,7 +44,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'en',
   supportedLngs: ['en', 'ar'],
   defaultNS: 'common',
-  ns: ['common', 'navigation', 'auth', 'validation', 'permissions'],
+  ns: ['common', 'navigation', 'auth', 'dashboard', 'validation', 'permissions'],
   interpolation: { escapeValue: false },
   returnNull: false,
 })

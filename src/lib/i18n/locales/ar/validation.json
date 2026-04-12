@@ -7,5 +7,8 @@
   "sessionExpired": "انتهت الجلسة. الرجاء تسجيل الدخول مرة أخرى.",
   "forbidden": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
   "invalidSubmission": "البيانات المدخلة غير صالحة.",
-  "passwordConfirmation": "يجب أن تكون كلمات المرور متطابقة."
+  "passwordConfirmation": "يجب أن تكون كلمات المرور متطابقة.",
+  "dateRangeStartRequired": "تاريخ البداية مطلوب.",
+  "dateRangeEndRequired": "تاريخ النهاية مطلوب.",
+  "dateRangeInvalidOrder": "يجب أن يكون تاريخ النهاية بعد أو مساويًا لتاريخ البداية."
 }

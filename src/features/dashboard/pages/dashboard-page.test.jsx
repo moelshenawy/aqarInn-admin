@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -11,23 +12,25 @@ import { I18nextProvider } from 'react-i18next'
 
 import { DashboardLayout } from '@/app/layouts/dashboard-layout'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AuthProvider } from '@/features/auth/context/auth-provider'
+import { DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/features/dashboard/constants/dashboard-storage'
 import DashboardPage from '@/features/dashboard/pages/dashboard-page'
 import { dashboardRouteMeta } from '@/features/dashboard/routes/dashboard.route'
-import { DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/features/dashboard/constants/dashboard-storage'
-import { AuthProvider } from '@/features/auth/context/auth-provider'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
+import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
 
-function renderDashboardRoute({
+async function renderDashboardRoute({
   initialEntries = ['/app/dashboard'],
   preserveSidebarStorage = false,
   sidebarCollapsed,
+  language = 'ar',
 } = {}) {
   if (!preserveSidebarStorage) {
     window.localStorage.removeItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY)
   }
 
-  window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+  window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
 
   if (sidebarCollapsed === true) {
     window.localStorage.setItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY, 'true')
@@ -37,6 +40,10 @@ function renderDashboardRoute({
       'false',
     )
   }
+
+  await act(async () => {
+    await i18n.changeLanguage(language)
+  })
 
   const router = createMemoryRouter(
     [
@@ -70,6 +77,18 @@ function renderDashboardRoute({
   )
 }
 
+function freezeDashboardClock() {
+  vi.useFakeTimers()
+  vi.setSystemTime(new Date('2026-04-12T12:00:00.000Z'))
+}
+
+async function renderDashboardRouteAtFrozenTime(options) {
+  freezeDashboardClock()
+  const result = await renderDashboardRoute(options)
+  vi.useRealTimers()
+  return result
+}
+
 function getDesktopSidebar() {
   return document.querySelector(
     '[data-slot="dashboard-sidebar"][data-sidebar-context="desktop"]',
@@ -82,15 +101,39 @@ function getMobileSidebar() {
   )
 }
 
+function getSummaryPanel(title) {
+  return screen.getByRole('region', { name: title })
+}
+
+function expectMetricTile(panel, metricKey, value) {
+  const metricTile = panel.querySelector(
+    `[data-slot="dashboard-transactions-metric"][data-metric-key="${metricKey}"]`,
+  )
+
+  expect(metricTile).not.toBeNull()
+  expect(within(metricTile).getByText(value)).toBeInTheDocument()
+}
+
+function expectPanelSummary(title, { count, amount }) {
+  const panel = getSummaryPanel(title)
+  expectMetricTile(panel, 'count', count)
+  expectMetricTile(panel, 'total-amount', amount)
+  return panel
+}
+
 describe('DashboardPage route', () => {
-  afterEach(() => {
+  afterEach(async () => {
+    vi.useRealTimers()
     window.localStorage.clear()
+    await act(async () => {
+      await i18n.changeLanguage('ar')
+    })
   })
 
-  it('renders the figma-based dashboard shell and content in Arabic', async () => {
-    renderDashboardRoute()
+  it('renders the figma-based dashboard shell and transactions overview in Arabic', async () => {
+    await renderDashboardRouteAtFrozenTime()
 
-    expect(await screen.findAllByText('لوحة المعلومات')).not.toHaveLength(0)
+    expect(screen.getAllByText('لوحة المعلومات')).not.toHaveLength(0)
     expect(screen.getByText('الفرص الاستثمارية')).toBeInTheDocument()
     expect(screen.getByText('ادارة المستخدمين')).toBeInTheDocument()
     expect(screen.queryByText('توزيعات الأرباح')).not.toBeInTheDocument()
@@ -101,14 +144,161 @@ describe('DashboardPage route', () => {
     expect(
       screen.getByText('أفضل فرص الاستثمار حسب المبلغ الممول'),
     ).toBeInTheDocument()
-    expect(screen.getByText('نظرة عامة على المعاملات')).toBeInTheDocument()
-    expect(screen.getByText('إجمالي المبلغ المستثمر')).toBeInTheDocument()
-    expect(screen.getByText('106,444,039')).toBeInTheDocument()
+
+    const transactionsSection = screen.getByRole('region', {
+      name: 'نظرة عامة على المعاملات',
+    })
+    expect(transactionsSection).toBeInTheDocument()
+    expect(
+      within(transactionsSection).getByText(
+        'تابع الاستثمارات وطلبات السحب والتوزيعات عبر نطاقات الوقت والفلاتر التشغيلية.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'اليوم' })).toHaveAttribute(
+      'data-state',
+      'active',
+    )
+    expect(screen.getByLabelText('الفرصة الاستثمارية')).toBeInTheDocument()
+    expect(screen.getByLabelText('الحالة')).toBeInTheDocument()
+    expect(screen.getByLabelText('المدينة')).toBeInTheDocument()
+    expect(screen.queryByText('89,000')).not.toBeInTheDocument()
+    expect(screen.queryByText('480,000')).not.toBeInTheDocument()
+    expect(screen.queryByText('285,000')).not.toBeInTheDocument()
+
+    expectPanelSummary('الاستثمارات', { count: '2', amount: '165,000' })
+    const withdrawalsPanel = expectPanelSummary('طلبات السحب', {
+      count: '1',
+      amount: '80,000',
+    })
+    expectPanelSummary('التوزيعات', { count: '1', amount: '35,000' })
+
+    const inProgressRow = withdrawalsPanel.querySelector(
+      '[data-slot="dashboard-transactions-breakdown-row"][data-breakdown-key="in_progress"]',
+    )
+    const depositMadeRow = withdrawalsPanel.querySelector(
+      '[data-slot="dashboard-transactions-breakdown-row"][data-breakdown-key="deposit_made"]',
+    )
+
+    expect(inProgressRow).not.toBeNull()
+    expect(within(inProgressRow).getByText('العدد: 1')).toBeInTheDocument()
+    expect(within(inProgressRow).getByText('80,000')).toBeInTheDocument()
+    expect(depositMadeRow).not.toBeNull()
+    expect(within(depositMadeRow).getAllByText('0')).not.toHaveLength(0)
     expect(screen.queryByText('English')).not.toBeInTheDocument()
   })
 
+  it('shows custom date fields, validates them, and clears errors when switching back to a preset', async () => {
+    await renderDashboardRouteAtFrozenTime()
+
+    fireEvent.click(screen.getByRole('button', { name: 'مخصص' }))
+
+    expect(await screen.findByText('تاريخ البداية مطلوب.')).toBeInTheDocument()
+    expect(screen.getByText('تاريخ النهاية مطلوب.')).toBeInTheDocument()
+
+    const startDateInput = screen.getByLabelText('من تاريخ')
+    const endDateInput = screen.getByLabelText('إلى تاريخ')
+
+    fireEvent.change(startDateInput, { target: { value: '2026-04-10' } })
+    fireEvent.change(endDateInput, { target: { value: '2026-04-09' } })
+
+    expect(
+      await screen.findByText(
+        'يجب أن يكون تاريخ النهاية بعد أو مساويًا لتاريخ البداية.',
+      ),
+    ).toBeInTheDocument()
+
+    fireEvent.change(startDateInput, { target: { value: '2026-04-06' } })
+    fireEvent.change(endDateInput, { target: { value: '2026-04-09' } })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(
+          'يجب أن يكون تاريخ النهاية بعد أو مساويًا لتاريخ البداية.',
+        ),
+      ).not.toBeInTheDocument()
+    })
+
+    expectPanelSummary('الاستثمارات', { count: '0', amount: '0' })
+    expectPanelSummary('طلبات السحب', { count: '2', amount: '103,000' })
+    expectPanelSummary('التوزيعات', { count: '1', amount: '42,000' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'اليوم' }))
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('من تاريخ')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('إلى تاريخ')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('تاريخ البداية مطلوب.'),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('تاريخ النهاية مطلوب.'),
+      ).not.toBeInTheDocument()
+    })
+
+    expectPanelSummary('الاستثمارات', { count: '2', amount: '165,000' })
+  })
+
+  it('recalculates transactions when IO, status, and city filters change', async () => {
+    await renderDashboardRouteAtFrozenTime()
+
+    fireEvent.click(screen.getByRole('button', { name: 'آخر 30 يوماً' }))
+
+    expectPanelSummary('الاستثمارات', { count: '5', amount: '497,000' })
+    expectPanelSummary('طلبات السحب', { count: '4', amount: '285,000' })
+    expectPanelSummary('التوزيعات', { count: '4', amount: '162,000' })
+
+    fireEvent.change(screen.getByLabelText('الفرصة الاستثمارية'), {
+      target: { value: 'jeddahCorniche' },
+    })
+
+    expectPanelSummary('الاستثمارات', { count: '2', amount: '132,000' })
+    expectPanelSummary('طلبات السحب', { count: '1', amount: '65,000' })
+    expectPanelSummary('التوزيعات', { count: '2', amount: '69,000' })
+
+    fireEvent.change(screen.getByLabelText('الحالة'), {
+      target: { value: 'in_progress' },
+    })
+
+    expectPanelSummary('الاستثمارات', { count: '2', amount: '132,000' })
+    expectPanelSummary('طلبات السحب', { count: '0', amount: '0' })
+    expectPanelSummary('التوزيعات', { count: '2', amount: '69,000' })
+
+    fireEvent.change(screen.getByLabelText('المدينة'), {
+      target: { value: 'riyadh' },
+    })
+
+    expectPanelSummary('الاستثمارات', { count: '0', amount: '0' })
+    expectPanelSummary('طلبات السحب', { count: '0', amount: '0' })
+    expectPanelSummary('التوزيعات', { count: '0', amount: '0' })
+  })
+
+  it('renders the transactions overview in English with localized labels and ltr direction', async () => {
+    await renderDashboardRouteAtFrozenTime({ language: 'en' })
+
+    const transactionsSection = screen.getByRole('region', {
+      name: 'Transactions Overview',
+    })
+    expect(transactionsSection).toHaveAttribute('dir', 'ltr')
+    expect(
+      within(transactionsSection).getByText(
+        'Track investments, withdrawals, and distributions across time and operational filters.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Last 7 days' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Last 30 days' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Custom' })).toBeInTheDocument()
+    expect(screen.getByLabelText('IO')).toBeInTheDocument()
+    expect(screen.getByLabelText('Status')).toBeInTheDocument()
+    expect(screen.getByLabelText('City')).toBeInTheDocument()
+
+    expectPanelSummary('Investments', { count: '2', amount: '165,000' })
+    expectPanelSummary('Withdrawals', { count: '1', amount: '80,000' })
+    expectPanelSummary('Distributions', { count: '1', amount: '35,000' })
+  })
+
   it('opens and closes the notification bell menu from the topbar', async () => {
-    renderDashboardRoute()
+    await renderDashboardRoute()
 
     const notificationTrigger = screen.getByRole('button', {
       name: 'الإشعارات',
@@ -148,7 +338,7 @@ describe('DashboardPage route', () => {
   })
 
   it('collapses, restores, and expands the desktop sidebar with persisted state', async () => {
-    const { unmount } = renderDashboardRoute()
+    const { unmount } = await renderDashboardRoute()
 
     const desktopSidebar = getDesktopSidebar()
     expect(desktopSidebar).toHaveAttribute('data-sidebar-state', 'expanded')
@@ -167,7 +357,7 @@ describe('DashboardPage route', () => {
     })
 
     unmount()
-    renderDashboardRoute({ preserveSidebarStorage: true })
+    await renderDashboardRoute({ preserveSidebarStorage: true })
 
     const restoredDesktopSidebar = getDesktopSidebar()
     expect(restoredDesktopSidebar).toHaveAttribute(
@@ -222,7 +412,7 @@ describe('DashboardPage route', () => {
   })
 
   it('keeps the mobile sheet sidebar expanded and labeled even when desktop is collapsed', async () => {
-    renderDashboardRoute({ sidebarCollapsed: true })
+    await renderDashboardRoute({ sidebarCollapsed: true })
 
     expect(getDesktopSidebar()).toHaveAttribute(
       'data-sidebar-state',

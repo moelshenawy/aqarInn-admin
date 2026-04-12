@@ -32,12 +32,14 @@ function NotificationMenuItem({ item }) {
 }
 
 export function DashboardNotificationsMenu({
-  bellIcon: BellIcon,
+  bellIcon,
   items,
   open,
   onOpenChange,
   triggerLabel,
 }) {
+  const BellIconComponent = bellIcon
+
   return (
     <DropdownMenu
       dir="ltr"
@@ -56,7 +58,7 @@ export function DashboardNotificationsMenu({
               : 'bg-[color:var(--dashboard-surface)] text-[color:var(--dashboard-text-soft)] hover:bg-[#ded6c4]',
           )}
         >
-          <BellIcon className="size-[22px] stroke-[1.8]" />
+          <BellIconComponent className="size-[22px] stroke-[1.8]" />
           {!open ? (
             <span className="absolute top-[16px] left-[22px] block size-[11px] rounded-full bg-[#c99d61]" />
           ) : null}

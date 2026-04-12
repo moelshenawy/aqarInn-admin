@@ -11,6 +11,7 @@ export function DashboardActionFilterRow({
   items,
   activeKey,
   onSelect,
+  direction = 'rtl',
 }) {
   const hasAction = Boolean(action)
 
@@ -24,13 +25,13 @@ export function DashboardActionFilterRow({
       {hasAction ? (
         <button
           type="button"
-          dir="ltr"
+          dir={direction}
           data-slot="dashboard-action-filter-trigger"
           aria-label={action.ariaLabel ?? action.label}
           className="inline-flex shrink-0 items-center gap-2.5 rounded-[36px] bg-[#402f28] px-4 py-2 ps-5 text-sm leading-5 font-medium text-[#f8f3e8] transition-colors hover:bg-[#4a3730] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
           onClick={action.onClick}
         >
-          <span dir="rtl" className="whitespace-nowrap">
+          <span dir={direction} className="whitespace-nowrap">
             {action.label}
           </span>
 
@@ -51,12 +52,12 @@ export function DashboardActionFilterRow({
       ) : null}
 
       <div
-        dir="rtl"
+        dir={direction}
         data-slot="dashboard-filter-swiper"
         className="min-w-0 flex-1"
       >
         <Swiper
-          dir="rtl"
+          dir={direction}
           modules={[FreeMode]}
           freeMode
           slidesPerView="auto"
@@ -74,7 +75,7 @@ export function DashboardActionFilterRow({
               >
                 <button
                   type="button"
-                  dir="rtl"
+                  dir={direction}
                   data-slot="dashboard-filter-chip"
                   data-state={isActive ? 'active' : 'inactive'}
                   aria-pressed={isActive}
