@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Menu } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -5,8 +6,11 @@ import {
   dashboardActions,
   dashboardSectionIcons,
 } from '@/features/dashboard/constants/dashboard-ui'
+import { DashboardNotificationsMenu } from '@/features/notifications/components/dashboard-notifications-menu'
+import { dashboardNotifications } from '@/features/notifications/constants/dashboard-notifications'
 
 export function DashboardTopbar({ title, user, onOpenSidebar }) {
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
   const BellIcon = dashboardSectionIcons.notification
   const SettingsIcon = dashboardSectionIcons.chevron
   const SearchIcon = dashboardSectionIcons.search
@@ -62,14 +66,13 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
           </svg>
         </span>
       </div>
-      <button
-        type="button"
-        className="relative flex h-[69px] min-w-[61px] items-center justify-center rounded-xl bg-[color:var(--dashboard-surface)] px-4 text-[color:var(--dashboard-text-soft)] shadow-[var(--dashboard-shadow)]"
-        aria-label={dashboardActions.topbar.notificationLabel}
-      >
-        <BellIcon className="size-[22px] stroke-[1.8]" />
-        <span className="absolute top-[16px] left-[22px] block size-[11px] rounded-full bg-[#c99d61]" />
-      </button>
+      <DashboardNotificationsMenu
+        bellIcon={BellIcon}
+        items={dashboardNotifications}
+        open={notificationsOpen}
+        onOpenChange={setNotificationsOpen}
+        triggerLabel={dashboardActions.topbar.notificationLabel}
+      />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 
@@ -62,5 +62,45 @@ describe('DashboardPage route', () => {
     expect(screen.getByText('إجمالي المبلغ المستثمر')).toBeInTheDocument()
     expect(screen.getByText('106,444,039')).toBeInTheDocument()
     expect(screen.queryByText('English')).not.toBeInTheDocument()
+  })
+
+  it('opens and closes the notification bell menu from the topbar', async () => {
+    renderDashboardRoute()
+
+    const notificationTrigger = screen.getByRole('button', {
+      name: 'الإشعارات',
+    })
+
+    fireEvent.pointerDown(notificationTrigger, { button: 0, ctrlKey: false })
+
+    expect(await screen.findByText('جميع الاشعارات')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(notificationTrigger).toHaveAttribute('aria-expanded', 'true')
+    })
+    expect(screen.getAllByText('إنجاز جديد 🎉')).not.toHaveLength(0)
+    expect(
+      screen.getAllByText('وصلت فرصة حي الربيع إلى 500 مستثمر'),
+    ).not.toHaveLength(0)
+
+    const menu = screen.getByRole('menu')
+    expect(menu.className).toContain('w-[calc(100vw-32px)]')
+    expect(menu.className).toContain('sm:w-[503px]')
+    expect(menu.className).toContain('max-w-[503px]')
+
+    fireEvent.pointerDown(notificationTrigger, { button: 0, ctrlKey: false })
+
+    await waitFor(() => {
+      expect(notificationTrigger).toHaveAttribute('aria-expanded', 'false')
+      expect(screen.queryByText('جميع الاشعارات')).not.toBeInTheDocument()
+    })
+
+    fireEvent.pointerDown(notificationTrigger, { button: 0, ctrlKey: false })
+    expect(await screen.findByText('جميع الاشعارات')).toBeInTheDocument()
+
+    fireEvent.pointerDown(document.body)
+
+    await waitFor(() => {
+      expect(screen.queryByText('جميع الاشعارات')).not.toBeInTheDocument()
+    })
   })
 })
