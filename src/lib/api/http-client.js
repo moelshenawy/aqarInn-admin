@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+import i18n from '@/lib/i18n'
 import { normalizeApiError } from '@/lib/api/app-error'
 
 let unauthorizedHandler = null
@@ -14,11 +15,11 @@ export function registerAccessTokenResolver(resolver) {
 }
 
 export const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || undefined,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://aqarinn.apphub.my.id/api/admin ",
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Accept-Language': 'en',
+    'Accept-Language': i18n?.language || 'en',
   },
 })
 

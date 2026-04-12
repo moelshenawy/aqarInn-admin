@@ -8,6 +8,8 @@ export const AuthField = forwardRef(function AuthField(
     error,
     trailingIcon: TrailingIcon,
     leadingIcon: LeadingIcon,
+    onTrailingIconClick,
+    trailingIconAriaLabel,
     className,
     inputClassName,
     ...props
@@ -24,9 +26,20 @@ export const AuthField = forwardRef(function AuthField(
       <div className="w-full">
         <div className="relative">
           {TrailingIcon ? (
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#876647]">
-              <TrailingIcon className="size-[18px] stroke-[1.8]" />
-            </span>
+            onTrailingIconClick ? (
+              <button
+                type="button"
+                aria-label={trailingIconAriaLabel}
+                onClick={onTrailingIconClick}
+                className="absolute inset-y-0 right-3 flex items-center text-[#876647]"
+              >
+                <TrailingIcon className="size-[18px] stroke-[1.8]" />
+              </button>
+            ) : (
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#876647]">
+                <TrailingIcon className="size-[18px] stroke-[1.8]" />
+              </span>
+            )
           ) : null}
           {LeadingIcon ? (
             <span

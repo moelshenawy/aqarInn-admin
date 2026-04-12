@@ -7,7 +7,10 @@ import {
   useState,
 } from 'react'
 
-import { registerUnauthorizedHandler } from '@/lib/api/http-client'
+import {
+  registerUnauthorizedHandler,
+  registerAccessTokenResolver,
+} from '@/lib/api/http-client'
 import { APP_ROLES } from '@/lib/permissions/constants'
 
 const AuthContext = createContext(null)
@@ -21,6 +24,19 @@ const PREVIEW_USER = {
 export function AuthProvider({ children }) {
   const [role, setRole] = useState(APP_ROLES.operationsAdmin)
 
+  const [user, setUser] = useState(() => {
+    try {
+      const raw = localStorage.getItem('authUser')
+      return raw ? JSON.parse(raw) : PREVIEW_USER
+    } catch (e) {
+      return PREVIEW_USER
+    }
+  })
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() =>
+    Boolean(localStorage.getItem('authToken')),
+  )
+
   const setPreviewRole = useCallback((nextRole) => {
     setRole(nextRole)
   }, [])
@@ -29,22 +45,58 @@ export function AuthProvider({ children }) {
     setRole(APP_ROLES.operationsAdmin)
   }, [])
 
-  useEffect(() => {
-    registerUnauthorizedHandler(() => {
-      resetPreviewRole()
-    })
+  const login = useCallback(({ token, admin }) => {
+    try {
+      localStorage.setItem('authToken', token)
+      localStorage.setItem('authUser', JSON.stringify(admin))
+    } catch (e) {
+      // ignore storage errors
+    }
+
+    setUser(admin)
+    setIsAuthenticated(true)
+  }, [])
+
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem('authToken')
+      localStorage.removeItem('authUser')
+    } catch (e) {
+      // ignore
+    }
+
+    setUser(PREVIEW_USER)
+    setIsAuthenticated(false)
+    resetPreviewRole()
   }, [resetPreviewRole])
+
+  useEffect(() => {
+    registerAccessTokenResolver(() => localStorage.getItem('authToken'))
+    registerUnauthorizedHandler(() => {
+      logout()
+    })
+  }, [logout])
 
   const value = useMemo(
     () => ({
       session: null,
-      user: PREVIEW_USER,
+      user,
       role,
-      isAuthenticated: true,
+      isAuthenticated,
       setPreviewRole,
       resetPreviewRole,
+      login,
+      logout,
     }),
-    [resetPreviewRole, role, setPreviewRole],
+    [
+      user,
+      resetPreviewRole,
+      role,
+      setPreviewRole,
+      isAuthenticated,
+      login,
+      logout,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

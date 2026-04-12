@@ -44,4 +44,6 @@ export const AUTH_VALIDATION_MESSAGES = {
   passwordRequired: 'كلمة المرور مطلوبة',
   confirmPasswordRequired: 'تأكيد كلمة المرور مطلوب',
   passwordMismatch: 'كلمة المرور غير متطابقة',
+  emailTooLong: 'يجب ألا يزيد البريد الإلكتروني عن 100 حرفًا',
+  passwordTooLong: 'يجب ألا تزيد كلمة المرور عن 50 حرفًا',
 }
