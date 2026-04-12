@@ -1,40 +1,80 @@
 import { z } from 'zod'
 
-import { AUTH_VALIDATION_MESSAGES } from '@/features/auth/constants/auth-ui'
+function getAuthValidationMessages(t) {
+  return {
+    emailRequired: t('emailRequired'),
+    emailInvalid: t('emailInvalid'),
+    emailTooLong: t('emailTooLong'),
+    passwordRequired: t('passwordRequired'),
+    confirmPasswordRequired: t('confirmPasswordRequired'),
+    passwordTooLong: t('passwordTooLong'),
+    passwordMismatch: t('passwordMismatch'),
+    passwordMinLength: t('passwordMinLength'),
+    passwordUppercase: t('passwordUppercase'),
+    passwordNumber: t('passwordNumber'),
+    passwordSymbol: t('passwordSymbol'),
+  }
+}
 
-export const loginFormSchema = z.object({
-  email: z
+function createEmailSchema(messages) {
+  return z
     .string()
-    .min(1, AUTH_VALIDATION_MESSAGES.emailRequired)
-    .max(100, AUTH_VALIDATION_MESSAGES.emailTooLong)
-    .email(AUTH_VALIDATION_MESSAGES.emailInvalid),
-  password: z
-    .string()
-    .min(1, AUTH_VALIDATION_MESSAGES.passwordRequired)
-    .max(50, AUTH_VALIDATION_MESSAGES.passwordTooLong),
-  remember: z.boolean().default(false),
-})
+    .min(1, messages.emailRequired)
+    .max(100, messages.emailTooLong)
+    .email(messages.emailInvalid)
+}
 
-export const forgotPasswordSchema = z.object({
-  email: z
+function createPasswordSchema(requiredMessage, messages) {
+  return z
     .string()
-    .min(1, AUTH_VALIDATION_MESSAGES.emailRequired)
-    .max(100, AUTH_VALIDATION_MESSAGES.emailTooLong)
-    .email(AUTH_VALIDATION_MESSAGES.emailInvalid),
-})
+    .min(1, requiredMessage)
+    .max(50, messages.passwordTooLong)
+    .refine((value) => value.length >= 8, {
+      message: messages.passwordMinLength,
+    })
+    .refine((value) => /[A-Z]/.test(value), {
+      message: messages.passwordUppercase,
+    })
+    .refine((value) => /\d/.test(value), {
+      message: messages.passwordNumber,
+    })
+    .refine((value) => /[^A-Za-z0-9]/.test(value), {
+      message: messages.passwordSymbol,
+    })
+}
 
-export const resetPasswordSchema = z
-  .object({
+export function createLoginFormSchema(t) {
+  const messages = getAuthValidationMessages(t)
+
+  return z.object({
+    email: createEmailSchema(messages),
     password: z
       .string()
-      .min(1, AUTH_VALIDATION_MESSAGES.passwordRequired)
-      .max(50, AUTH_VALIDATION_MESSAGES.passwordTooLong),
-    confirmPassword: z.string().min(
-      1,
-      AUTH_VALIDATION_MESSAGES.confirmPasswordRequired,
-    ),
+      .min(1, messages.passwordRequired)
+      .max(50, messages.passwordTooLong),
+    remember: z.boolean().default(false),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: AUTH_VALIDATION_MESSAGES.passwordMismatch,
-    path: ['confirmPassword'],
+}
+
+export function createForgotPasswordSchema(t) {
+  return z.object({
+    email: createEmailSchema(getAuthValidationMessages(t)),
   })
+}
+
+export function createResetPasswordSchema(t) {
+  const messages = getAuthValidationMessages(t)
+
+  return z
+    .object({
+      password: createPasswordSchema(messages.passwordRequired, messages),
+      confirmPassword: createPasswordSchema(
+        messages.confirmPasswordRequired,
+        messages,
+      ),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: messages.passwordMismatch,
+      path: ['confirmPassword'],
+    })
+}

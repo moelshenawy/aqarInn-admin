@@ -5,6 +5,16 @@ export async function login(payload) {
   return apiPost('auth/login', payload)
 }
 
+export async function forgotPassword(payload) {
+  // POST to `${VITE_API_BASE_URL}/auth/forgot-password`
+  return apiPost('auth/forgot-password', payload)
+}
+
+export async function resetPassword(payload) {
+  // POST to `${VITE_API_BASE_URL}/auth/reset-password`
+  return apiPost('auth/reset-password', payload)
+}
+
 export async function logout(accessToken) {
   // POST to `${VITE_API_BASE_URL}/auth/logout`
   // send empty body; axios will include Authorization header via http-client resolver
@@ -23,5 +33,7 @@ export async function logout(accessToken) {
 
 export default {
   login,
+  forgotPassword,
+  resetPassword,
   logout,
 }

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleAlert, EyeOff, KeyRound, Mail, Eye, Check } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -12,9 +12,10 @@ import { AuthCard } from '@/features/auth/components/auth-card'
 import { AuthField } from '@/features/auth/components/auth-field'
 import { AuthPrimaryButton } from '@/features/auth/components/auth-primary-button'
 import { LOGIN_CONTENT } from '@/features/auth/constants/auth-ui'
-import { loginFormSchema } from '@/features/auth/schemas/auth-form-schemas'
+import { createLoginFormSchema } from '@/features/auth/schemas/auth-form-schemas'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import * as authService from '@/features/auth/services/auth-service'
+import { getLocalizedAuthErrorMessage } from '@/features/auth/utils/auth-error-message'
 import {
   showDashboardSuccessToast,
   showDashboardErrorToast,
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { t } = useTranslation('auth')
   const auth = useAuth()
+  const loginFormSchema = useMemo(() => createLoginFormSchema(t), [t])
   const {
     register,
     handleSubmit,
@@ -56,14 +58,16 @@ export default function LoginPage() {
       try {
         localStorage.setItem('authToken', token)
         localStorage.setItem('authUser', JSON.stringify(admin))
-      } catch (e) {
+      } catch {
         // ignore storage errors
       }
 
       if (remember) {
         try {
           localStorage.setItem('rememberedEmail', email)
-        } catch (e) {}
+        } catch {
+          // ignore storage errors
+        }
       } else {
         localStorage.removeItem('rememberedEmail')
       }
@@ -76,22 +80,7 @@ export default function LoginPage() {
       navigate(ROUTE_PATHS.dashboard)
     } catch (err) {
       toast.dismiss(loadingId)
-      const apiError = err || {}
-      const messageKey = apiError.message || 'validation.unexpectedError'
-
-      let description = messageKey
-      if (typeof messageKey === 'string' && messageKey.includes('.')) {
-        const [ns, key] = messageKey.split('.', 2)
-        description = t(key, { ns })
-      } else {
-        // try current namespace then validation namespace
-        const translated = t(messageKey)
-        description =
-          translated === messageKey
-            ? t(messageKey, { ns: 'validation' })
-            : translated
-      }
-
+      const description = getLocalizedAuthErrorMessage(err, t)
       showDashboardErrorToast({ title: t('loginFailed'), description })
     }
   })
@@ -165,7 +154,7 @@ export default function LoginPage() {
             </label>
           </div>
 
-          <AuthPrimaryButton className="mt-[17px]">
+          <AuthPrimaryButton className="mt-[17px]" disabled={isSubmitting}>
             {LOGIN_CONTENT.submit}
           </AuthPrimaryButton>
         </form>
