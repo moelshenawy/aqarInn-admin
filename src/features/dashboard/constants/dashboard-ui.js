@@ -44,6 +44,9 @@ export const dashboardRouteTitles = {
   'investment-opportunity-details': 'الفرص الاستثمارية',
   'investment-opportunity-edit': 'الفرص الاستثمارية',
   'investment-opportunity-profit-distributions': 'الفرص الاستثمارية',
+  notifications: 'الإشعارات',
+  'profit-distributions': 'توزيعات الأرباح',
+  'activity-logs': 'سجل النشاطات',
   users: 'ادارة المستخدمين',
   'users-add': 'ادارة المستخدمين',
 }
@@ -85,13 +88,13 @@ export const dashboardSettingsItem = {
 }
 
 export const dashboardMetrics = [
-    {
+  {
     key: 'users-count',
     label: 'عدد المستخدمين',
     value: '2,404',
     icon: User,
   },
-    {
+  {
     key: 'verified-users',
     label: 'المستخدمين الموثقين',
     value: '1,548',
@@ -105,7 +108,7 @@ export const dashboardMetrics = [
     isCurrency: true,
   },
 
-    {
+  {
     key: 'distributed-returns',
     label: 'إجمالي العوائد الموزعة',
     value: '1,444,039',
@@ -126,7 +129,6 @@ export const dashboardMetrics = [
     value: '10,548',
     icon: CreditCard,
   },
-
 ]
 
 export const investmentStatusRows = [

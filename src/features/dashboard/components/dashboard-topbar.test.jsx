@@ -25,6 +25,7 @@ import {
   createInitialDashboardNotifications,
   formatDashboardNotificationDateTime,
 } from '@/features/notifications/constants/dashboard-notifications'
+import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
@@ -102,7 +103,9 @@ async function renderDashboardTopbar({
     ...render(
       <I18nextProvider i18n={i18n}>
         <AppDirectionProvider>
-          <RouterProvider router={router} />
+          <NotificationsProvider>
+            <RouterProvider router={router} />
+          </NotificationsProvider>
         </AppDirectionProvider>
       </I18nextProvider>,
     ),
@@ -189,7 +192,9 @@ describe('DashboardTopbar notifications bar', () => {
 
     expect(firstNotification).toHaveAttribute('data-state', 'unread')
     expect(secondNotification).toHaveAttribute('data-state', 'unread')
-    expect(within(firstNotification).getByText('Funding milestone reached')).toBeInTheDocument()
+    expect(
+      within(firstNotification).getByText('Funding milestone reached'),
+    ).toBeInTheDocument()
 
     fireEvent.click(firstNotification)
 
@@ -259,7 +264,9 @@ describe('DashboardTopbar notifications bar', () => {
         ROUTE_PATHS.notifications,
       )
     })
-    expect(screen.getByRole('heading', { name: 'Notifications page' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Notifications page' }),
+    ).toBeInTheDocument()
   })
 
   it('inserts one live notification after five seconds and keeps the list capped at twenty items', async () => {
@@ -275,7 +282,7 @@ describe('DashboardTopbar notifications bar', () => {
 
     expect(screen.getByText(getNotificationsTitle())).toBeInTheDocument()
 
-    expect(getNotificationItems()).toHaveLength(19)
+    expect(getNotificationItems()).toHaveLength(20)
 
     await act(async () => {
       vi.advanceTimersByTime(5000)
@@ -289,13 +296,12 @@ describe('DashboardTopbar notifications bar', () => {
       'data-notification-id',
       'notification-live-001',
     )
-    expect(within(firstNotification).getByText('New live alert')).toBeInTheDocument()
+    expect(
+      within(firstNotification).getByText('New live alert'),
+    ).toBeInTheDocument()
     expect(
       within(firstNotification).getByText(
-        formatDashboardNotificationDateTime(
-          '2026-04-12T12:00:00.000Z',
-          'en',
-        ),
+        formatDashboardNotificationDateTime('2026-04-12T12:00:00.000Z', 'en'),
       ),
     ).toBeInTheDocument()
     expect(
@@ -306,6 +312,9 @@ describe('DashboardTopbar notifications bar', () => {
         }),
       ),
     ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-notification-id="notification-020"]'),
+    ).toBeNull()
   })
 
   it('localizes the menu content and timestamps in Arabic with right-to-left direction', async () => {

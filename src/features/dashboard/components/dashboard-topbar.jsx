@@ -7,14 +7,19 @@ import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { dashboardSectionIcons } from '@/features/dashboard/constants/dashboard-ui'
 import { DashboardNotificationsMenu } from '@/features/notifications/components/dashboard-notifications-menu'
-import { useDashboardNotifications } from '@/features/notifications/hooks/use-dashboard-notifications'
+import { useNotifications } from '@/features/notifications/hooks/use-notifications'
 
 export function DashboardTopbar({ title, user, onOpenSidebar }) {
   const navigate = useNavigate()
   const { t } = useTranslation('notifications')
   const [notificationsOpen, setNotificationsOpen] = useState(false)
-  const { notifications, unreadCount, hasUnread, markNotificationAsRead, markAllAsRead } =
-    useDashboardNotifications()
+  const {
+    barNotifications,
+    unreadCount,
+    hasUnread,
+    markNotificationAsRead,
+    markAllAsRead,
+  } = useNotifications()
   const BellIcon = dashboardSectionIcons.notification
   const SettingsIcon = dashboardSectionIcons.chevron
   const SearchIcon = dashboardSectionIcons.search
@@ -85,7 +90,7 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
 
       <DashboardNotificationsMenu
         bellIcon={BellIcon}
-        items={notifications}
+        items={barNotifications}
         unreadCount={unreadCount}
         hasUnread={hasUnread}
         open={notificationsOpen}

@@ -51,5 +51,19 @@
         "body": "A real-time notification has just arrived in the notifications bar."
       }
     }
+  },
+  "notificationsPage": {
+    "description": "Review every notification in one place and open the related activity from the list.",
+    "actions": {
+      "markAllAsRead": "Mark all as read"
+    },
+    "list": {
+      "title": "Notifications list",
+      "count": "{{count}} notifications"
+    },
+    "empty": {
+      "title": "No notifications yet",
+      "description": "New alerts will appear here as soon as they arrive."
+    }
   }
 }

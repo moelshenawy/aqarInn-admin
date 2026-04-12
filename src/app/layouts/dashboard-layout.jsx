@@ -28,6 +28,7 @@ import {
   getInitialDashboardSidebarCollapsed,
   persistDashboardSidebarCollapsed,
 } from '@/features/dashboard/constants/dashboard-storage'
+import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import { cn } from '@/lib/utils'
 import { canAccessRoute } from '@/lib/permissions/helpers'
@@ -200,42 +201,44 @@ export function DashboardLayout() {
   )
 
   return (
-    <div className="min-h-screen bg-[color:var(--dashboard-bg)] p-4 sm:p-5">
-      <div
-        className={cn(
-          'mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-[1440px] grid-cols-1 gap-5 transition-[grid-template-columns] duration-300 ease-in-out',
-          isSidebarCollapsed
-            ? 'lg:grid-cols-[96px_minmax(0,1fr)]'
-            : 'lg:grid-cols-[266px_minmax(0,1fr)]',
-        )}
-      >
-        <aside className="hidden h-[calc(100vh-2.5rem)] min-h-[992px] lg:block">
-          {desktopSidebar}
-        </aside>
-
-        <main className="min-w-0">
-          <DashboardTopbar
-            title={pageTitle}
-            user={dashboardTopbarUser}
-            onOpenSidebar={() => setSidebarOpen(true)}
-          />
-          <div className="pt-[31px]">
-            <Outlet />
-          </div>
-        </main>
-      </div>
-
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent
-          side="right"
-          className="w-full max-w-[290px] border-none bg-[color:var(--dashboard-bg)] p-4"
+    <NotificationsProvider>
+      <div className="min-h-screen bg-[color:var(--dashboard-bg)] p-4 sm:p-5">
+        <div
+          className={cn(
+            'mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-[1440px] grid-cols-1 gap-5 transition-[grid-template-columns] duration-300 ease-in-out',
+            isSidebarCollapsed
+              ? 'lg:grid-cols-[96px_minmax(0,1fr)]'
+              : 'lg:grid-cols-[266px_minmax(0,1fr)]',
+          )}
         >
-          <SheetHeader className="sr-only">
-            <SheetTitle>{dashboardActions.topbar.settingsLabel}</SheetTitle>
-          </SheetHeader>
-          {mobileSidebar}
-        </SheetContent>
-      </Sheet>
-    </div>
+          <aside className="hidden h-[calc(100vh-2.5rem)] min-h-[992px] lg:block">
+            {desktopSidebar}
+          </aside>
+
+          <main className="min-w-0">
+            <DashboardTopbar
+              title={pageTitle}
+              user={dashboardTopbarUser}
+              onOpenSidebar={() => setSidebarOpen(true)}
+            />
+            <div className="pt-[31px]">
+              <Outlet />
+            </div>
+          </main>
+        </div>
+
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetContent
+            side="right"
+            className="w-full max-w-[290px] border-none bg-[color:var(--dashboard-bg)] p-4"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>{dashboardActions.topbar.settingsLabel}</SheetTitle>
+            </SheetHeader>
+            {mobileSidebar}
+          </SheetContent>
+        </Sheet>
+      </div>
+    </NotificationsProvider>
   )
 }
