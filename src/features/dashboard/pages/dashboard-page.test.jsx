@@ -1,17 +1,42 @@
-import { describe, expect, it } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 
 import { DashboardLayout } from '@/app/layouts/dashboard-layout'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import DashboardPage from '@/features/dashboard/pages/dashboard-page'
 import { dashboardRouteMeta } from '@/features/dashboard/routes/dashboard.route'
+import { DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/features/dashboard/constants/dashboard-storage'
 import { AuthProvider } from '@/features/auth/context/auth-provider'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 
-function renderDashboardRoute() {
+function renderDashboardRoute({
+  initialEntries = ['/app/dashboard'],
+  preserveSidebarStorage = false,
+  sidebarCollapsed,
+} = {}) {
+  if (!preserveSidebarStorage) {
+    window.localStorage.removeItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY)
+  }
+
   window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+
+  if (sidebarCollapsed === true) {
+    window.localStorage.setItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY, 'true')
+  } else if (sidebarCollapsed === false) {
+    window.localStorage.setItem(
+      DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY,
+      'false',
+    )
+  }
 
   const router = createMemoryRouter(
     [
@@ -28,7 +53,7 @@ function renderDashboardRoute() {
       },
     ],
     {
-      initialEntries: ['/app/dashboard'],
+      initialEntries,
     },
   )
 
@@ -36,14 +61,32 @@ function renderDashboardRoute() {
     <I18nextProvider i18n={i18n}>
       <AuthProvider>
         <AppDirectionProvider>
-          <RouterProvider router={router} />
+          <TooltipProvider delayDuration={0}>
+            <RouterProvider router={router} />
+          </TooltipProvider>
         </AppDirectionProvider>
       </AuthProvider>
     </I18nextProvider>,
   )
 }
 
+function getDesktopSidebar() {
+  return document.querySelector(
+    '[data-slot="dashboard-sidebar"][data-sidebar-context="desktop"]',
+  )
+}
+
+function getMobileSidebar() {
+  return document.querySelector(
+    '[data-slot="dashboard-sidebar"][data-sidebar-context="mobile"]',
+  )
+}
+
 describe('DashboardPage route', () => {
+  afterEach(() => {
+    window.localStorage.clear()
+  })
+
   it('renders the figma-based dashboard shell and content in Arabic', async () => {
     renderDashboardRoute()
 
@@ -102,5 +145,104 @@ describe('DashboardPage route', () => {
     await waitFor(() => {
       expect(screen.queryByText('جميع الاشعارات')).not.toBeInTheDocument()
     })
+  })
+
+  it('collapses, restores, and expands the desktop sidebar with persisted state', async () => {
+    const { unmount } = renderDashboardRoute()
+
+    const desktopSidebar = getDesktopSidebar()
+    expect(desktopSidebar).toHaveAttribute('data-sidebar-state', 'expanded')
+
+    const collapseButton = screen.getByRole('button', {
+      name: 'طي القائمة الجانبية',
+    })
+
+    fireEvent.click(collapseButton)
+
+    await waitFor(() => {
+      expect(desktopSidebar).toHaveAttribute('data-sidebar-state', 'collapsed')
+      expect(
+        window.localStorage.getItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY),
+      ).toBe('true')
+    })
+
+    unmount()
+    renderDashboardRoute({ preserveSidebarStorage: true })
+
+    const restoredDesktopSidebar = getDesktopSidebar()
+    expect(restoredDesktopSidebar).toHaveAttribute(
+      'data-sidebar-state',
+      'collapsed',
+    )
+
+    const restoredUsersLink = screen.getByRole('link', {
+      name: 'ادارة المستخدمين',
+    })
+    const restoredUsersLabel = restoredUsersLink.querySelector(
+      '[data-slot="dashboard-sidebar-label"]',
+    )
+
+    expect(restoredUsersLabel).toHaveAttribute('aria-hidden', 'true')
+
+    fireEvent.focus(restoredUsersLink)
+
+    const tooltip = await screen.findByRole('tooltip')
+    expect(tooltip).toHaveTextContent('ادارة المستخدمين')
+
+    fireEvent.blur(restoredUsersLink)
+
+    await waitFor(() => {
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    })
+
+    const expandButton = screen.getByRole('button', {
+      name: 'توسيع القائمة الجانبية',
+    })
+
+    fireEvent.click(expandButton)
+
+    await waitFor(() => {
+      expect(restoredDesktopSidebar).toHaveAttribute(
+        'data-sidebar-state',
+        'expanded',
+      )
+      expect(
+        window.localStorage.getItem(DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY),
+      ).toBe('false')
+    })
+
+    const expandedUsersLink = screen.getByRole('link', {
+      name: 'ادارة المستخدمين',
+    })
+    const expandedUsersLabel = expandedUsersLink.querySelector(
+      '[data-slot="dashboard-sidebar-label"]',
+    )
+
+    expect(expandedUsersLabel).not.toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('keeps the mobile sheet sidebar expanded and labeled even when desktop is collapsed', async () => {
+    renderDashboardRoute({ sidebarCollapsed: true })
+
+    expect(getDesktopSidebar()).toHaveAttribute(
+      'data-sidebar-state',
+      'collapsed',
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'فتح القائمة الجانبية' }),
+    )
+
+    await waitFor(() => {
+      expect(
+        document.querySelector('[data-slot="sheet-content"]'),
+      ).not.toBeNull()
+    })
+
+    const mobileSidebar = getMobileSidebar()
+    expect(mobileSidebar).toHaveAttribute('data-sidebar-state', 'expanded')
+    expect(
+      within(mobileSidebar).getByText('ادارة المستخدمين'),
+    ).toBeInTheDocument()
   })
 })

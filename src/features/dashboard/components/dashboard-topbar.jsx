@@ -26,6 +26,7 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
           type="button"
           variant="ghost"
           size="icon-sm"
+          aria-label="فتح القائمة الجانبية"
           className="size-9 rounded-lg text-[color:var(--dashboard-text-soft)] hover:bg-transparent lg:hidden"
           onClick={onOpenSidebar}
         >
