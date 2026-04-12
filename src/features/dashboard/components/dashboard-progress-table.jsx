@@ -1,16 +1,16 @@
 export function DashboardProgressTable({ rows }) {
   return (
-    <section className="rounded-xl border border-[color:var(--dashboard-border)] bg-[#fbf7ef] shadow-[var(--dashboard-shadow)]">
+    <section className="rounded-xl border border-[color:var(--dashboard-border)] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]">
       <div className="flex items-center justify-between gap-4 px-6 py-4">
-          <h2 className="text-right text-lg font-semibold leading-7 text-[color:var(--dashboard-text)]">
-            إجمالي فرص الاستثمار
-          </h2>
-        <p className="rounded-full bg-white px-3 py-1 text-xs font-medium leading-[18px] text-[color:var(--dashboard-text-soft)] shadow-[var(--dashboard-shadow)]">
+        <h2 className="text-right text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
+          إجمالي فرص الاستثمار
+        </h2>
+        <p className="rounded-full bg-white px-3 py-1 text-xs leading-[18px] font-medium text-[color:var(--dashboard-text-soft)] shadow-[var(--dashboard-shadow)]">
           137 فرصة
         </p>
       </div>
-      <div className="border-t border-[color:var(--dashboard-border)] px-4 pb-4 pt-3">
-        <div className="grid grid-cols-[minmax(0,1fr)_72px_84px] items-center gap-x-4 px-2 pb-3 text-xs font-medium leading-5 text-[color:var(--dashboard-text-soft)]">
+      <div className="border-t border-[color:var(--dashboard-border)] px-4 pt-3 pb-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_72px_84px] items-center gap-x-4 px-2 pb-3 text-xs leading-5 font-medium text-[color:var(--dashboard-text-soft)]">
           <span className="text-right"> </span>
           <span className="text-right">العدد</span>
           <span className="text-right">الحالة</span>
@@ -27,10 +27,10 @@ export function DashboardProgressTable({ rows }) {
                   style={{ width: `${row.progress}%` }}
                 />
               </div>
-              <span className="text-right text-xs font-medium leading-5 text-[color:var(--dashboard-text)]">
+              <span className="text-right text-xs leading-5 font-medium text-[color:var(--dashboard-text)]">
                 {row.count}
               </span>
-              <span className="text-right text-xs font-medium leading-5 text-[color:var(--dashboard-text)]">
+              <span className="text-right text-xs leading-5 font-medium text-[color:var(--dashboard-text)]">
                 {row.label}
               </span>
             </div>
