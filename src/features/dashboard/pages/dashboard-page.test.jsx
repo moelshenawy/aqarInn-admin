@@ -297,7 +297,78 @@ describe('DashboardPage route', () => {
     expectPanelSummary('Distributions', { count: '1', amount: '35,000' })
   })
 
-  it('opens and closes the notification bell menu from the topbar', async () => {
+  it('renders the notification bell menu with unread summary and localized actions from the topbar', async () => {
+    await renderDashboardRouteAtFrozenTime()
+
+    const notificationTrigger = screen.getByRole('button', {
+      name: i18n.t('notificationsBar.triggerLabel', { ns: 'notifications' }),
+    })
+
+    expect(
+      document.querySelector(
+        '[data-slot="dashboard-notifications-trigger-indicator"]',
+      ),
+    ).not.toBeNull()
+
+    fireEvent.pointerDown(notificationTrigger, { button: 0, ctrlKey: false })
+
+    expect(
+      await screen.findByText(
+        i18n.t('notificationsBar.title', { ns: 'notifications' }),
+      ),
+    ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(notificationTrigger).toHaveAttribute('aria-expanded', 'true')
+    })
+
+    expect(
+      screen.getByText(
+        i18n.t('notificationsBar.header.unreadCount', {
+          ns: 'notifications',
+          count: 7,
+        }),
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: i18n.t('notificationsBar.actions.markAllAsRead', {
+          ns: 'notifications',
+        }),
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: i18n.t('notificationsBar.actions.viewAllNotifications', {
+          ns: 'notifications',
+        }),
+      }),
+    ).toBeInTheDocument()
+
+    const menu = screen.getByRole('menu')
+    expect(menu.className).toContain('w-[calc(100vw-32px)]')
+    expect(menu.className).toContain('sm:w-[503px]')
+    expect(menu.className).toContain('max-w-[503px]')
+
+    expect(
+      document.querySelector('[data-slot="dashboard-notifications-content"]'),
+    ).toHaveAttribute('dir', 'rtl')
+    expect(
+      document.querySelector('[data-notification-id="notification-001"]'),
+    ).toHaveAttribute('data-state', 'unread')
+
+    fireEvent.pointerDown(document.body)
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(
+          i18n.t('notificationsBar.title', { ns: 'notifications' }),
+        ),
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it.skip('opens and closes the notification bell menu from the topbar', async () => {
     await renderDashboardRoute()
 
     const notificationTrigger = screen.getByRole('button', {

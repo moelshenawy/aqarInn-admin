@@ -8,12 +8,14 @@ import arAuth from '@/lib/i18n/locales/ar/auth.json'
 import arCommon from '@/lib/i18n/locales/ar/common.json'
 import arDashboard from '@/lib/i18n/locales/ar/dashboard.json'
 import arNavigation from '@/lib/i18n/locales/ar/navigation.json'
+import arNotifications from '@/lib/i18n/locales/ar/notifications.json'
 import arPermissions from '@/lib/i18n/locales/ar/permissions.json'
 import arValidation from '@/lib/i18n/locales/ar/validation.json'
 import enAuth from '@/lib/i18n/locales/en/auth.json'
 import enCommon from '@/lib/i18n/locales/en/common.json'
 import enDashboard from '@/lib/i18n/locales/en/dashboard.json'
 import enNavigation from '@/lib/i18n/locales/en/navigation.json'
+import enNotifications from '@/lib/i18n/locales/en/notifications.json'
 import enPermissions from '@/lib/i18n/locales/en/permissions.json'
 import enValidation from '@/lib/i18n/locales/en/validation.json'
 
@@ -23,6 +25,7 @@ const resources = {
     common: enCommon,
     dashboard: enDashboard,
     navigation: enNavigation,
+    notifications: enNotifications,
     permissions: enPermissions,
     validation: enValidation,
   },
@@ -31,6 +34,7 @@ const resources = {
     common: arCommon,
     dashboard: arDashboard,
     navigation: arNavigation,
+    notifications: arNotifications,
     permissions: arPermissions,
     validation: arValidation,
   },
@@ -44,7 +48,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'en',
   supportedLngs: ['en', 'ar'],
   defaultNS: 'common',
-  ns: ['common', 'navigation', 'auth', 'dashboard', 'validation', 'permissions'],
+  ns: ['common', 'navigation', 'auth', 'dashboard', 'notifications', 'validation', 'permissions'],
   interpolation: { escapeValue: false },
   returnNull: false,
 })

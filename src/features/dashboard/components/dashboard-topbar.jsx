@@ -1,19 +1,34 @@
 import { useState } from 'react'
 import { Menu } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import {
-  dashboardActions,
-  dashboardSectionIcons,
-} from '@/features/dashboard/constants/dashboard-ui'
+import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { dashboardSectionIcons } from '@/features/dashboard/constants/dashboard-ui'
 import { DashboardNotificationsMenu } from '@/features/notifications/components/dashboard-notifications-menu'
-import { dashboardNotifications } from '@/features/notifications/constants/dashboard-notifications'
+import { useDashboardNotifications } from '@/features/notifications/hooks/use-dashboard-notifications'
 
 export function DashboardTopbar({ title, user, onOpenSidebar }) {
+  const navigate = useNavigate()
+  const { t } = useTranslation('notifications')
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const { notifications, unreadCount, hasUnread, markNotificationAsRead, markAllAsRead } =
+    useDashboardNotifications()
   const BellIcon = dashboardSectionIcons.notification
   const SettingsIcon = dashboardSectionIcons.chevron
   const SearchIcon = dashboardSectionIcons.search
+
+  function handleNotificationSelect(notification) {
+    markNotificationAsRead(notification.id)
+    setNotificationsOpen(false)
+    navigate(notification.targetPath)
+  }
+
+  function handleViewAllNotifications() {
+    setNotificationsOpen(false)
+    navigate(ROUTE_PATHS.notifications)
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
@@ -67,12 +82,20 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
           </svg>
         </span>
       </div>
+
       <DashboardNotificationsMenu
         bellIcon={BellIcon}
-        items={dashboardNotifications}
+        items={notifications}
+        unreadCount={unreadCount}
+        hasUnread={hasUnread}
         open={notificationsOpen}
         onOpenChange={setNotificationsOpen}
-        triggerLabel={dashboardActions.topbar.notificationLabel}
+        onNotificationSelect={handleNotificationSelect}
+        onMarkAllAsRead={markAllAsRead}
+        onViewAll={handleViewAllNotifications}
+        triggerLabel={t('notificationsBar.triggerLabel')}
+        markAllLabel={t('notificationsBar.actions.markAllAsRead')}
+        viewAllLabel={t('notificationsBar.actions.viewAllNotifications')}
       />
     </div>
   )

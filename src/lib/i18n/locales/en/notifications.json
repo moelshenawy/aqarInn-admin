@@ -1,0 +1,55 @@
+{
+  "notificationsBar": {
+    "triggerLabel": "Notifications",
+    "title": "All notifications",
+    "header": {
+      "unreadCount": "{{count}} new notifications"
+    },
+    "actions": {
+      "markAllAsRead": "Mark all as read",
+      "viewAllNotifications": "View all notifications"
+    },
+    "items": {
+      "fundingMilestone": {
+        "title": "Funding milestone reached",
+        "body": "One of your opportunities has reached a new investor milestone."
+      },
+      "opportunityPublished": {
+        "title": "Opportunity published",
+        "body": "A new investment opportunity is now visible to investors."
+      },
+      "distributionReady": {
+        "title": "Distribution update available",
+        "body": "A profit distribution activity requires your review."
+      },
+      "withdrawalInProgress": {
+        "title": "Withdrawal request in progress",
+        "body": "A withdrawal request was updated and needs operational follow-up."
+      },
+      "withdrawalDeposited": {
+        "title": "Withdrawal deposit completed",
+        "body": "A withdrawal request has been marked as deposited successfully."
+      },
+      "kycApproved": {
+        "title": "User verification completed",
+        "body": "A user verification request was approved and added to the active users list."
+      },
+      "activityReview": {
+        "title": "Activity requires review",
+        "body": "A recent backoffice activity was flagged for review in the activity log."
+      },
+      "systemUpdate": {
+        "title": "System update",
+        "body": "A new operational update was added to your notifications feed."
+      },
+      "newUserRequest": {
+        "title": "New user request",
+        "body": "A new user-related request is ready for follow-up from the users module."
+      },
+      "liveOperationalAlert": {
+        "title": "New live alert",
+        "body": "A real-time notification has just arrived in the notifications bar."
+      }
+    }
+  }
+}
