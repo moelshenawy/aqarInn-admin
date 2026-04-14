@@ -45,10 +45,10 @@ export function DashboardToast({
               src={icon}
               alt=""
               aria-hidden="true"
-              className="size-[35px] shrink-0"
+              className="size-[16px] shrink-0"
             />
           ) : (
-            <div className="flex size-[35px] shrink-0 items-center justify-center">
+            <div className="flex size-[16px] shrink-0 items-center justify-center">
               {icon}
             </div>
           )}

@@ -11,7 +11,7 @@ import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { AuthCard } from '@/features/auth/components/auth-card'
 import { AuthField } from '@/features/auth/components/auth-field'
 import { AuthPrimaryButton } from '@/features/auth/components/auth-primary-button'
-import { LOGIN_CONTENT } from '@/features/auth/constants/auth-ui'
+// Using translation keys instead of static UI constants
 import { createLoginFormSchema } from '@/features/auth/schemas/auth-form-schemas'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import * as authService from '@/features/auth/services/auth-service'
@@ -89,20 +89,20 @@ export default function LoginPage() {
 
   return (
     <AuthCard variant="login">
-      <div className="space-y-[34px] text-right">
+      <div className="space-y-[34px] text-start">
         <div className="space-y-3">
           <h2 className="text-[30px] leading-[38px] font-semibold text-[#402f28]">
-            {LOGIN_CONTENT.title}
+            {t('loginPage.title')}
           </h2>
           <p className="text-[20px] leading-[30px] font-medium text-[#414651]">
-            {LOGIN_CONTENT.description}
+            {t('loginPage.description')}
           </p>
         </div>
 
         <form className="space-y-[9px]" onSubmit={onSubmit} noValidate>
           <AuthField
-            label={LOGIN_CONTENT.emailLabel}
-            placeholder={LOGIN_CONTENT.emailPlaceholder}
+            label={t('loginPage.emailLabel')}
+            placeholder={t('loginPage.emailPlaceholder')}
             trailingIcon={Mail}
             leadingIcon={errors.email ? CircleAlert : undefined}
             error={errors.email?.message}
@@ -110,9 +110,9 @@ export default function LoginPage() {
           />
 
           <AuthField
-            label={LOGIN_CONTENT.passwordLabel}
+            label={t('loginPage.passwordLabel')}
             type={showPassword ? 'text' : 'password'}
-            placeholder={LOGIN_CONTENT.passwordPlaceholder}
+            placeholder={t('loginPage.passwordPlaceholder')}
             trailingIcon={showPassword ? Eye : EyeOff}
             onTrailingIconClick={() => setShowPassword((s) => !s)}
             trailingIconAriaLabel={
@@ -128,11 +128,11 @@ export default function LoginPage() {
               to={ROUTE_PATHS.forgotPassword}
               className="text-base leading-6 font-medium transition-opacity hover:opacity-85"
             >
-              {LOGIN_CONTENT.forgotPassword}
+              {t('loginPage.forgotPassword')}
             </Link>
 
             <label className="flex cursor-pointer items-center gap-[10px] text-base leading-6 font-medium">
-              <span>{LOGIN_CONTENT.rememberMe}</span>
+              <span>{t('loginPage.rememberMe')}</span>
 
               <span className="relative inline-flex size-[22px] shrink-0 items-center justify-center">
                 <input
@@ -155,7 +155,7 @@ export default function LoginPage() {
           </div>
 
           <AuthPrimaryButton className="mt-[17px]" disabled={isSubmitting}>
-            {LOGIN_CONTENT.submit}
+            {t('loginPage.submit')}
           </AuthPrimaryButton>
         </form>
       </div>
