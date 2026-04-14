@@ -10,7 +10,7 @@ export const forgotPasswordRouteMeta = {
 }
 
 export const forgotPasswordRoute = {
-  path: ROUTE_PATHS.forgotPassword,
+  path: 'forgot-password',
   async lazy() {
     const module = await import('@/features/auth/pages/forgot-password-page')
     return { Component: module.default, handle: forgotPasswordRouteMeta }

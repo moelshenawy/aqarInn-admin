@@ -10,7 +10,7 @@ export const resetPasswordRouteMeta = {
 }
 
 export const resetPasswordRoute = {
-  path: ROUTE_PATHS.resetPassword,
+  path: 'reset-password',
   async lazy() {
     const module = await import('@/features/auth/pages/reset-password-page')
     return { Component: module.default, handle: resetPasswordRouteMeta }

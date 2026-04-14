@@ -10,7 +10,8 @@ export const loginRouteMeta = {
 }
 
 export const loginRoute = {
-  path: ROUTE_PATHS.login,
+  // Relative path so it works under both / and /en
+  path: 'login',
   async lazy() {
     const module = await import('@/features/auth/pages/login-page')
     return { Component: module.default, handle: loginRouteMeta }

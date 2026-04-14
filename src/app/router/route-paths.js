@@ -1,3 +1,11 @@
+// Helper to add locale prefix
+function withLocale(path, locale) {
+  if (locale === 'en') {
+    return path.startsWith('/en') ? path : '/en' + (path === '/' ? '' : path)
+  }
+  return path.startsWith('/en') ? path.replace(/^\/en/, '') || '/' : path
+}
+
 export const ROUTE_PATHS = {
   login: '/login',
   forgotPassword: '/forgot-password',
@@ -17,16 +25,29 @@ export const ROUTE_PATHS = {
   profitDistributions: '/app/profit-distributions',
   activityLogs: '/app/activity-logs',
   notifications: '/app/notifications',
+  withLocale,
 }
 
-export function buildInvestmentOpportunityDetailsPath(opportunityId) {
-  return `/app/investment-opportunities/${encodeURIComponent(opportunityId)}`
+export function buildInvestmentOpportunityDetailsPath(opportunityId, locale) {
+  return ROUTE_PATHS.withLocale(
+    `/app/investment-opportunities/${encodeURIComponent(opportunityId)}`,
+    locale,
+  )
 }
 
-export function buildInvestmentOpportunityEditPath(opportunityId) {
-  return `${buildInvestmentOpportunityDetailsPath(opportunityId)}/edit`
+export function buildInvestmentOpportunityEditPath(opportunityId, locale) {
+  return ROUTE_PATHS.withLocale(
+    `${buildInvestmentOpportunityDetailsPath(opportunityId)}/edit`,
+    locale,
+  )
 }
 
-export function buildInvestmentOpportunityProfitDistributionsPath(opportunityId) {
-  return `${buildInvestmentOpportunityDetailsPath(opportunityId)}/profit-distributions`
+export function buildInvestmentOpportunityProfitDistributionsPath(
+  opportunityId,
+  locale,
+) {
+  return ROUTE_PATHS.withLocale(
+    `${buildInvestmentOpportunityDetailsPath(opportunityId)}/profit-distributions`,
+    locale,
+  )
 }

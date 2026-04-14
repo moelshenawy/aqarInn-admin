@@ -40,7 +40,16 @@ const resources = {
   },
 }
 
-const initialLanguage = getInitialLanguage()
+// Get locale from URL if present
+function getLocaleFromUrl() {
+  if (typeof window === 'undefined') return null
+  const path = window.location.pathname
+  if (path.startsWith('/en')) return 'en'
+  return 'ar'
+}
+
+const urlLocale = getLocaleFromUrl()
+const initialLanguage = urlLocale || getInitialLanguage()
 
 void i18n.use(initReactI18next).init({
   resources,
@@ -48,7 +57,15 @@ void i18n.use(initReactI18next).init({
   fallbackLng: 'en',
   supportedLngs: ['en', 'ar'],
   defaultNS: 'common',
-  ns: ['common', 'navigation', 'auth', 'dashboard', 'notifications', 'validation', 'permissions'],
+  ns: [
+    'common',
+    'navigation',
+    'auth',
+    'dashboard',
+    'notifications',
+    'validation',
+    'permissions',
+  ],
   interpolation: { escapeValue: false },
   returnNull: false,
 })
