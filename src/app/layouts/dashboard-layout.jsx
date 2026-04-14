@@ -6,6 +6,8 @@ import {
   useLocation,
   useMatches,
 } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { LocalizedLink } from '@/shared/components/localized-link'
 
 import {
   Sheet,
@@ -99,6 +101,7 @@ function DashboardSidebar({
   collapsed = false,
   canCollapse = false,
   onToggleCollapse,
+  locale,
 }) {
   return (
     <div
@@ -123,15 +126,17 @@ function DashboardSidebar({
         )}
       >
         {dashboardNavItems.map((item) => {
+          const localizedBase = ROUTE_PATHS.withLocale(item.path, locale)
           const isActive =
-            pathname === item.path || pathname.startsWith(`${item.path}/`)
+            pathname === localizedBase ||
+            pathname.startsWith(`${localizedBase}/`)
 
           return (
             <DashboardSidebarItem
               key={item.key}
               icon={item.icon}
               label={item.label}
-              to={item.path}
+              to={localizedBase}
               active={isActive}
               collapsed={collapsed}
               onNavigate={onNavigate}

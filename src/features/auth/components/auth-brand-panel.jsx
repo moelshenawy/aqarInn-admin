@@ -16,7 +16,7 @@ function getLocaleFromPath(pathname) {
 export function AuthBrandPanel({ className }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation('auth')
   const currentLocale = getLocaleFromPath(location.pathname)
 
   // Switch locale and update URL
@@ -46,12 +46,12 @@ export function AuthBrandPanel({ className }) {
 
       <div className="auth-brand-copy space-y-[25px]">
         <h1 className="text-[30px] leading-[38px] font-semibold text-[#252b37] md:text-[36px] md:leading-[44px]">
-          {AUTH_BRAND_CONTENT.title[0]}
+          {t('brand.titlePartOne')}
           <br />
-          {AUTH_BRAND_CONTENT.title[1]}
+          {t('brand.titlePartTwo')}
         </h1>
         <p className="auth-brand-description text-[18px] leading-[28px] font-normal text-[#414651] md:text-[20px] md:leading-[30px]">
-          {AUTH_BRAND_CONTENT.description}
+          {t('brand.description')}
         </p>
       </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import {
   buildInvestmentOpportunityDetailsPath,
@@ -26,6 +27,7 @@ import { useAuthorization } from '@/lib/permissions/use-authorization'
 
 export default function InvestmentOpportunitiesPage() {
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
   const { hasAllPermissions } = useAuthorization()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
@@ -91,7 +93,13 @@ export default function InvestmentOpportunitiesPage() {
     ? {
         label: investmentActions.addOpportunityLabel,
         ariaLabel: investmentActions.addOpportunityLabel,
-        onClick: () => navigate(ROUTE_PATHS.investmentOpportunityAdd),
+        onClick: () =>
+          navigate(
+            ROUTE_PATHS.withLocale(
+              ROUTE_PATHS.investmentOpportunityAdd,
+              i18n.resolvedLanguage,
+            ),
+          ),
         icon: <Plus className="size-[18px] stroke-[2.1]" aria-hidden="true" />,
       }
     : undefined
@@ -117,7 +125,10 @@ export default function InvestmentOpportunitiesPage() {
               <DashboardOpportunityCard
                 key={opportunity.id}
                 {...opportunity}
-                to={buildInvestmentOpportunityDetailsPath(opportunity.id)}
+                to={buildInvestmentOpportunityDetailsPath(
+                  opportunity.id,
+                  i18n.resolvedLanguage,
+                )}
               />
             ))}
           </section>

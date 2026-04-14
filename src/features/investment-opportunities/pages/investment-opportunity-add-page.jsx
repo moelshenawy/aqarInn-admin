@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { InvestmentOpportunityForm } from '@/features/investment-opportunities/components/investment-opportunity-form'
@@ -12,6 +13,7 @@ const addOpportunityDescription =
 
 export default function InvestmentOpportunityAddPage() {
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
   const [reviewOpen, setReviewOpen] = useState(false)
   const { register, handleSubmit } = useForm({
     defaultValues: INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
@@ -23,7 +25,12 @@ export default function InvestmentOpportunityAddPage() {
 
   const handlePublish = () => {
     setReviewOpen(false)
-    navigate(ROUTE_PATHS.investmentOpportunities)
+    navigate(
+      ROUTE_PATHS.withLocale(
+        ROUTE_PATHS.investmentOpportunities,
+        i18n.resolvedLanguage,
+      ),
+    )
   }
 
   return (
@@ -36,7 +43,14 @@ export default function InvestmentOpportunityAddPage() {
         onSubmit={onSubmit}
         submitLabel="التالي"
         cancelLabel="الغاء"
-        onCancel={() => navigate(ROUTE_PATHS.investmentOpportunities)}
+        onCancel={() =>
+          navigate(
+            ROUTE_PATHS.withLocale(
+              ROUTE_PATHS.investmentOpportunities,
+              i18n.resolvedLanguage,
+            ),
+          )
+        }
       />
       <InvestmentOpportunityReviewDialog
         open={reviewOpen}

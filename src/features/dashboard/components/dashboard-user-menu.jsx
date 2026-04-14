@@ -84,7 +84,9 @@ export function DashboardUserMenu({ user }) {
     })
 
     logout()
-    navigate(ROUTE_PATHS.login, { replace: true })
+    navigate(ROUTE_PATHS.withLocale(ROUTE_PATHS.login, i18n.resolvedLanguage), {
+      replace: true,
+    })
 
     if (!accessToken) {
       toast.dismiss(loadingToastId)

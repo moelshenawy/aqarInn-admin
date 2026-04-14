@@ -29,16 +29,11 @@ export function DashboardToast({
       role="status"
       aria-live="polite"
       className={cn(
-        'flex w-[min(485px,calc(100vw-40px))] flex-col overflow-hidden rounded-[14px] bg-[#eae5d7] p-5 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)]',
+        'flex flex-col overflow-hidden rounded-[14px] bg-[#eae5d7] p-5 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)]',
         dir === 'rtl' ? 'items-end text-right' : 'items-start text-left',
       )}
     >
-      <div
-        className={cn(
-          'flex w-full items-start gap-5',
-          dir === 'rtl' ? 'justify-end' : 'justify-start',
-        )}
-      >
+      <div className={cn('flex w-full items-start justify-start gap-5')}>
         <div className="relative flex size-[53px] shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#d6cbb2]">
           {typeof icon === 'string' ? (
             <img

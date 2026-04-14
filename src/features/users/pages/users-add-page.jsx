@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { Button } from '@/components/ui/button'
@@ -154,6 +155,7 @@ function UsersAddStatusField({ active, onChange }) {
 export default function UsersAddPage() {
   const navigate = useNavigate()
   const [formValues, setFormValues] = useState(initialFormValues)
+  const { i18n } = useTranslation()
 
   function updateField(field, value) {
     setFormValues((currentValues) => ({
@@ -165,7 +167,7 @@ export default function UsersAddPage() {
   function handleSubmit(event) {
     event.preventDefault()
     showDashboardSuccessToast(addUserSuccessToast)
-    navigate(ROUTE_PATHS.users)
+    navigate(ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage))
   }
 
   return (
@@ -263,7 +265,14 @@ export default function UsersAddPage() {
           </Button>
           <Button
             type="button"
-            onClick={() => navigate(ROUTE_PATHS.users)}
+            onClick={() =>
+              navigate(
+                ROUTE_PATHS.withLocale(
+                  ROUTE_PATHS.users,
+                  i18n.resolvedLanguage,
+                ),
+              )
+            }
             className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] hover:bg-[#ded6c4] focus-visible:ring-[#9d7e55]/25"
           >
             الغاء

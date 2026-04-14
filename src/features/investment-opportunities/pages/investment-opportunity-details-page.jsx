@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import {
   buildInvestmentOpportunityEditPath,
@@ -22,6 +23,7 @@ const deleteSuccessToast = {
 
 export default function InvestmentOpportunityDetailsPage() {
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
   const details = getInvestmentOpportunityDetails(opportunityId)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -29,7 +31,12 @@ export default function InvestmentOpportunityDetailsPage() {
   const handleConfirmDelete = () => {
     setDeleteOpen(false)
     showDashboardSuccessToast(deleteSuccessToast)
-    navigate(ROUTE_PATHS.investmentOpportunities)
+    navigate(
+      ROUTE_PATHS.withLocale(
+        ROUTE_PATHS.investmentOpportunities,
+        i18n.resolvedLanguage,
+      ),
+    )
   }
 
   return (
@@ -48,7 +55,12 @@ export default function InvestmentOpportunityDetailsPage() {
             <InvestmentOpportunityDetailsActions
               onDelete={() => setDeleteOpen(true)}
               onEdit={() =>
-                navigate(buildInvestmentOpportunityEditPath(details.id))
+                navigate(
+                  buildInvestmentOpportunityEditPath(
+                    details.id,
+                    i18n.resolvedLanguage,
+                  ),
+                )
               }
             />
             <h1

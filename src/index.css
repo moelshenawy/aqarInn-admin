@@ -3,8 +3,7 @@
 
 @font-face {
   font-family: 'saudi_riyal';
-  src: url('./assets/fonts/saudi-riyal-font/saudi_riyal.woff2')
-    format('woff2');
+  src: url('./assets/fonts/saudi-riyal-font/saudi_riyal.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -12,11 +11,7 @@
 
 @theme inline {
   --font-sans:
-    'Noto Kufi Arabic',
-    'Geist Variable',
-    ui-sans-serif,
-    system-ui,
-    sans-serif;
+    'Noto Kufi Arabic', 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'SFMono-Regular', ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -72,22 +67,17 @@
   --dashboard-shadow: 0 1px 2px rgba(64, 47, 40, 0.08);
 }
 
-
-
 ::selection {
   background: var(--card-foreground);
   color: white;
   text-shadow: none;
-
-
 }
 
 ::-moz-selection {
-  background: #FF0099;
+  background: #ff0099;
   color: black;
   text-shadow: none;
 }
-
 
 * {
   box-sizing: border-box;
@@ -184,7 +174,7 @@ textarea {
   border-radius: 24px;
   padding: 2rem 1.5rem;
   text-align: right;
-  padding-top:0 !important;
+  padding-top: 0 !important;
 }
 
 .auth-brand-logo {
@@ -196,7 +186,7 @@ textarea {
 .auth-brand-copy {
   width: min(100%, 31.3125rem);
   margin-inline-start: auto;
-  text-align: right;
+  text-align: start;
 }
 
 .auth-brand-description {

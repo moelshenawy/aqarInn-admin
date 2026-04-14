@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { CircleAlert, EyeOff, KeyRound, Mail, Eye, Check } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { LocalizedLink } from '@/shared/components/localized-link'
 import { toast } from 'sonner'
 
 import { useTranslation } from 'react-i18next'
@@ -24,7 +25,7 @@ import {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation('auth')
+  const { t, i18n } = useTranslation('auth')
   const auth = useAuth()
   const loginFormSchema = useMemo(() => createLoginFormSchema(t), [t])
   const {
@@ -77,7 +78,9 @@ export default function LoginPage() {
       toast.dismiss(loadingId)
       showDashboardSuccessToast({ title: t('loginSuccess') })
 
-      navigate(ROUTE_PATHS.dashboard)
+      navigate(
+        ROUTE_PATHS.withLocale(ROUTE_PATHS.dashboard, i18n.resolvedLanguage),
+      )
     } catch (err) {
       toast.dismiss(loadingId)
       const description = getLocalizedAuthErrorMessage(err, t)
@@ -124,12 +127,12 @@ export default function LoginPage() {
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4 py-1 text-[#876647]">
-            <Link
+            <LocalizedLink
               to={ROUTE_PATHS.forgotPassword}
               className="text-base leading-6 font-medium transition-opacity hover:opacity-85"
             >
               {t('loginPage.forgotPassword')}
-            </Link>
+            </LocalizedLink>
 
             <label className="flex cursor-pointer items-center gap-[10px] text-base leading-6 font-medium">
               <span>{t('loginPage.rememberMe')}</span>

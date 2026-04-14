@@ -12,7 +12,7 @@ import { useNotifications } from '@/features/notifications/hooks/use-notificatio
 
 export function DashboardTopbar({ title, user, onOpenSidebar }) {
   const navigate = useNavigate()
-  const { t } = useTranslation('notifications')
+  const { t, i18n } = useTranslation('notifications')
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const {
     barNotifications,
@@ -28,12 +28,23 @@ export function DashboardTopbar({ title, user, onOpenSidebar }) {
   function handleNotificationSelect(notification) {
     markNotificationAsRead(notification.id)
     setNotificationsOpen(false)
-    navigate(notification.targetPath)
+    if (
+      typeof notification.targetPath === 'string' &&
+      notification.targetPath.startsWith('/')
+    ) {
+      navigate(
+        ROUTE_PATHS.withLocale(notification.targetPath, i18n.resolvedLanguage),
+      )
+    } else {
+      navigate(notification.targetPath)
+    }
   }
 
   function handleViewAllNotifications() {
     setNotificationsOpen(false)
-    navigate(ROUTE_PATHS.notifications)
+    navigate(
+      ROUTE_PATHS.withLocale(ROUTE_PATHS.notifications, i18n.resolvedLanguage),
+    )
   }
 
   return (

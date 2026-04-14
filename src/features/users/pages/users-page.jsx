@@ -11,6 +11,7 @@ import {
   User,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
@@ -144,7 +145,15 @@ function getUsersPaginationItems(currentPage, totalPages) {
   }
 
   if (currentPage >= totalPages - 2) {
-    return [1, 2, 3, 'ellipsis-start', totalPages - 2, totalPages - 1, totalPages]
+    return [
+      1,
+      2,
+      3,
+      'ellipsis-start',
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ]
   }
 
   return [
@@ -184,7 +193,7 @@ function UserRowCheckbox({ label }) {
 
 function UserStatusBadge({ children }) {
   return (
-    <span className="inline-flex items-center justify-end gap-1 rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 pe-[9px] ps-[11px] text-xs leading-[18px] font-medium text-[#402f28]">
+    <span className="inline-flex items-center justify-end gap-1 rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 ps-[11px] pe-[9px] text-xs leading-[18px] font-medium text-[#402f28]">
       <span className="size-1.5 rounded-full bg-[#12b76a]" aria-hidden="true" />
       {children}
     </span>
@@ -272,6 +281,7 @@ function UsersPagination({ currentPage, totalPages, onPageChange }) {
 
 function UsersManagementTable() {
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
   const [currentPage, setCurrentPage] = useState(1)
   const totalPages = Math.ceil(usersRows.length / USERS_PAGE_SIZE)
   const visibleUsersRows = useMemo(() => {
@@ -302,12 +312,21 @@ function UsersManagementTable() {
           <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-center text-xs leading-[18px] font-medium text-[#6d4f3b]">
             {usersRows.length} مستخدم
           </span>
-          <Can allOf={[createPermission(APP_RESOURCES.users, APP_ACTIONS.create)]}>
+          <Can
+            allOf={[createPermission(APP_RESOURCES.users, APP_ACTIONS.create)]}
+          >
             <Button
               type="button"
               dir="ltr"
               size="lg"
-              onClick={() => navigate(ROUTE_PATHS.usersAdd)}
+              onClick={() =>
+                navigate(
+                  ROUTE_PATHS.withLocale(
+                    ROUTE_PATHS.usersAdd,
+                    i18n.resolvedLanguage,
+                  ),
+                )
+              }
               className="ms-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
             >
               <span>اضافة مستخدم</span>
@@ -361,7 +380,10 @@ function UsersManagementTable() {
                 )}
               >
                 <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
-                  <div className="flex items-center justify-end gap-3" dir="ltr">
+                  <div
+                    className="flex items-center justify-end gap-3"
+                    dir="ltr"
+                  >
                     <span className="whitespace-nowrap">{row.fullName}</span>
                     <UserAvatarIcon />
                     <UserRowCheckbox label={`تحديد المستخدم ${row.fullName}`} />
@@ -375,12 +397,21 @@ function UsersManagementTable() {
                   <UserStatusBadge>{row.status}</UserStatusBadge>
                 </td>
                 <td className="px-4">
-                  <div className="flex items-center justify-start gap-0.5" dir="ltr">
+                  <div
+                    className="flex items-center justify-start gap-0.5"
+                    dir="ltr"
+                  >
                     <UserTableAction label={`حذف المستخدم ${row.fullName}`}>
-                      <Trash2 className="size-4 stroke-[1.8]" aria-hidden="true" />
+                      <Trash2
+                        className="size-4 stroke-[1.8]"
+                        aria-hidden="true"
+                      />
                     </UserTableAction>
                     <UserTableAction label={`تعديل المستخدم ${row.fullName}`}>
-                      <Edit className="size-4 stroke-[1.8]" aria-hidden="true" />
+                      <Edit
+                        className="size-4 stroke-[1.8]"
+                        aria-hidden="true"
+                      />
                     </UserTableAction>
                   </div>
                 </td>

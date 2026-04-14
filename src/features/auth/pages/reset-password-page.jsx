@@ -23,7 +23,7 @@ import { getLocalizedAuthErrorMessage } from '@/features/auth/utils/auth-error-m
 export default function ResetPasswordPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { t } = useTranslation('auth')
+  const { t, i18n } = useTranslation('auth')
   const resetPasswordSchema = useMemo(() => createResetPasswordSchema(t), [t])
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -73,7 +73,10 @@ export default function ResetPasswordPage() {
       title: t('resetPasswordFailed'),
       description: t('resetPasswordEmailMissing'),
     })
-    navigate(ROUTE_PATHS.forgotPassword, { replace: true })
+    navigate(
+      ROUTE_PATHS.withLocale(ROUTE_PATHS.forgotPassword, i18n.resolvedLanguage),
+      { replace: true },
+    )
   }, [navigate, resetEmail, t])
 
   const onSubmit = handleSubmit(async ({ password }) => {
@@ -82,7 +85,13 @@ export default function ResetPasswordPage() {
         title: t('resetPasswordFailed'),
         description: t('resetPasswordEmailMissing'),
       })
-      navigate(ROUTE_PATHS.forgotPassword, { replace: true })
+      navigate(
+        ROUTE_PATHS.withLocale(
+          ROUTE_PATHS.forgotPassword,
+          i18n.resolvedLanguage,
+        ),
+        { replace: true },
+      )
       return
     }
 
@@ -107,7 +116,10 @@ export default function ResetPasswordPage() {
         title: t('resetPasswordSuccess'),
         description: t('resetPasswordSuccessDescription'),
       })
-      navigate(ROUTE_PATHS.login, { replace: true })
+      navigate(
+        ROUTE_PATHS.withLocale(ROUTE_PATHS.login, i18n.resolvedLanguage),
+        { replace: true },
+      )
     } catch (error) {
       toast.dismiss(loadingToastId)
       showDashboardErrorToast({

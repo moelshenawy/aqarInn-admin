@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
+import { LocalizedLink } from '@/shared/components/localized-link'
 import { toast } from 'sonner'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
@@ -22,7 +23,7 @@ import { getLocalizedAuthErrorMessage } from '@/features/auth/utils/auth-error-m
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation('auth')
+  const { t, i18n } = useTranslation('auth')
   const forgotPasswordSchema = useMemo(() => createForgotPasswordSchema(t), [t])
   const {
     register,
@@ -56,7 +57,7 @@ export default function ForgotPasswordPage() {
       })
 
       navigate(
-        `${ROUTE_PATHS.resetPassword}?email=${encodeURIComponent(email)}`,
+        `${ROUTE_PATHS.withLocale(ROUTE_PATHS.resetPassword, i18n.resolvedLanguage)}?email=${encodeURIComponent(email)}`,
       )
     } catch (error) {
       toast.dismiss(loadingToastId)
@@ -70,14 +71,14 @@ export default function ForgotPasswordPage() {
   return (
     <AuthCard variant="compact">
       <form className="flex h-full flex-col" onSubmit={onSubmit} noValidate>
-        <div className="flex justify-end">
-          <Link
+        <div className="flex justify-start">
+          <LocalizedLink
             to={ROUTE_PATHS.login}
             aria-label={t('goBackToLogin')}
             className="flex size-8 items-center justify-center rounded-full border border-[#d6cbb2] text-[#6d4f3b] transition-colors hover:bg-[#efe7d8]"
           >
             <ChevronRight className="size-4 stroke-[1.8]" />
-          </Link>
+          </LocalizedLink>
         </div>
 
         <div className="mt-6 space-y-3 text-right">

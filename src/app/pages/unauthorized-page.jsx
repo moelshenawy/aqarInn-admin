@@ -1,5 +1,6 @@
 import { ShieldAlert } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { LocalizedLink } from '@/shared/components/localized-link'
 import { useTranslation } from 'react-i18next'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
@@ -22,7 +23,9 @@ export function UnauthorizedPage() {
         </p>
         <div className="mt-8 flex justify-center">
           <AppButton asChild>
-            <Link to={ROUTE_PATHS.dashboard}>{t('backToDashboard')}</Link>
+            <LocalizedLink to={ROUTE_PATHS.dashboard}>
+              {t('backToDashboard')}
+            </LocalizedLink>
           </AppButton>
         </div>
       </div>

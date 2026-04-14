@@ -84,8 +84,8 @@ export function ConfirmationDialog({
           className={cn(
             'absolute bottom-[33px] flex h-[43px] items-start gap-[15px]',
             dir === 'rtl'
-              ? 'left-[29px] justify-start'
-              : 'right-[29px] flex-row-reverse justify-end',
+              ? 'right-[29px] justify-start'
+              : 'left-[29px] flex-row-reverse justify-end',
           )}
         >
           <button
