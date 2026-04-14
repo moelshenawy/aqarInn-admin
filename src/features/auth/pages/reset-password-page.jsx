@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
   return (
     <AuthCard variant="compact">
       <form className="flex h-full flex-col" onSubmit={onSubmit} noValidate>
-        <div className="space-y-3 text-right">
+        <div className="space-y-3 text-start">
           <h2 className="text-[30px] leading-[38px] font-semibold text-[#402f28]">
             {t('resetPasswordTitle')}
           </h2>

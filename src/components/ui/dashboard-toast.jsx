@@ -64,12 +64,7 @@ export function DashboardToast({
             {title}
           </p>
 
-          <div
-            className={cn(
-              'flex w-full items-center gap-2.5',
-              dir === 'rtl' ? 'justify-end' : 'justify-start',
-            )}
-          >
+          <div className={cn('flex w-full items-center justify-start gap-2.5')}>
             {description ? (
               <p
                 className={cn(

@@ -49,7 +49,7 @@ function DashboardBrand({
         collapsed ? 'justify-center gap-3' : 'justify-between',
       )}
     >
-      <Link
+      <LocalizedLink
         to={ROUTE_PATHS.dashboard}
         aria-label="عقار إن"
         className={cn(
@@ -65,7 +65,7 @@ function DashboardBrand({
             isExpanded ? 'w-auto' : 'w-[33px]',
           )}
         />
-      </Link>
+      </LocalizedLink>
 
       {canCollapse ? (
         <button
@@ -159,6 +159,7 @@ export function DashboardLayout() {
   const matches = useMatches()
   const location = useLocation()
   const { role, isAuthenticated } = useAuth()
+  const { i18n } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
@@ -170,14 +171,27 @@ export function DashboardLayout() {
   )
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTE_PATHS.login} replace />
+    return (
+      <Navigate
+        to={ROUTE_PATHS.withLocale(ROUTE_PATHS.login, i18n.resolvedLanguage)}
+        replace
+      />
+    )
   }
 
   if (
     activeRoute?.handle &&
     !canAccessRoute(role, activeRoute.handle.requiredPermissions)
   ) {
-    return <Navigate to={ROUTE_PATHS.unauthorized} replace />
+    return (
+      <Navigate
+        to={ROUTE_PATHS.withLocale(
+          ROUTE_PATHS.unauthorized,
+          i18n.resolvedLanguage,
+        )}
+        replace
+      />
+    )
   }
 
   const pageTitle =
@@ -199,6 +213,7 @@ export function DashboardLayout() {
       canCollapse
       onToggleCollapse={handleToggleDesktopSidebar}
       onNavigate={() => setSidebarOpen(false)}
+      locale={i18n.resolvedLanguage}
     />
   )
 
@@ -206,6 +221,7 @@ export function DashboardLayout() {
     <DashboardSidebar
       pathname={location.pathname}
       onNavigate={() => setSidebarOpen(false)}
+      locale={i18n.resolvedLanguage}
     />
   )
 

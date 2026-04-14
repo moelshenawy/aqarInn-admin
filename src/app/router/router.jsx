@@ -21,7 +21,9 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to={ROUTE_PATHS.dashboard} replace />,
+            element: (
+              <Navigate to={ROUTE_PATHS.dashboard.replace(/^\//, '')} replace />
+            ),
           },
           ...protectedRoutes,
         ],
@@ -45,7 +47,9 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to={ROUTE_PATHS.dashboard} replace />,
+            element: (
+              <Navigate to={ROUTE_PATHS.dashboard.replace(/^\//, '')} replace />
+            ),
           },
           ...protectedRoutes,
         ],

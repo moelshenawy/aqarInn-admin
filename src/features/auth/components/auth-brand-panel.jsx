@@ -6,6 +6,8 @@ import {
   AUTH_LOGO_SRC,
 } from '@/features/auth/constants/auth-ui'
 import { cn } from '@/lib/utils'
+import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { LocalizedLink } from '@/shared/components/localized-link'
 
 // Helper to get locale from path
 function getLocaleFromPath(pathname) {
@@ -40,9 +42,11 @@ export function AuthBrandPanel({ className }) {
 
   return (
     <section className={cn('auth-brand-panel', className)}>
-      <div className="flex justify-start">
-        <img src={AUTH_LOGO_SRC} alt="Aqar Inn" className="auth-brand-logo" />
-      </div>
+      <LocalizedLink to={ROUTE_PATHS.login} aria-label={t('goBackToLogin')}>
+        <div className="flex justify-start">
+          <img src={AUTH_LOGO_SRC} alt="Aqar Inn" className="auth-brand-logo" />
+        </div>
+      </LocalizedLink>
 
       <div className="auth-brand-copy space-y-[25px]">
         <h1 className="text-[30px] leading-[38px] font-semibold text-[#252b37] md:text-[36px] md:leading-[44px]">

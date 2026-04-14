@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
           </LocalizedLink>
         </div>
 
-        <div className="mt-6 space-y-3 text-right">
+        <div className="mt-6 space-y-3 text-start">
           <h2 className="text-[30px] leading-[38px] font-semibold text-[#402f28]">
             {t('forgotPasswordTitle')}
           </h2>
