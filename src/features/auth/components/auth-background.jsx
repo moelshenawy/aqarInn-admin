@@ -4,14 +4,14 @@ export function AuthBackground({ className }) {
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-y-0 left-0 w-full overflow-hidden lg:w-1/2',
+        'pointer-events-none absolute inset-y-0 end-0 w-full overflow-hidden lg:w-1/2',
         className,
       )}
     >
       <img
-        src={'/assets/imgs/Logo-mark.png'}
+        src="/assets/imgs/Logo-mark.png"
         alt="عقار إن"
-        className="absolute top-0 left-0 h-full w-full object-cover opacity-10"
+        className="auth-background-img absolute start-0 top-0 h-full w-full object-cover opacity-10"
       />
     </div>
   )

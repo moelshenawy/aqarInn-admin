@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
 
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import i18n from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 export function DashboardSidebarItem({
@@ -17,6 +19,24 @@ export function DashboardSidebarItem({
   onNavigate,
 }) {
   const IconComponent = Icon
+  const currentLocale = i18n?.resolvedLanguage === 'en' ? 'en' : 'ar'
+  const effectiveDir = currentLocale === 'en' ? 'ltr' : 'rtl'
+  const tooltipSide = currentLocale === 'ar' ? 'left' : 'right'
+
+  useEffect(() => {
+    if (!collapsed) return
+
+    try {
+      console.log('Tooltip debug:', {
+        effectiveDir,
+        documentDir:
+          typeof document !== 'undefined'
+            ? document.documentElement?.dir
+            : undefined,
+        i18nResolvedLanguage: i18n?.resolvedLanguage,
+      })
+    } catch (e) {}
+  }, [collapsed, effectiveDir])
 
   const className = cn(
     'flex w-full items-center rounded-lg border py-3.5 text-start transition-[padding,gap,background-color,border-color] duration-300 ease-in-out',
@@ -74,7 +94,7 @@ export function DashboardSidebarItem({
   return (
     <Tooltip>
       <TooltipTrigger asChild>{item}</TooltipTrigger>
-      <TooltipContent side="left" sideOffset={12} dir="rtl">
+      <TooltipContent side={tooltipSide} sideOffset={12} dir={effectiveDir}>
         {label}
       </TooltipContent>
     </Tooltip>

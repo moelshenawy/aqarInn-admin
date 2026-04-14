@@ -25,6 +25,14 @@ import opportunityFour from '@/assets/dashboard/opportunity-4.png'
 import opportunityFive from '@/assets/dashboard/opportunity-5.png'
 import sharesDot from '@/assets/dashboard/shares-dot.svg'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { createElement } from 'react'
+
+// Use the public SVG file as a React component via a small wrapper so
+// callers that render `icon` as a component (<item.icon />) continue to work.
+const SettingsIcon = (props) =>
+  // public assets are served from /assets relative to root
+  // spread props so callers can pass className, etc.
+  createElement('img', { src: '/assets/icons/settings.svg', alt: 'الاعدادات', ...props })
 
 export const dashboardBrand = {
   mark: logoMark,
@@ -83,7 +91,7 @@ export const dashboardNavItems = [
 
 export const dashboardSettingsItem = {
   label: 'الاعدادات',
-  icon: Settings2,
+  icon: SettingsIcon,
   disabled: true,
 }
 

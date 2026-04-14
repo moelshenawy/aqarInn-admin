@@ -231,3 +231,11 @@ textarea {
     padding: 84px 41px;
   }
 }
+
+.auth-background-img {
+  transform: none;
+}
+
+body[dir='ltr'] .auth-background-img {
+  transform: scaleX(-1);
+}

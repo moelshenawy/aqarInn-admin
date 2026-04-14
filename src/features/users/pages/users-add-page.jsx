@@ -145,7 +145,7 @@ function UsersAddStatusField({ active, onChange }) {
             onChange={(event) => onChange(event.target.checked)}
             className="peer sr-only"
           />
-          <span className="size-4 rounded-full border border-[#d6cbb2] bg-[#d6cbb2] shadow-[var(--dashboard-shadow)] transition peer-checked:translate-x-4 peer-checked:border-[#402f28] peer-checked:bg-[#402f28]" />
+          <span className="size-4 rounded-full border border-[#d6cbb2] bg-[#d6cbb2] shadow-[var(--dashboard-shadow)] transition peer-checked:-translate-x-4 peer-checked:border-[#402f28] peer-checked:bg-[#402f28]" />
         </span>
       </label>
     </UsersAddFieldShell>
