@@ -32,7 +32,11 @@ import { createElement } from 'react'
 const SettingsIcon = (props) =>
   // public assets are served from /assets relative to root
   // spread props so callers can pass className, etc.
-  createElement('img', { src: '/assets/icons/settings.svg', alt: 'الاعدادات', ...props })
+  createElement('img', {
+    src: '/assets/icons/settings.svg',
+    alt: 'الاعدادات',
+    ...props,
+  })
 
 export const dashboardBrand = {
   mark: logoMark,
