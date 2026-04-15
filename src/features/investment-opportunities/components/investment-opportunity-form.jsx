@@ -35,6 +35,8 @@ export function InvestmentOpportunityForm({
   register,
   onSubmit,
   submitLabel,
+  draftLabel,
+  onDraft,
   cancelLabel,
   onCancel,
 }) {
@@ -45,9 +47,9 @@ export function InvestmentOpportunityForm({
           className="flex flex-wrap items-center justify-start gap-2 text-sm leading-5 font-semibold"
           aria-label="مسار الصفحة"
         >
-          <span className="text-[#ac9063]">{breadcrumbCurrent}</span>
-          <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
           <span className="text-[#6d4f3b]">الفرص الاستثمارية</span>
+          <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
+          <span className="text-[#ac9063]">{breadcrumbCurrent}</span>
         </nav>
 
         <div className="space-y-3">
@@ -282,6 +284,8 @@ export function InvestmentOpportunityForm({
 
       <InvestmentOpportunityFormActions
         submitLabel={submitLabel}
+        draftLabel={draftLabel}
+        onDraft={onDraft}
         cancelLabel={cancelLabel}
         onCancel={onCancel}
       />

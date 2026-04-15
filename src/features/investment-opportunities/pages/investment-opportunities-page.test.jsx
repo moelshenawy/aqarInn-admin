@@ -645,4 +645,41 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(screen.getByRole('button', { name: 'التالي' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'السابق' })).toBeInTheDocument()
   })
+  it('keeps user on add page and shows error toast when saving draft without basic information', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { router } = renderInvestmentOpportunitiesRoute({
+      initialEntries: [ROUTE_PATHS.investmentOpportunityAdd],
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /مسودة|draft/i }))
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(router.state.location.pathname).toBe(
+      ROUTE_PATHS.investmentOpportunityAdd,
+    )
+    expect(await screen.findByText(/المسودة/)).toBeInTheDocument()
+  })
+
+  it('saves draft and redirects to list when basic information is filled', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const { router } = renderInvestmentOpportunitiesRoute({
+      initialEntries: [ROUTE_PATHS.investmentOpportunityAdd],
+    })
+
+    fireEvent.change(document.getElementById('titleAr'), {
+      target: { value: 'مسودة فرصة الرياض' },
+    })
+    fireEvent.change(document.getElementById('titleEn'), {
+      target: { value: 'Riyadh Draft Opportunity' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /مسودة|draft/i }))
+
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(router.state.location.pathname).toBe(
+      ROUTE_PATHS.investmentOpportunities,
+    )
+    expect(await screen.findByText(/كمسودة/)).toBeInTheDocument()
+  })
 })

@@ -94,7 +94,6 @@ export function showDashboardSuccessToast({
   title,
   description,
   actionLabel,
-  duration = Infinity,
 }) {
   return toast.custom(
     (id) => (
@@ -108,7 +107,7 @@ export function showDashboardSuccessToast({
     {
       position: 'bottom-left',
       closeButton: false,
-      duration,
+      duration: 5000,
       unstyled: true,
       className: 'border-0 bg-transparent p-0 shadow-none',
     },
@@ -119,7 +118,6 @@ export function showDashboardErrorToast({
   title,
   description,
   actionLabel,
-  duration = 6000,
 }) {
   return toast.custom(
     (id) => (
@@ -134,7 +132,7 @@ export function showDashboardErrorToast({
     {
       position: 'bottom-left',
       closeButton: false,
-      duration,
+      duration: 5000,
       unstyled: true,
       className: 'border-0 bg-transparent p-0 shadow-none',
     },

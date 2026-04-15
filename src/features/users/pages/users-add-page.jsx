@@ -1,12 +1,19 @@
-import { useState } from 'react'
-import { ChevronDown, EyeOff } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Check, ChevronDown, EyeOff } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { Button } from '@/components/ui/button'
 import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import i18n from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+
+function getToastDirection() {
+  return i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
+}
+
+const dir = getToastDirection()
 
 const addUserSuccessToast = {
   title: 'تم اضافة المستخدم بنجاح',
@@ -15,20 +22,11 @@ const addUserSuccessToast = {
   actionLabel: 'اغلاق',
 }
 
-const initialFormValues = {
-  fullNameAr: '',
-  fullNameEn: '',
-  email: '',
-  mobile: '',
-  role: '',
-  active: false,
-  investmentOpportunity: '',
-}
-
 const roleOptions = [
-  { value: 'operations-manager', label: 'مدير العمليات' },
-  { value: 'customer-service-manager', label: 'مدير خدمة العملاء' },
-  { value: 'investment-analyst', label: 'محلل استثمار عقاري' },
+  { value: 'super-admin', label: 'Super Admin المشرف العام' },
+  { value: 'operation-admin', label: 'Operation Admin مدير العمليات' },
+  { value: 'investment-manager', label: 'Investment Manager مدير استثمار' },
+  { value: 'read-only-viewer', label: 'Read-Only Viewer مشاهد فقط' },
 ]
 
 const investmentOpportunityOptions = [
@@ -42,9 +40,53 @@ const investmentOpportunityOptions = [
   },
 ]
 
+const initialFormValues = {
+  fullNameAr: '',
+  fullNameEn: '',
+  email: '',
+  mobile: '',
+  roles: [],
+  active: false,
+  investmentOpportunities: [],
+}
+
+function normalizeMultiSelectInput(value) {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.length > 0) {
+    return [value]
+  }
+
+  return []
+}
+
+function getInitialFormValues(prefillValues) {
+  if (!prefillValues) {
+    return initialFormValues
+  }
+
+  return {
+    ...initialFormValues,
+    ...prefillValues,
+    roles: normalizeMultiSelectInput(prefillValues.roles ?? prefillValues.role),
+    investmentOpportunities: normalizeMultiSelectInput(
+      prefillValues.investmentOpportunities ??
+        prefillValues.investmentOpportunity,
+    ),
+    active: Boolean(prefillValues.active),
+  }
+}
+
 function UsersAddFieldShell({ id, label, children, className }) {
   return (
-    <div className={cn('flex min-w-0 flex-col items-end gap-3', className)}>
+    <div
+      className={cn(
+        'flex min-w-0 flex-col items-start gap-3 text-start',
+        className,
+      )}
+    >
       <label
         htmlFor={id}
         className="inline-flex items-start justify-end gap-0.5 text-right text-sm leading-5 font-medium text-[#402f28]"
@@ -77,7 +119,7 @@ function UsersAddTextField({
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
           aria-required="true"
-          dir="rtl"
+          dir={dir}
           className="h-[50px] w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-right text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
         />
         <EyeOff
@@ -89,39 +131,123 @@ function UsersAddTextField({
   )
 }
 
-function UsersAddSelectField({
+function UsersAddMultiSelectField({
   id,
   label,
-  value,
+  values,
   onChange,
-  placeholder,
   options,
+  placeholder,
   className,
 }) {
+  const [open, setOpen] = useState(false)
+  const wrapperRef = useRef(null)
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setOpen(false)
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [])
+
+  const selectedLabels = useMemo(
+    () =>
+      options
+        .filter((option) => values.includes(option.value))
+        .map((option) => option.label),
+    [options, values],
+  )
+
+  const summaryText =
+    selectedLabels.length > 0 ? selectedLabels.join('، ') : placeholder
+
+  function toggleValue(nextValue) {
+    if (values.includes(nextValue)) {
+      onChange(values.filter((value) => value !== nextValue))
+      return
+    }
+
+    onChange([...values, nextValue])
+  }
+
   return (
     <UsersAddFieldShell id={id} label={label} className={className}>
-      <div className="relative w-full">
-        <select
+      <div ref={wrapperRef} className="relative w-full">
+        <button
           id={id}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
+          type="button"
           aria-required="true"
-          dir="rtl"
-          className="h-[50px] w-full appearance-none rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-right text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={() => setOpen((current) => !current)}
+          className="flex h-[50px] w-full items-center justify-end rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-right text-sm leading-5 font-medium shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
         >
-          <option value="" disabled>
-            {placeholder}
-          </option>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 stroke-[1.8] text-[#9d7e55]"
-          aria-hidden="true"
-        />
+          <span
+            className={cn(
+              'line-clamp-1 min-w-0 flex-1 text-right',
+              selectedLabels.length > 0 ? 'text-[#402f28]' : 'text-[#bfab85]',
+            )}
+          >
+            {summaryText}
+          </span>
+          <ChevronDown
+            className={cn(
+              'pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 stroke-[1.8] text-[#9d7e55] transition-transform',
+              open && 'rotate-180',
+            )}
+            aria-hidden="true"
+          />
+        </button>
+
+        {open ? (
+          <div
+            role="listbox"
+            aria-multiselectable="true"
+            className="absolute z-20 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-[#d6cbb2] bg-[#f8f3e8] p-1 shadow-[0_12px_24px_rgba(10,13,18,0.08)]"
+          >
+            {options.map((option) => {
+              const isSelected = values.includes(option.value)
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onClick={() => toggleValue(option.value)}
+                  className="flex w-full items-center justify-end gap-2 rounded-md px-3 py-2 text-right text-sm leading-5 text-[#402f28] transition hover:bg-[#eae5d7] focus-visible:bg-[#eae5d7] focus-visible:outline-none"
+                >
+                  <span className="min-w-0 flex-1">{option.label}</span>
+                  <span
+                    className={cn(
+                      'flex size-4 items-center justify-center rounded-[4px] border transition',
+                      isSelected
+                        ? 'border-[#402f28] bg-[#402f28] text-white'
+                        : 'border-[#d6cbb2] bg-transparent text-transparent',
+                    )}
+                  >
+                    <Check className="size-3 stroke-[2.2]" aria-hidden="true" />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        ) : null}
       </div>
     </UsersAddFieldShell>
   )
@@ -154,7 +280,12 @@ function UsersAddStatusField({ active, onChange }) {
 
 export default function UsersAddPage() {
   const navigate = useNavigate()
-  const [formValues, setFormValues] = useState(initialFormValues)
+  const location = useLocation()
+  const prefillValues = location.state?.userFormPrefill
+  const isEditMode = location.state?.mode === 'edit' && Boolean(prefillValues)
+  const [formValues, setFormValues] = useState(() =>
+    getInitialFormValues(prefillValues),
+  )
   const { i18n } = useTranslation()
 
   function updateField(field, value) {
@@ -166,7 +297,16 @@ export default function UsersAddPage() {
 
   function handleSubmit(event) {
     event.preventDefault()
-    showDashboardSuccessToast(addUserSuccessToast)
+    showDashboardSuccessToast(
+      isEditMode
+        ? {
+            title: 'تم تعديل المستخدم بنجاح',
+            description:
+              'تم حفظ بيانات المستخدم المحدثة بنجاح، ويمكنك متابعة صلاحياته من قائمة المستخدمين.',
+            actionLabel: 'اغلاق',
+          }
+        : addUserSuccessToast,
+    )
     navigate(ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage))
   }
 
@@ -185,17 +325,21 @@ export default function UsersAddPage() {
               aria-label="مسار الصفحة"
               className="flex w-full items-start justify-start gap-2 text-sm leading-5 font-semibold whitespace-nowrap"
             >
-              <span className="text-[#ac9063]">إضافة مستخدم جديد</span>
+              <span className="text-[#ac9063]">
+                {isEditMode ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
+              </span>
               <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
               <span className="text-[#6d4f3b]">المستخدمين</span>
             </nav>
 
             <div className="flex w-full flex-col items-start gap-3">
               <h1 className="w-full text-right text-[30px] leading-[38px] font-semibold text-[#181927]">
-                إضافة مستخدم جديد
+                {isEditMode ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
               </h1>
               <p className="w-full text-right text-lg leading-7 font-medium text-[#717680]">
-                قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام
+                {isEditMode
+                  ? 'قم بتحديث بيانات المستخدم ثم احفظ التعديلات.'
+                  : 'قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام'}
               </p>
             </div>
           </header>
@@ -232,25 +376,27 @@ export default function UsersAddPage() {
               placeholder="أدخل بريدًا إلكترونيًا فعالًا"
               type="email"
             />
-            <UsersAddSelectField
+            <UsersAddMultiSelectField
               id="user-role"
               label="الدور"
-              value={formValues.role}
-              onChange={(value) => updateField('role', value)}
-              placeholder="حدد دور أو أكثر يحدد صلاحيات المستخدم داخل النظام"
+              values={formValues.roles}
+              onChange={(value) => updateField('roles', value)}
               options={roleOptions}
+              placeholder="حدد دور أو أكثر يحدد صلاحيات المستخدم داخل النظام"
             />
             <UsersAddStatusField
               active={formValues.active}
               onChange={(value) => updateField('active', value)}
             />
-            <UsersAddSelectField
+            <UsersAddMultiSelectField
               id="user-investment-opportunity"
               label="قائمة الفرص الاستثمارية"
-              value={formValues.investmentOpportunity}
-              onChange={(value) => updateField('investmentOpportunity', value)}
-              placeholder="اختر الفرص الاستثمارية"
+              values={formValues.investmentOpportunities}
+              onChange={(value) =>
+                updateField('investmentOpportunities', value)
+              }
               options={investmentOpportunityOptions}
+              placeholder="اختر الفرص الاستثمارية"
               className="md:col-span-2"
             />
           </div>
@@ -261,7 +407,7 @@ export default function UsersAddPage() {
             type="submit"
             className="h-[47px] w-[176px] rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
           >
-            اضافة المستخدم
+            {isEditMode ? 'حفظ التعديلات' : 'اضافة المستخدم'}
           </Button>
           <Button
             type="button"

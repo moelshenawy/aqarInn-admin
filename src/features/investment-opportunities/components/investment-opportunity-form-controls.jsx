@@ -72,13 +72,14 @@ export function InvestmentOpportunitySectionHeading({ title, className }) {
         className,
       )}
     >
+      <h2 className="text-lg leading-7 font-semibold text-[#181927]">
+        {title}
+      </h2>
+
       <ChevronUp
         className="size-5 stroke-[2] text-[#181927]"
         aria-hidden="true"
       />
-      <h2 className="text-lg leading-7 font-semibold text-[#181927]">
-        {title}
-      </h2>
     </div>
   )
 }
@@ -311,6 +312,8 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
 
 export function InvestmentOpportunityFormActions({
   submitLabel,
+  draftLabel,
+  onDraft,
   cancelLabel,
   onCancel,
 }) {
@@ -322,6 +325,15 @@ export function InvestmentOpportunityFormActions({
       >
         {submitLabel}
       </button>
+      {onDraft && draftLabel ? (
+        <button
+          type="button"
+          onClick={onDraft}
+          className="h-[47px] w-[176px] rounded-lg bg-[#f1ead8] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#e5dac2] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+        >
+          {draftLabel}
+        </button>
+      ) : null}
       <button
         type="button"
         onClick={onCancel}

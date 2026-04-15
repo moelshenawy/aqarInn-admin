@@ -13,10 +13,7 @@ function UserAvatarIcon({ className, iconClassName }) {
         className,
       )}
     >
-      <User
-        className={cn('stroke-[1.8]', iconClassName)}
-        aria-hidden="true"
-      />
+      <User className={cn('stroke-[1.8]', iconClassName)} aria-hidden="true" />
     </span>
   )
 }
@@ -55,9 +52,15 @@ function DistributionSummary({ details }) {
 
 function ExecutorDetails({ details }) {
   return (
-    <section className="flex w-full flex-col gap-2.5" aria-labelledby="executor-details-title">
-      <header className="flex w-full items-center justify-end gap-2.5 py-2">
-        <ChevronUp className="size-5 stroke-[1.8] text-[#181927]" aria-hidden="true" />
+    <section
+      className="flex w-full flex-col gap-2.5"
+      aria-labelledby="executor-details-title"
+    >
+      <header className="flex w-full items-center justify-start gap-2.5 py-2">
+        <ChevronUp
+          className="size-5 stroke-[1.8] text-[#181927]"
+          aria-hidden="true"
+        />
         <h3
           id="executor-details-title"
           className="text-lg leading-7 font-semibold text-[#181927]"
@@ -67,14 +70,9 @@ function ExecutorDetails({ details }) {
       </header>
 
       <div className="flex w-full items-center justify-between">
-        <div className="flex flex-col items-start gap-[13px] text-start font-semibold">
-          <span className="text-sm leading-5 text-[#ac9063]">رقم المستخدم</span>
-          <span className="w-[147px] text-lg leading-7 text-[#402f28]">
-            {details.executor.userId}
-          </span>
-        </div>
-
         <div className="flex items-center justify-end gap-[22px]">
+          <UserAvatarIcon className="size-[82px]" iconClassName="size-10" />
+
           <div className="flex w-[345px] flex-col items-end gap-2 text-right text-base leading-6 font-bold">
             <span className="w-full text-[#181927]">
               {details.executor.nameAr}
@@ -83,7 +81,12 @@ function ExecutorDetails({ details }) {
               {details.executor.nameEn}
             </span>
           </div>
-          <UserAvatarIcon className="size-[82px]" iconClassName="size-10" />
+        </div>
+        <div className="flex flex-col items-start gap-[13px] text-start font-semibold">
+          <span className="text-sm leading-5 text-[#ac9063]">رقم المستخدم</span>
+          <span className="w-[147px] text-lg leading-7 text-[#402f28]">
+            {details.executor.userId}
+          </span>
         </div>
       </div>
     </section>
@@ -98,12 +101,12 @@ function InvestorsTable({ details }) {
     >
       <header className="flex min-h-[71px] items-start border-b border-[#d6cbb2] bg-[#eae5d7] px-6 pt-5">
         <div className="flex w-full items-center justify-end gap-2">
-          <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-xs leading-[18px] font-semibold text-[#5c4437]">
-            {details.investorsCountLabel}
-          </span>
           <h3 className="min-w-0 flex-1 text-right text-lg leading-7 font-semibold text-[#181927]">
             {details.investorsTitle}
           </h3>
+          <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-xs leading-[18px] font-semibold text-[#5c4437]">
+            {details.investorsCountLabel}
+          </span>
         </div>
       </header>
 
@@ -132,12 +135,12 @@ function InvestorsTable({ details }) {
                 className="h-[72px] border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0"
               >
                 <td className="px-6 font-medium text-[#181927]">
-                  <div className="flex items-center justify-end gap-3">
-                    <span>{investor.fullName}</span>
+                  <div className="flex items-center justify-start gap-3">
                     <UserAvatarIcon
                       className="size-10 border border-[#eae5d7] bg-[#f8f3e8]"
                       iconClassName="size-5"
                     />
+                    <span>{investor.fullName}</span>
                   </div>
                 </td>
                 <td className="px-6 font-normal">{investor.nationalId}</td>
@@ -174,11 +177,11 @@ export function InvestmentOpportunityDistributionDetailsModal({
       <section className="flex w-full flex-col items-start gap-[30px]">
         <div className="flex w-full flex-col items-start gap-5">
           <header className="flex w-full items-center justify-end py-5">
-            <h2 className="min-w-0 flex-1 text-right text-2xl leading-8 font-semibold text-[#181927]">
+            <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]">
               {details.title}
             </h2>
           </header>
-          <p className="w-full text-right text-lg leading-7 font-semibold text-[#6d4f3b]">
+          <p className="w-full text-start text-lg leading-7 font-semibold text-[#6d4f3b]">
             {details.description}
           </p>
         </div>

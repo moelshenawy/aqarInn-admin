@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowDown,
   ArrowLeft,
@@ -13,8 +13,12 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
+import {
+  showDashboardErrorToast,
+  showDashboardSuccessToast,
+} from '@/components/ui/dashboard-toast'
+import { Button } from '@/components/ui/button'
 import { Can } from '@/lib/permissions/can'
 import {
   APP_ACTIONS,
@@ -22,9 +26,92 @@ import {
   createPermission,
 } from '@/lib/permissions/constants'
 import { cn } from '@/lib/utils'
+import { UserDetailsModal } from '@/features/users/components/user-details-modal'
+import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const USERS_PAGE_SIZE = 10
 const TOTAL_USERS = 100
+
+const usersCopy = {
+  ar: {
+    tableRegionLabel: 'جميع المستخدمين',
+    tableTitle: 'جميع المستخدمين',
+    usersCountSuffix: 'مستخدم',
+    addUser: 'اضافة مستخدم',
+    fullNameHeader: 'الاسم بالكامل',
+    selectAllUsers: 'تحديد كل المستخدمين',
+    identifierHeader: 'الرقم التعريفي',
+    roleHeader: 'الدور الوظيفي',
+    emailHeader: 'عنوان البريد الإلكتروني',
+    phoneHeader: 'رقم الهاتف',
+    statusHeader: 'الحالة',
+    actionsHeader: 'الإجراءات',
+    selectUser: 'تحديد المستخدم',
+    deleteUser: 'حذف المستخدم',
+    editUser: 'تعديل المستخدم',
+    paginationLabel: 'ترقيم صفحات المستخدمين',
+    previousPage: 'السابق',
+    nextPage: 'التالي',
+    deleteDialog: {
+      title: 'حذف المستخدم',
+      description:
+        'هل أنت متأكد من حذف المستخدم؟ لا يمكن التراجع عن هذا الإجراء.',
+      confirm: 'حذف',
+      cancel: 'الغاء',
+      close: 'إغلاق النافذة',
+    },
+    toasts: {
+      deletedTitle: 'تم حذف المستخدم بنجاح',
+      deletedDescription: 'تم حذف المستخدم من قائمة المستخدمين النشطين.',
+      fixedSuperAdminCannotDeleteTitle: 'لا يمكن حذف السوبر أدمن الثابت',
+      fixedSuperAdminCannotDeleteDescription:
+        'هذا المستخدم أساسي في النظام ولا يمكن حذفه.',
+      systemUserCannotDeleteTitle: 'لا يمكن حذف المستخدم الحرج',
+      systemUserCannotDeleteDescription:
+        'هذا المستخدم مرتبط بمهام نظامية ولا يمكن حذفه.',
+      actionLabel: 'إغلاق',
+    },
+  },
+  en: {
+    tableRegionLabel: 'All users',
+    tableTitle: 'All users',
+    usersCountSuffix: 'users',
+    addUser: 'Add user',
+    fullNameHeader: 'Full name',
+    selectAllUsers: 'Select all users',
+    identifierHeader: 'Identifier',
+    roleHeader: 'Role',
+    emailHeader: 'Email',
+    phoneHeader: 'Phone number',
+    statusHeader: 'Status',
+    actionsHeader: 'Actions',
+    selectUser: 'Select user',
+    deleteUser: 'Delete user',
+    editUser: 'Edit user',
+    paginationLabel: 'Users pagination',
+    previousPage: 'Previous',
+    nextPage: 'Next',
+    deleteDialog: {
+      title: 'Delete user',
+      description:
+        'Are you sure you want to delete this user? This action cannot be undone.',
+      confirm: 'Delete',
+      cancel: 'Cancel',
+      close: 'Close dialog',
+    },
+    toasts: {
+      deletedTitle: 'User deleted successfully',
+      deletedDescription: 'The user was removed from the active users list.',
+      fixedSuperAdminCannotDeleteTitle: 'Fixed super admin cannot be deleted',
+      fixedSuperAdminCannotDeleteDescription:
+        'This account is protected and cannot be deleted.',
+      systemUserCannotDeleteTitle: 'System user cannot be deleted',
+      systemUserCannotDeleteDescription:
+        'This account is critical for system operations and cannot be deleted.',
+      actionLabel: 'Close',
+    },
+  },
+}
 
 const baseUsersRows = [
   {
@@ -35,6 +122,7 @@ const baseUsersRows = [
     email: 'phoenix@AqarInn',
     phone: '+966 55 555 5555',
     status: 'نشط',
+    isFixedSuperAdmin: true,
   },
   {
     id: 'user-2',
@@ -44,6 +132,7 @@ const baseUsersRows = [
     email: 'phoenix@AqarInn',
     phone: '+966 55 555 5555',
     status: 'نشط',
+    isSystemUser: true,
   },
   {
     id: 'user-3',
@@ -132,8 +221,131 @@ const usersRows = Array.from({ length: TOTAL_USERS }, (_, index) => {
         ? baseRow.identifier
         : `AQIN${String(rowNumber).padStart(3, '0')}`,
     highlighted: rowNumber % USERS_PAGE_SIZE === 3,
+    isFixedSuperAdmin: baseRow.isFixedSuperAdmin ?? false,
+    isSystemUser: baseRow.isSystemUser ?? false,
   }
 })
+
+const roleLabelToValue = {
+  'مدير العمليات': 'operation-admin',
+  'مدير خدمة العملاء': 'operation-admin',
+  'محلل استثمار عقاري': 'investment-manager',
+}
+
+const mockEnglishNamesByBaseUserId = {
+  'user-1': 'Abdulaziz Ahmed Salem Alhashmi',
+  'user-2': 'Laila Hassan Ali Alghamdi',
+  'user-3': 'Reem Abdulrahman Saud Albalawi',
+  'user-4': 'Mona Faisal Hamad Alsobaii',
+  'user-5': 'Abeer Saad Mubarak Aldosari',
+  'user-6': 'Noura Khaled Fahad Alruwaili',
+  'user-7': 'Fahad Abdullah Mubarak Alotaibi',
+  'user-8': 'Mohammed Ibrahim Hassan Alasiri',
+  'user-9': 'Salem Ali Mohammed Alnasser',
+  'user-10': 'Hind Talal Abdulaziz Alotaibi',
+}
+
+const mockSecondaryRoleByBaseUserId = {
+  'user-1': 'أخصائي قانوني عقاري',
+  'user-2': 'مدير علاقات المستثمرين',
+  'user-3': 'مدير العمليات',
+  'user-4': 'مستشار تطوير أعمال',
+  'user-5': 'مشرف قنوات البيع',
+  'user-6': 'أخصائي تجربة العميل',
+  'user-7': 'محلل امتثال',
+  'user-8': 'أخصائي تقارير مالية',
+  'user-9': 'مشرف جودة الاستثمار',
+  'user-10': 'أخصائي تنفيذ المشاريع',
+}
+
+const defaultRecentActivities = [
+  {
+    date: '01 يناير 2025',
+    title: 'إنشاء حساب جديد للمستخدم',
+    description:
+      'تم إدخال البيانات الأساسية (الاسم بالعربي والإنجليزي، رقم الجوال، البريد الإلكتروني) وتفعيل الحساب بشكل أولي مع تعيين الإعدادات الافتراضية للإشعارات.',
+    icon: 'account',
+  },
+  {
+    date: '01 يناير 2025',
+    title: 'عرض تفاصيل فرصة استثمارية',
+    description:
+      'قام المستخدم بفتح تفاصيل الفرصة الاستثمارية رقم RES-RUH-001 وراجع البيانات الأساسية بهدف تقييم إمكانية الدخول في الاستثمار.',
+    icon: 'opportunity',
+  },
+  {
+    date: '01 يناير 2025',
+    title: 'البحث عن فرص في مدينة محددة',
+    description:
+      'استخدم المستخدم خانة البحث عن الفرص في مدينة الرياض مع تطبيق فلتر الحالة المنشورة فقط لتسهيل المقارنة بين الفرص المتاحة.',
+    icon: 'search',
+  },
+  {
+    date: '01 يناير 2025',
+    title: 'إضافة فرصة إلى قائمة المتابعة',
+    description:
+      'أضاف المستخدم الفرصة الاستثمارية RES-JED-012 إلى قائمة المتابعة الخاصة به لسهولة الرجوع إليها لاحقًا.',
+    icon: 'watchlist',
+  },
+  {
+    date: '01 يناير 2025',
+    title: 'إنشاء طلب استثمار جديد',
+    description:
+      'قام المستخدم بإنشاء طلب استثمار جديد وتم تسجيل الطلب بحالة قيد المراجعة وإرسال إشعار داخلي بالاستلام.',
+    icon: 'notification',
+  },
+]
+
+const recentActivitiesByBaseUserId = {
+  'user-2': [
+    ...defaultRecentActivities.slice(0, 2),
+    {
+      date: '03 يناير 2025',
+      title: 'تحديث صلاحيات مستخدم',
+      description:
+        'تم تعديل صلاحيات أحد مستخدمي العمليات وإعادة توزيع نطاق الوصول بما يتوافق مع السياسات الداخلية.',
+      icon: 'account',
+    },
+    ...defaultRecentActivities.slice(3),
+  ],
+  'user-3': [
+    {
+      date: '05 يناير 2025',
+      title: 'مراجعة تقرير فرص جديدة',
+      description:
+        'راجع المستخدم تقرير الفرص الاستثمارية الجديدة وقام بترتيب النتائج حسب العائد المتوقع.',
+      icon: 'opportunity',
+    },
+    ...defaultRecentActivities.slice(1),
+  ],
+}
+
+function getBaseUserId(rowId) {
+  return `user-${((Number.parseInt(rowId.split('-')[1], 10) - 1) % 10) + 1}`
+}
+
+function buildEditFormPrefill(row) {
+  const baseUserId = getBaseUserId(row.id)
+  const mappedRole = roleLabelToValue[row.role] ?? 'operation-admin'
+  const mappedRoles = row.isFixedSuperAdmin
+    ? ['super-admin', mappedRole]
+    : [mappedRole]
+
+  return {
+    fullNameAr: row.fullName,
+    fullNameEn:
+      mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name',
+    email: row.email,
+    mobile: row.phone,
+    roles: mappedRoles,
+    active: row.status === 'نشط',
+    investmentOpportunities: [
+      Number.parseInt(row.id.split('-')[1], 10) % 2 === 0
+        ? 'investment-jeddah-023'
+        : 'investment-riyadh-001',
+    ],
+  }
+}
 
 function getUsersPaginationItems(currentPage, totalPages) {
   if (totalPages <= 7) {
@@ -178,7 +390,12 @@ function UserAvatarIcon() {
 function UserRowCheckbox({ label }) {
   return (
     <label className="relative inline-flex size-5 shrink-0 cursor-pointer items-center justify-center">
-      <input type="checkbox" aria-label={label} className="peer sr-only" />
+      <input
+        type="checkbox"
+        aria-label={label}
+        className="peer sr-only"
+        onClick={(event) => event.stopPropagation()}
+      />
       <span
         className="pointer-events-none size-5 rounded-[6px] border border-[#d6cbb2] bg-transparent transition peer-checked:border-[#402f28] peer-checked:bg-[#402f28] peer-focus-visible:ring-3 peer-focus-visible:ring-[#9d7e55]/25"
         aria-hidden="true"
@@ -200,13 +417,14 @@ function UserStatusBadge({ children }) {
   )
 }
 
-function UserTableAction({ label, children }) {
+function UserTableAction({ label, onClick, children }) {
   return (
     <Button
       type="button"
       variant="ghost"
       size="icon-xs"
       aria-label={label}
+      onClick={onClick}
       className="size-7 rounded-md text-[#6d4f3b] hover:bg-[#eae5d7] hover:text-[#402f28] focus-visible:ring-[#9d7e55]/25"
     >
       {children}
@@ -214,12 +432,12 @@ function UserTableAction({ label, children }) {
   )
 }
 
-function UsersPagination({ currentPage, totalPages, onPageChange }) {
+function UsersPagination({ copy, currentPage, totalPages, onPageChange }) {
   const paginationItems = getUsersPaginationItems(currentPage, totalPages)
 
   return (
     <nav
-      aria-label="ترقيم صفحات المستخدمين"
+      aria-label={copy.paginationLabel}
       className="flex min-h-[104px] items-center justify-between gap-4 border-t border-[#eae5d7] px-[30px] py-3"
     >
       <button
@@ -228,7 +446,7 @@ function UsersPagination({ currentPage, totalPages, onPageChange }) {
         onClick={() => onPageChange(currentPage - 1)}
         className="inline-flex items-center gap-1.5 text-sm leading-5 font-semibold text-[#402f28] transition disabled:cursor-not-allowed disabled:opacity-45"
       >
-        <span>السابق</span>
+        <span>{copy.previousPage}</span>
         <ArrowLeft className="size-4 stroke-[1.9]" aria-hidden="true" />
       </button>
 
@@ -273,7 +491,7 @@ function UsersPagination({ currentPage, totalPages, onPageChange }) {
         className="inline-flex items-center gap-1.5 text-sm leading-5 font-semibold text-[#402f28] transition disabled:cursor-not-allowed disabled:opacity-45"
       >
         <ArrowRight className="size-4 stroke-[1.9]" aria-hidden="true" />
-        <span>التالي</span>
+        <span>{copy.nextPage}</span>
       </button>
     </nav>
   )
@@ -283,21 +501,130 @@ function UsersManagementTable() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const [currentPage, setCurrentPage] = useState(1)
-  const totalPages = Math.ceil(usersRows.length / USERS_PAGE_SIZE)
+  const [deletedUserIds, setDeletedUserIds] = useState([])
+  const [pendingDeleteUser, setPendingDeleteUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const isArabic = i18n.resolvedLanguage !== 'en'
+  const copy = isArabic ? usersCopy.ar : usersCopy.en
+
+  const activeUsersRows = useMemo(
+    () => usersRows.filter((row) => !deletedUserIds.includes(row.id)),
+    [deletedUserIds],
+  )
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(activeUsersRows.length / USERS_PAGE_SIZE),
+  )
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
   const visibleUsersRows = useMemo(() => {
     const startIndex = (currentPage - 1) * USERS_PAGE_SIZE
 
-    return usersRows.slice(startIndex, startIndex + USERS_PAGE_SIZE)
-  }, [currentPage])
+    return activeUsersRows.slice(startIndex, startIndex + USERS_PAGE_SIZE)
+  }, [activeUsersRows, currentPage])
 
   function handlePageChange(nextPage) {
     setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages))
   }
 
+  function handleEditUser(row) {
+    navigate(
+      ROUTE_PATHS.withLocale(ROUTE_PATHS.usersAdd, i18n.resolvedLanguage),
+      {
+        state: {
+          mode: 'edit',
+          userFormPrefill: buildEditFormPrefill(row),
+        },
+      },
+    )
+  }
+
+  function handleOpenUserDetails(row) {
+    setSelectedUser(row)
+  }
+
+  function handleDeleteUser(event, row) {
+    event.stopPropagation()
+    setPendingDeleteUser(row)
+  }
+
+  function handleEditUserFromTable(event, row) {
+    event.stopPropagation()
+    handleEditUser(row)
+  }
+
+  function handleDeleteFromDetails() {
+    if (!selectedUser) {
+      return
+    }
+
+    setPendingDeleteUser(selectedUser)
+    setSelectedUser(null)
+  }
+
+  function handleEditFromDetails() {
+    if (!selectedUser) {
+      return
+    }
+
+    const userToEdit = selectedUser
+    setSelectedUser(null)
+    handleEditUser(userToEdit)
+  }
+
+  function showDeleteBlockedToast(title, description) {
+    showDashboardErrorToast({
+      title,
+      description,
+      actionLabel: copy.toasts.actionLabel,
+    })
+  }
+
+  function handleConfirmDelete() {
+    if (!pendingDeleteUser) {
+      return
+    }
+
+    if (pendingDeleteUser.isFixedSuperAdmin) {
+      showDeleteBlockedToast(
+        copy.toasts.fixedSuperAdminCannotDeleteTitle,
+        copy.toasts.fixedSuperAdminCannotDeleteDescription,
+      )
+      setPendingDeleteUser(null)
+      return
+    }
+
+    if (pendingDeleteUser.isSystemUser) {
+      showDeleteBlockedToast(
+        copy.toasts.systemUserCannotDeleteTitle,
+        copy.toasts.systemUserCannotDeleteDescription,
+      )
+      setPendingDeleteUser(null)
+      return
+    }
+
+    setDeletedUserIds((prev) => [...prev, pendingDeleteUser.id])
+    if (selectedUser?.id === pendingDeleteUser.id) {
+      setSelectedUser(null)
+    }
+    setPendingDeleteUser(null)
+    showDashboardSuccessToast({
+      title: copy.toasts.deletedTitle,
+      description: copy.toasts.deletedDescription,
+      actionLabel: copy.toasts.actionLabel,
+    })
+  }
+
   return (
     <section
-      dir="rtl"
-      aria-label="جميع المستخدمين"
+      dir={isArabic ? 'rtl' : 'ltr'}
+      aria-label={copy.tableRegionLabel}
       className="overflow-hidden rounded-xl border border-[#eae5d7] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]"
     >
       <header className="flex h-[77px] items-start border-b border-[#eae5d7] bg-[#eae5d7] px-6 pt-5">
@@ -307,10 +634,10 @@ function UsersManagementTable() {
             aria-hidden="true"
           />
           <h1 className="text-lg leading-7 font-semibold text-[#181927]">
-            جميع المستخدمين
+            {copy.tableTitle}
           </h1>
           <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-center text-xs leading-[18px] font-medium text-[#6d4f3b]">
-            {usersRows.length} مستخدم
+            {activeUsersRows.length} {copy.usersCountSuffix}
           </span>
           <Can
             allOf={[createPermission(APP_RESOURCES.users, APP_ACTIONS.create)]}
@@ -327,9 +654,9 @@ function UsersManagementTable() {
                   ),
                 )
               }
-              className="ms-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
+              className="me-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
             >
-              <span>اضافة مستخدم</span>
+              <span>{copy.addUser}</span>
               <span className="flex size-5 items-center justify-center rounded-full bg-[#f8f3e8] text-[#402f28]">
                 <Plus className="size-3.5 stroke-[2.4]" aria-hidden="true" />
               </span>
@@ -353,86 +680,155 @@ function UsersManagementTable() {
             <tr className="h-11 border-b border-[#eae5d7] bg-[#f8f3e8] text-xs leading-[18px] font-bold text-[#5c4437]">
               <th className="px-6 font-bold">
                 <div className="flex items-center justify-end gap-3" dir="ltr">
-                  <span className="whitespace-nowrap">الاسم بالكامل</span>
-                  <UserRowCheckbox label="تحديد كل المستخدمين" />
+                  <span className="whitespace-nowrap">
+                    {copy.fullNameHeader}
+                  </span>
+                  <UserRowCheckbox label={copy.selectAllUsers} />
                 </div>
               </th>
-              <th className="px-6 font-bold">الرقم التعريفي</th>
-              <th className="px-6 font-bold">الدور الوظيفي</th>
-              <th className="px-6 font-bold">عنوان البريد الإلكتروني</th>
-              <th className="px-6 font-bold">رقم الهاتف</th>
+              <th className="px-6 font-bold">{copy.identifierHeader}</th>
+              <th className="px-6 font-bold">{copy.roleHeader}</th>
+              <th className="px-6 font-bold">{copy.emailHeader}</th>
+              <th className="px-6 font-bold">{copy.phoneHeader}</th>
               <th className="px-6 font-bold">
                 <div className="flex items-center justify-end gap-1">
-                  <span>الحالة</span>
+                  <span>{copy.statusHeader}</span>
                   <ArrowDown className="size-3 stroke-[2]" aria-hidden="true" />
                 </div>
               </th>
-              <th className="px-4 font-bold" aria-label="الإجراءات" />
+              <th className="px-4 font-bold" aria-label={copy.actionsHeader} />
             </tr>
           </thead>
           <tbody>
-            {visibleUsersRows.map((row) => (
-              <tr
-                key={row.id}
-                className={cn(
-                  'h-[72px] border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0',
-                  row.highlighted && 'bg-[#eae5d7]',
-                )}
-              >
-                <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
-                  <div
-                    className="flex items-center justify-end gap-3"
-                    dir="ltr"
-                  >
-                    <span className="whitespace-nowrap">{row.fullName}</span>
-                    <UserAvatarIcon />
-                    <UserRowCheckbox label={`تحديد المستخدم ${row.fullName}`} />
-                  </div>
-                </td>
-                <td className="px-6 font-normal">{row.identifier}</td>
-                <td className="px-6 font-medium">{row.role}</td>
-                <td className="px-6 font-normal">{row.email}</td>
-                <td className="px-6 font-normal">{row.phone}</td>
-                <td className="px-6">
-                  <UserStatusBadge>{row.status}</UserStatusBadge>
-                </td>
-                <td className="px-4">
-                  <div
-                    className="flex items-center justify-start gap-0.5"
-                    dir="ltr"
-                  >
-                    <UserTableAction label={`حذف المستخدم ${row.fullName}`}>
-                      <Trash2
-                        className="size-4 stroke-[1.8]"
-                        aria-hidden="true"
+            {visibleUsersRows.map((row) => {
+              const baseUserId = getBaseUserId(row.id)
+              const rowWithDetails = {
+                ...row,
+                fullNameEn:
+                  mockEnglishNamesByBaseUserId[baseUserId] ??
+                  'Generated User Name',
+                secondaryRole: mockSecondaryRoleByBaseUserId[baseUserId],
+                activities:
+                  recentActivitiesByBaseUserId[baseUserId] ??
+                  defaultRecentActivities,
+              }
+
+              return (
+                <tr
+                  key={row.id}
+                  className={cn(
+                    'h-[72px] cursor-pointer border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0',
+                    row.highlighted && 'bg-[#eae5d7]',
+                  )}
+                  onClick={() => handleOpenUserDetails(rowWithDetails)}
+                >
+                  <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
+                    <div
+                      className="flex items-center justify-end gap-3"
+                      dir="ltr"
+                    >
+                      <span className="whitespace-nowrap">{row.fullName}</span>
+                      <UserAvatarIcon />
+                      <UserRowCheckbox
+                        label={`${copy.selectUser} ${row.fullName}`}
                       />
-                    </UserTableAction>
-                    <UserTableAction label={`تعديل المستخدم ${row.fullName}`}>
-                      <Edit
-                        className="size-4 stroke-[1.8]"
-                        aria-hidden="true"
-                      />
-                    </UserTableAction>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    </div>
+                  </td>
+                  <td className="px-6 font-normal">{row.identifier}</td>
+                  <td className="px-6 font-medium">{row.role}</td>
+                  <td className="px-6 font-normal">{row.email}</td>
+                  <td className="px-6 font-normal">{row.phone}</td>
+                  <td className="px-6">
+                    <UserStatusBadge>{row.status}</UserStatusBadge>
+                  </td>
+                  <td className="px-4">
+                    <Can
+                      allOf={[
+                        createPermission(APP_RESOURCES.users, APP_ACTIONS.edit),
+                      ]}
+                    >
+                      <div
+                        className="flex items-center justify-start gap-0.5"
+                        dir="ltr"
+                      >
+                        <UserTableAction
+                          label={`${copy.deleteUser} ${row.fullName}`}
+                          onClick={(event) =>
+                            handleDeleteUser(event, rowWithDetails)
+                          }
+                        >
+                          <Trash2
+                            className="size-4 stroke-[1.8]"
+                            aria-hidden="true"
+                          />
+                        </UserTableAction>
+                        <UserTableAction
+                          label={`${copy.editUser} ${row.fullName}`}
+                          onClick={(event) =>
+                            handleEditUserFromTable(event, rowWithDetails)
+                          }
+                        >
+                          <Edit
+                            className="size-4 stroke-[1.8]"
+                            aria-hidden="true"
+                          />
+                        </UserTableAction>
+                      </div>
+                    </Can>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
 
       <UsersPagination
+        copy={copy}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
+      />
+
+      <ConfirmationDialog
+        open={Boolean(pendingDeleteUser)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setPendingDeleteUser(null)
+          }
+        }}
+        title={copy.deleteDialog.title}
+        description={copy.deleteDialog.description}
+        confirmLabel={copy.deleteDialog.confirm}
+        cancelLabel={copy.deleteDialog.cancel}
+        closeLabel={copy.deleteDialog.close}
+        confirmVariant="destructive"
+        dir={isArabic ? 'rtl' : 'ltr'}
+        onConfirm={handleConfirmDelete}
+      />
+
+      <UserDetailsModal
+        open={Boolean(selectedUser)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setSelectedUser(null)
+          }
+        }}
+        user={selectedUser}
+        onEdit={handleEditFromDetails}
+        onDelete={handleDeleteFromDetails}
+        isArabic={isArabic}
       />
     </section>
   )
 }
 
 export default function UsersPage() {
+  const { i18n } = useTranslation()
+  const isArabic = i18n.resolvedLanguage !== 'en'
+
   return (
-    <div className="-mt-[17px]" dir="rtl">
+    <div className="-mt-[17px]" dir={isArabic ? 'rtl' : 'ltr'}>
       <UsersManagementTable />
     </div>
   )

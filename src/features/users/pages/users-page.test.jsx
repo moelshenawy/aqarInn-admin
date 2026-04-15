@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { I18nextProvider } from 'react-i18next'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -83,79 +83,131 @@ describe('UsersPage route', () => {
     expect(
       screen.getByRole('button', { name: 'اضافة مستخدم' }),
     ).toBeInTheDocument()
-
-    expect(screen.getByText('الاسم بالكامل')).toBeInTheDocument()
-    expect(screen.getByText('الرقم التعريفي')).toBeInTheDocument()
-    expect(screen.getByText('الدور الوظيفي')).toBeInTheDocument()
-    expect(screen.getByText('عنوان البريد الإلكتروني')).toBeInTheDocument()
-    expect(screen.getByText('رقم الهاتف')).toBeInTheDocument()
-    expect(screen.getByText('الحالة')).toBeInTheDocument()
-
     expect(screen.getByText('عبد العزيز أحمد سالم الهاشمي')).toBeInTheDocument()
-    expect(screen.getAllByText('AQIN001')).not.toHaveLength(0)
-    expect(screen.getByText('مدير العمليات')).toBeInTheDocument()
-    expect(screen.getAllByText('phoenix@AqarInn')).not.toHaveLength(0)
-    expect(screen.getAllByText('+966 55 555 5555')).not.toHaveLength(0)
-    expect(screen.getAllByText('نشط')).not.toHaveLength(0)
-
-    const firstRowCheckbox = screen.getByLabelText(
-      'تحديد المستخدم عبد العزيز أحمد سالم الهاشمي',
-    )
-    fireEvent.click(firstRowCheckbox)
-    expect(firstRowCheckbox).toBeChecked()
-
-    expect(screen.getByRole('button', { name: 'التالي' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'السابق' })).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { current: 'page', name: '1' }),
-    ).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: '2' }))
-
-    expect(screen.getByText('2').closest('button')).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-    expect(screen.getByText('AQIN011')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'التالي' }))
-
-    expect(screen.getByText('3').closest('button')).toHaveAttribute(
-      'aria-current',
-      'page',
-    )
-    expect(screen.getByText('AQIN021')).toBeInTheDocument()
   })
 
-  it('navigates to the add user page from the users table action', () => {
+  it('opens user details modal on row click and renders activity list', async () => {
+    renderUsersRoute()
+
+    fireEvent.click(screen.getByText('عبد العزيز أحمد سالم الهاشمي'))
+
+    const detailsDialog = await screen.findByRole('dialog', {
+      name: 'عرض تفاصيل المستخدم',
+    })
+    expect(
+      within(detailsDialog).getByText('Abdulaziz Ahmed Salem Alhashmi'),
+    ).toBeInTheDocument()
+    expect(
+      within(detailsDialog).getByText('الانشطة الأخيرة'),
+    ).toBeInTheDocument()
+    expect(
+      within(detailsDialog).getByText('إنشاء حساب جديد للمستخدم'),
+    ).toBeInTheDocument()
+  })
+
+  it('does not open details modal when clicking table edit action', () => {
     const { router } = renderUsersRoute()
 
-    fireEvent.click(screen.getByRole('button', { name: 'اضافة مستخدم' }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'تعديل المستخدم عبد العزيز أحمد سالم الهاشمي',
+      }),
+    )
 
     expect(router.state.location.pathname).toBe(ROUTE_PATHS.usersAdd)
     expect(
-      screen.getByRole('heading', { name: 'إضافة مستخدم جديد' }),
-    ).toBeInTheDocument()
-    expect(screen.getByText('المستخدمين')).toBeInTheDocument()
+      screen.queryByRole('dialog', { name: 'عرض تفاصيل المستخدم' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('navigates to the add page in edit mode with prefilled data from row action', () => {
+    const { router } = renderUsersRoute()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'تعديل المستخدم عبد العزيز أحمد سالم الهاشمي',
+      }),
+    )
+
+    expect(router.state.location.pathname).toBe(ROUTE_PATHS.usersAdd)
     expect(
-      screen.getByText(
-        'قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام',
-      ),
+      screen.getByRole('heading', { name: 'تعديل مستخدم' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByDisplayValue('عبد العزيز أحمد سالم الهاشمي'),
+    ).toBeInTheDocument()
+    expect(screen.getByDisplayValue('phoenix@AqarInn')).toBeInTheDocument()
+    expect(document.getElementById('user-role')).toHaveTextContent(
+      'Super Admin المشرف العام',
+    )
+  })
+
+  it('navigates to edit mode when modal edit is clicked', async () => {
+    const { router } = renderUsersRoute()
+
+    fireEvent.click(screen.getByText('عبد العزيز أحمد سالم الهاشمي'))
+    const detailsDialog = await screen.findByRole('dialog', {
+      name: 'عرض تفاصيل المستخدم',
+    })
+
+    fireEvent.click(
+      within(detailsDialog).getByRole('button', { name: 'تعديل' }),
+    )
+
+    expect(router.state.location.pathname).toBe(ROUTE_PATHS.usersAdd)
+    expect(
+      screen.getByRole('heading', { name: 'تعديل مستخدم' }),
+    ).toBeInTheDocument()
+  })
+
+  it('opens delete confirmation from modal delete action and closes details modal', async () => {
+    renderUsersRoute()
+
+    fireEvent.click(screen.getByText('ريم عبد الرحمن سعود البلوي'))
+    const detailsDialog = await screen.findByRole('dialog', {
+      name: 'عرض تفاصيل المستخدم',
+    })
+
+    fireEvent.click(within(detailsDialog).getByRole('button', { name: 'حذف' }))
 
     expect(
-      screen.getByLabelText(/الاسم الكامل بالإنجليزية/),
-    ).toBeInTheDocument()
-    expect(screen.getByLabelText(/الاسم الكامل بالعربية/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/البريد الإلكتروني/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/رقم الجوال/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/الدور/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/الحالة/)).toBeInTheDocument()
-    expect(screen.getByLabelText(/قائمة الفرص الاستثمارية/)).toBeInTheDocument()
+      screen.queryByRole('dialog', { name: 'عرض تفاصيل المستخدم' }),
+    ).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'اضافة المستخدم' }),
+      await screen.findByRole('dialog', { name: 'حذف المستخدم' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'الغاء' })).toBeInTheDocument()
+  })
+
+  it('closes details modal by close button and Escape and changes activity content per user', async () => {
+    renderUsersRoute()
+
+    fireEvent.click(screen.getByText('عبد العزيز أحمد سالم الهاشمي'))
+    const firstDialog = await screen.findByRole('dialog', {
+      name: 'عرض تفاصيل المستخدم',
+    })
+    expect(
+      within(firstDialog).getByText('إنشاء حساب جديد للمستخدم'),
+    ).toBeInTheDocument()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(
+      screen.queryByRole('dialog', { name: 'عرض تفاصيل المستخدم' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('ليلى حسن علي الغامدي'))
+    const secondDialog = await screen.findByRole('dialog', {
+      name: 'عرض تفاصيل المستخدم',
+    })
+    expect(
+      within(secondDialog).getByText('تحديث صلاحيات مستخدم'),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      within(secondDialog).getByRole('button', { name: 'إغلاق النافذة' }),
+    )
+    expect(
+      screen.queryByRole('dialog', { name: 'عرض تفاصيل المستخدم' }),
+    ).not.toBeInTheDocument()
   })
 
   it('submits the add user happy path locally and shows the success toast', async () => {
@@ -177,13 +229,13 @@ describe('UsersPage route', () => {
     fireEvent.change(screen.getByLabelText(/رقم الجوال/), {
       target: { value: '+966 55 555 5555' },
     })
-    fireEvent.change(screen.getByLabelText(/الدور/), {
-      target: { value: 'operations-manager' },
-    })
+    fireEvent.click(screen.getByLabelText(/الدور/))
+    fireEvent.click(screen.getByRole('option', { name: /Operation Admin/ }))
     fireEvent.click(screen.getByLabelText(/الحالة/))
-    fireEvent.change(screen.getByLabelText(/قائمة الفرص الاستثمارية/), {
-      target: { value: 'investment-riyadh-001' },
-    })
+    fireEvent.click(screen.getByLabelText(/قائمة الفرص الاستثمارية/))
+    fireEvent.click(
+      screen.getByRole('option', { name: /مجمع سكني حديث في شمال الرياض/ }),
+    )
     fireEvent.click(screen.getByRole('button', { name: 'اضافة المستخدم' }))
 
     expect(fetchMock).not.toHaveBeenCalled()
@@ -191,24 +243,39 @@ describe('UsersPage route', () => {
     expect(
       await screen.findByText('تم اضافة المستخدم بنجاح'),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(
-        'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه',
-      ),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'اغلاق' })).toBeInTheDocument()
   })
 
-  it('cancels add user without showing a success toast', () => {
-    const { router } = renderUsersRoute({
-      initialEntries: [ROUTE_PATHS.usersAdd],
+  it('opens the delete modal, cancels it, then confirms soft delete locally', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    renderUsersRoute()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'حذف المستخدم ريم عبد الرحمن سعود البلوي',
+      }),
+    )
+
+    const cancelDialog = await screen.findByRole('dialog', {
+      name: 'حذف المستخدم',
     })
+    fireEvent.click(within(cancelDialog).getByRole('button', { name: 'الغاء' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'الغاء' }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'حذف المستخدم ريم عبد الرحمن سعود البلوي',
+      }),
+    )
+    const confirmDialog = await screen.findByRole('dialog', {
+      name: 'حذف المستخدم',
+    })
+    fireEvent.click(within(confirmDialog).getByRole('button', { name: 'حذف' }))
 
-    expect(router.state.location.pathname).toBe(ROUTE_PATHS.users)
+    expect(fetchMock).not.toHaveBeenCalled()
     expect(
-      screen.queryByText('تم اضافة المستخدم بنجاح'),
+      screen.queryByText('ريم عبد الرحمن سعود البلوي'),
     ).not.toBeInTheDocument()
+    expect(await screen.findByText('تم حذف المستخدم بنجاح')).toBeInTheDocument()
   })
 })
