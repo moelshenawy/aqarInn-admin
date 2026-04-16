@@ -7,18 +7,24 @@ import {
   useMatches,
 } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { XIcon } from 'lucide-react'
 import { LocalizedLink } from '@/shared/components/localized-link'
 
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
 import logoMark from '@/assets/dashboard/logo-mark.svg'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
-import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
+import {
+  DashboardMobileSidebarUtilities,
+  DashboardTopbar,
+} from '@/features/dashboard/components/dashboard-topbar'
 import {
   dashboardActions,
   dashboardNavItems,
@@ -39,6 +45,7 @@ function DashboardBrand({
   collapsed = false,
   canCollapse = false,
   onToggleCollapse,
+  mobileClose = false,
 }) {
   const isExpanded = !collapsed
 
@@ -83,6 +90,19 @@ function DashboardBrand({
             aria-hidden="true"
           />
         </button>
+      ) : mobileClose ? (
+        <SheetClose data-slot="sheet-close" asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="إغلاق القائمة"
+            className="size-7 rounded-[min(var(--radius-md),12px)]"
+          >
+            <XIcon />
+            <span className="sr-only">Close</span>
+          </Button>
+        </SheetClose>
       ) : (
         <span
           aria-hidden="true"
@@ -102,6 +122,8 @@ function DashboardSidebar({
   canCollapse = false,
   onToggleCollapse,
   locale,
+  topContent = null,
+  mobileClose = false,
 }) {
   return (
     <div
@@ -117,12 +139,15 @@ function DashboardSidebar({
         collapsed={collapsed}
         canCollapse={canCollapse}
         onToggleCollapse={onToggleCollapse}
+        mobileClose={mobileClose}
       />
+
+      {topContent ? <div className="mt-6">{topContent}</div> : null}
 
       <div
         className={cn(
-          'flex-1 space-y-5 transition-[margin] duration-300 ease-in-out',
-          collapsed ? 'mt-10' : 'mt-16',
+          'min-h-0 flex-1 space-y-5 overflow-y-auto transition-[margin] duration-300 ease-in-out',
+          topContent ? 'mt-6' : collapsed ? 'mt-10' : 'mt-16',
         )}
       >
         {dashboardNavItems.map((item) => {
@@ -222,8 +247,17 @@ export function DashboardLayout() {
       pathname={location.pathname}
       onNavigate={() => setSidebarOpen(false)}
       locale={i18n.resolvedLanguage}
+      mobileClose
+      topContent={
+        <DashboardMobileSidebarUtilities
+          user={dashboardTopbarUser}
+          onNavigate={() => setSidebarOpen(false)}
+        />
+      }
     />
   )
+
+  const mobileSheetSide = i18n.resolvedLanguage === 'en' ? 'left' : 'right'
 
   return (
     <NotificationsProvider>
@@ -254,12 +288,14 @@ export function DashboardLayout() {
 
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetContent
-            side="right"
-            className="w-full max-w-[290px] border-none bg-[color:var(--dashboard-bg)] p-4"
+            side={mobileSheetSide}
+            showCloseButton={false}
+            className="w-full max-w-[320px] border-none bg-[color:var(--dashboard-bg)] p-4"
           >
             <SheetHeader className="sr-only">
               <SheetTitle>{dashboardActions.topbar.settingsLabel}</SheetTitle>
             </SheetHeader>
+
             {mobileSidebar}
           </SheetContent>
         </Sheet>

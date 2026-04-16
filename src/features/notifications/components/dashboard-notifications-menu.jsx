@@ -21,6 +21,9 @@ export function DashboardNotificationsMenu({
   triggerLabel,
   markAllLabel,
   viewAllLabel,
+  triggerClassName,
+  contentClassName,
+  align = 'start',
 }) {
   const BellIconComponent = bellIcon
   const { t } = useTranslation('notifications')
@@ -42,6 +45,7 @@ export function DashboardNotificationsMenu({
             open
               ? 'bg-[color:var(--dashboard-surface-strong)] text-[#f8f3e8]'
               : 'bg-[color:var(--dashboard-surface)] text-[color:var(--dashboard-text-soft)] hover:bg-[#ded6c4]',
+            triggerClassName,
           )}
         >
           <BellIconComponent className="size-[22px] stroke-[1.8]" />
@@ -56,10 +60,13 @@ export function DashboardNotificationsMenu({
 
       <DropdownMenuContent
         side="bottom"
-        align="start"
+        align={align}
         sideOffset={12}
         collisionPadding={16}
-        className="w-[calc(100vw-32px)] max-w-[503px] rounded-[12px] border border-[#d6cbb2] bg-[#f8f3e8] p-0 text-[#6d4f3b] shadow-[0_12px_32px_rgba(64,47,40,0.14)] ring-0 sm:w-[503px] [&::-webkit-scrollbar]:hidden"
+        className={cn(
+          'w-[calc(100vw-32px)] max-w-[503px] rounded-[12px] border border-[#d6cbb2] bg-[#f8f3e8] p-0 text-[#6d4f3b] shadow-[0_12px_32px_rgba(64,47,40,0.14)] ring-0 sm:w-[503px] [&::-webkit-scrollbar]:hidden',
+          contentClassName,
+        )}
       >
         <div
           data-slot="dashboard-notifications-content"

@@ -43,7 +43,12 @@ function getDisplayName(currentUser, fallbackUser, language) {
   )
 }
 
-export function DashboardUserMenu({ user }) {
+export function DashboardUserMenu({
+  user,
+  triggerClassName,
+  contentClassName,
+  contentAlign = 'end',
+}) {
   const navigate = useNavigate()
   const { dir } = useDirection()
   const { t, i18n } = useTranslation(['auth', 'permissions', 'common'])
@@ -122,6 +127,7 @@ export function DashboardUserMenu({ user }) {
               open
                 ? 'bg-[color:var(--dashboard-surface-strong)] text-[#f8f3e8]'
                 : 'bg-[color:var(--dashboard-surface)] text-[color:var(--dashboard-text-soft)] hover:bg-[#ded6c4]',
+              triggerClassName,
             )}
           >
             <div className="flex items-center gap-[13px]">
@@ -170,10 +176,13 @@ export function DashboardUserMenu({ user }) {
 
         <DropdownMenuContent
           side="bottom"
-          align="end"
+          align={contentAlign}
           sideOffset={12}
           collisionPadding={16}
-          className="w-[calc(100vw-32px)] max-w-[320px] rounded-[12px] border border-[#d6cbb2] bg-[#f8f3e8] p-0 text-[#6d4f3b] shadow-[0_12px_32px_rgba(64,47,40,0.14)] ring-0 sm:w-[320px]"
+          className={cn(
+            'w-[calc(100vw-32px)] max-w-[320px] rounded-[12px] border border-[#d6cbb2] bg-[#f8f3e8] p-0 text-[#6d4f3b] shadow-[0_12px_32px_rgba(64,47,40,0.14)] ring-0 sm:w-[320px]',
+            contentClassName,
+          )}
         >
           <div
             data-slot="dashboard-user-menu-content"
