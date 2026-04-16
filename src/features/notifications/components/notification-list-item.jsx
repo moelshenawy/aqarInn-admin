@@ -33,6 +33,19 @@ export function NotificationListItem({
         )}
         onClick={() => onSelect(item)}
       >
+        <div
+          aria-hidden="true"
+          className={cn(
+            'flex size-[57px] shrink-0 items-center justify-center rounded-full border border-[#eae5d7] bg-[#f8f3e8] shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_-2px_0_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18)]',
+            isUnread && 'border-[#bfab85] bg-[#f4eee1]',
+          )}
+        >
+          <img
+            src={item.iconSrc}
+            alt=""
+            className="h-[22px] w-[22px] object-contain"
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -71,20 +84,6 @@ export function NotificationListItem({
               i18n.resolvedLanguage,
             )}
           </time>
-        </div>
-
-        <div
-          aria-hidden="true"
-          className={cn(
-            'flex size-[57px] shrink-0 items-center justify-center rounded-full border border-[#eae5d7] bg-[#f8f3e8] shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_-2px_0_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18)]',
-            isUnread && 'border-[#bfab85] bg-[#f4eee1]',
-          )}
-        >
-          <img
-            src={item.iconSrc}
-            alt=""
-            className="h-[27px] w-[26px] object-contain"
-          />
         </div>
       </button>
     </li>
