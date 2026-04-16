@@ -7,6 +7,6 @@
   "activityLogs": "سجل النشاطات",
   "notifications": "الإشعارات",
   "login": "تسجيل الدخول",
-  "forgotPassword": "نسيت كلمة المرور",
-  "resetPassword": "إعادة تعيين كلمة المرور"
+  "forgotPassword": "نسيت كلمة السر",
+  "resetPassword": "إعادة تعيين كلمة السر"
 }

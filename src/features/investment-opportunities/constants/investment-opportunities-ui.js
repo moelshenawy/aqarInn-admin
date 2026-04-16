@@ -1,11 +1,11 @@
 import { Megaphone } from 'lucide-react'
 
-import opportunityOne from '@/assets/dashboard/opportunity-1.png'
-import opportunityTwo from '@/assets/dashboard/opportunity-2.png'
-import opportunityThree from '@/assets/dashboard/opportunity-3.png'
-import opportunityFour from '@/assets/dashboard/opportunity-4.png'
-import opportunityFive from '@/assets/dashboard/opportunity-5.png'
-import sharesDot from '@/assets/dashboard/shares-dot.svg'
+import opportunityOne from '/assets/dashboard/opportunity-1.png'
+import opportunityTwo from '/assets/dashboard/opportunity-2.png'
+import opportunityThree from '/assets/dashboard/opportunity-3.png'
+import opportunityFour from '/assets/dashboard/opportunity-4.png'
+import opportunityFive from '/assets/dashboard/opportunity-5.png'
+import sharesDot from '/assets/dashboard/shares-dot.svg'
 
 export const investmentPageSize = 9
 export const investmentLoadingDelayMs = 450
@@ -56,7 +56,9 @@ function createInvestmentOpportunities() {
         progress,
         city: city.label,
         image:
-          investmentImagePool[(cityIndex + itemIndex) % investmentImagePool.length],
+          investmentImagePool[
+            (cityIndex + itemIndex) % investmentImagePool.length
+          ],
         sharesDot,
         accentIcon: Megaphone,
       }
@@ -71,6 +73,7 @@ export const investmentLocationFilters = [
   ...investmentCityProfiles.map((city) => ({
     key: city.key,
     label: city.label,
-    count: investmentOpportunities.filter((item) => item.city === city.label).length,
+    count: investmentOpportunities.filter((item) => item.city === city.label)
+      .length,
   })),
 ]

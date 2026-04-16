@@ -13,10 +13,10 @@ export const LOGIN_CONTENT = {
   description: 'أدخل بياناتك للوصول إلى الفرص العقارية.',
   emailLabel: 'البريد الالكتروني',
   emailPlaceholder: 'ادخل البريد الالكتروني الخاص بك',
-  passwordLabel: 'كلمة المرور',
-  passwordPlaceholder: 'ادخل كلمة المرور',
+  passwordLabel: 'كلمة السر',
+  passwordPlaceholder: 'ادخل كلمة السر',
   rememberMe: 'تذكر هذا الحساب',
-  forgotPassword: 'نسيت كلمة المرور؟',
+  forgotPassword: 'نسيت كلمة السر؟',
   submit: 'تسجيل الدخول',
 }
 
@@ -31,19 +31,19 @@ export const FORGOT_PASSWORD_CONTENT = {
 export const RESET_PASSWORD_CONTENT = {
   title: 'اعادة تعيين كلمة السر',
   description: 'قم بكتابة كلمة السر الجديدة الخاصة بك',
-  newPasswordLabel: 'كلمة المرور الجديدة',
-  newPasswordPlaceholder: 'ادخل كلمة المرور الجديدة',
-  confirmPasswordLabel: 'تأكيد كلمة المرور',
-  confirmPasswordPlaceholder: 'تأكيد كلمة المرور',
+  newPasswordLabel: 'كلمة السر الجديدة',
+  newPasswordPlaceholder: 'ادخل كلمة السر الجديدة',
+  confirmPasswordLabel: 'تأكيد كلمة السر',
+  confirmPasswordPlaceholder: 'تأكيد كلمة السر',
   submit: 'اعادة تعيين',
 }
 
 export const AUTH_VALIDATION_MESSAGES = {
   emailRequired: 'البريد الالكتروني مطلوب',
   emailInvalid: 'عذراً، البريد الإلكتروني غير صحيح',
-  passwordRequired: 'كلمة المرور مطلوبة',
-  confirmPasswordRequired: 'تأكيد كلمة المرور مطلوب',
-  passwordMismatch: 'كلمة المرور غير متطابقة',
+  passwordRequired: 'كلمة السر مطلوبة',
+  confirmPasswordRequired: 'تأكيد كلمة السر مطلوب',
+  passwordMismatch: 'كلمة السر غير متطابقة',
   emailTooLong: 'يجب ألا يزيد البريد الإلكتروني عن 100 حرفًا',
-  passwordTooLong: 'يجب ألا تزيد كلمة المرور عن 50 حرفًا',
+  passwordTooLong: 'يجب ألا تزيد كلمة السر عن 50 حرفًا',
 }

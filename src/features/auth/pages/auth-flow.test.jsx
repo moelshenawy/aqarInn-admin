@@ -111,7 +111,7 @@ describe('Auth flow routes', () => {
         target: { value: 'invalid-email' },
       },
     )
-    fireEvent.change(screen.getByPlaceholderText('ادخل كلمة المرور'), {
+    fireEvent.change(screen.getByPlaceholderText('ادخل كلمة السر'), {
       target: { value: '123456' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'تسجيل الدخول' }))
@@ -130,7 +130,7 @@ describe('Auth flow routes', () => {
     expect(
       await screen.findByText('البريد الإلكتروني مطلوب.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('كلمة المرور مطلوبة.')).toBeInTheDocument()
+    expect(screen.getByText('كلمة السر مطلوبة.')).toBeInTheDocument()
   })
 
   it('validates the email field on forgot password', async () => {
@@ -138,7 +138,7 @@ describe('Auth flow routes', () => {
     renderAuthRouter([ROUTE_PATHS.forgotPassword])
 
     expect(
-      await screen.findByRole('heading', { name: 'هل نسيت كلمة المرور؟' }),
+      await screen.findByRole('heading', { name: 'هل نسيت كلمة السر؟' }),
     ).toBeInTheDocument()
 
     fireEvent.change(screen.getByPlaceholderText('أدخل بريدك الإلكتروني'), {
@@ -176,7 +176,7 @@ describe('Auth flow routes', () => {
     })
 
     expect(
-      await screen.findByRole('heading', { name: 'إعادة تعيين كلمة المرور' }),
+      await screen.findByRole('heading', { name: 'إعادة تعيين كلمة السر' }),
     ).toBeInTheDocument()
     expect(
       window.sessionStorage.getItem(AUTH_RESET_PASSWORD_EMAIL_STORAGE_KEY),
@@ -188,25 +188,25 @@ describe('Auth flow routes', () => {
     renderAuthRouter([`${ROUTE_PATHS.resetPassword}?email=admin@example.com`])
 
     expect(
-      await screen.findByRole('heading', { name: 'إعادة تعيين كلمة المرور' }),
+      await screen.findByRole('heading', { name: 'إعادة تعيين كلمة السر' }),
     ).toBeInTheDocument()
 
-    fireEvent.change(screen.getByPlaceholderText('أدخل كلمة المرور الجديدة'), {
+    fireEvent.change(screen.getByPlaceholderText('أدخل كلمة السر الجديدة'), {
       target: { value: 'newpass@1234' },
     })
     fireEvent.change(
-      screen.getByPlaceholderText('أعد إدخال كلمة المرور الجديدة'),
+      screen.getByPlaceholderText('أعد إدخال كلمة السر الجديدة'),
       {
         target: { value: 'Different@1234' },
       },
     )
     fireEvent.click(
-      screen.getByRole('button', { name: 'إعادة تعيين كلمة المرور' }),
+      screen.getByRole('button', { name: 'إعادة تعيين كلمة السر' }),
     )
 
     expect(
       await screen.findByText(
-        'يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل.',
+        'يجب أن تحتوي كلمة السر على حرف كبير واحد على الأقل.',
       ),
     ).toBeInTheDocument()
     expect(
@@ -223,17 +223,17 @@ describe('Auth flow routes', () => {
     window.localStorage.setItem(ONBOARDING_SEEN_STORAGE_KEY, 'true')
     renderAuthRouter([`${ROUTE_PATHS.resetPassword}?email=admin@example.com`])
 
-    fireEvent.change(screen.getByPlaceholderText('أدخل كلمة المرور الجديدة'), {
+    fireEvent.change(screen.getByPlaceholderText('أدخل كلمة السر الجديدة'), {
       target: { value: 'NewPass@1234' },
     })
     fireEvent.change(
-      screen.getByPlaceholderText('أعد إدخال كلمة المرور الجديدة'),
+      screen.getByPlaceholderText('أعد إدخال كلمة السر الجديدة'),
       {
         target: { value: 'NewPass@1234' },
       },
     )
     fireEvent.click(
-      screen.getByRole('button', { name: 'إعادة تعيين كلمة المرور' }),
+      screen.getByRole('button', { name: 'إعادة تعيين كلمة السر' }),
     )
 
     await waitFor(() => {

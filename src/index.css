@@ -185,7 +185,7 @@ textarea {
 
 .auth-brand-copy {
   width: min(100%, 31.3125rem);
-  margin-inline-start: auto;
+  /* margin-inline-start: auto; */
   text-align: start;
 }
 
@@ -220,7 +220,7 @@ textarea {
 
 @media (min-width: 1024px) {
   .auth-shell-grid {
-    max-width: 1197px;
+    /* max-width: 1197px; */
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: center;
     gap: 31px;

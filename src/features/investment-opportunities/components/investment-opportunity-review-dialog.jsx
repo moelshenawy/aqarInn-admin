@@ -1,4 +1,4 @@
-import reviewCloseIcon from '@/assets/investment-opportunities/review-icon-close.svg'
+import reviewCloseIcon from '/assets/investment-opportunities/review-icon-close.svg'
 import {
   Dialog,
   DialogClose,
