@@ -83,6 +83,14 @@ export const investmentOpportunityDefaultDetails = {
   },
 }
 
+export const investmentOpportunityGalleryTileClassNames = [
+  'h-[164px]',
+  'h-[164px]',
+  'h-[148px]',
+  'h-[148px]',
+  'h-[148px]',
+]
+
 export const investmentOpportunityDetailsById = Object.fromEntries(
   investmentOpportunities.map((opportunity) => [
     opportunity.id,
@@ -158,13 +166,15 @@ export function mapOpportunityApiToDetails(
   const expectedAnnualReturnPct = asNumber(opportunity.expected_annual_return_pct)
   const expectedNetReturn = (propertyPrice * expectedAnnualReturnPct) / 100
 
-  const defaultGallery = investmentOpportunityDefaultDetails.gallery
   const apiGallery = Array.isArray(opportunity.gallery) ? opportunity.gallery : []
   const gallerySources = [opportunity.cover_image_url, ...apiGallery].filter(Boolean)
-  const gallery = defaultGallery.map((galleryItem, index) => ({
-    ...galleryItem,
-    src: gallerySources[index] ?? galleryItem.src,
-  }))
+  const gallery = gallerySources
+    .slice(0, investmentOpportunityGalleryTileClassNames.length)
+    .map((src, index) => ({
+      src,
+      alt: investmentOpportunityDefaultDetails.gallery[index]?.alt ?? '',
+      tileClassName: investmentOpportunityGalleryTileClassNames[index],
+    }))
 
   const cityName =
     language === 'en'

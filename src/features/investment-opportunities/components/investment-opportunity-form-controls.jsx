@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { ChevronUp, UploadCloud } from 'lucide-react'
+import { ChevronUp, LoaderCircle, UploadCloud, X } from 'lucide-react'
 
 import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
@@ -53,6 +53,80 @@ function InvestmentOpportunityFieldAddon({ children, icon: Icon }) {
       ) : null}
       {hasAddon && !shouldWrapAddon ? children : null}
     </span>
+  )
+}
+
+function normalizeFiles(value) {
+  if (!value) {
+    return []
+  }
+
+  if (Array.isArray(value)) {
+    return value.filter(Boolean)
+  }
+
+  if (typeof FileList !== 'undefined' && value instanceof FileList) {
+    return Array.from(value)
+  }
+
+  return []
+}
+
+function FileSelectionSummary({
+  selectedFiles,
+  isLoading = false,
+  idleMessage,
+  loadingMessage,
+  onRemoveFile,
+}) {
+  const files = normalizeFiles(selectedFiles)
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-end gap-2 text-xs leading-5 font-medium text-[#6d4f3b]">
+        <span>{loadingMessage}</span>
+        <LoaderCircle
+          className="size-4 animate-spin stroke-[1.8]"
+          aria-hidden="true"
+        />
+      </div>
+    )
+  }
+
+  if (!files.length) {
+    return idleMessage ? (
+      <p className="text-xs leading-5 font-medium text-[#717680]">
+        {idleMessage}
+      </p>
+    ) : null
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-2 text-xs leading-5 font-medium text-[#6d4f3b]">
+      <p>
+        {files.length === 1
+          ? files[0].name
+          : `\u062A\u0645 \u0627\u062E\u062A\u064A\u0627\u0631 ${files.length} \u0645\u0644\u0641\u0627\u062A`}
+      </p>
+      <div className="flex w-full flex-wrap justify-end gap-2">
+        {files.map((file, index) => (
+          <div
+            key={`${file.name}-${index}`}
+            className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#d6cbb2] bg-[#f7f4ec] px-3 py-1 text-[#6d4f3b]"
+          >
+            <button
+              type="button"
+              onClick={() => onRemoveFile?.(index)}
+              className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[#9d7e55] transition hover:text-[#402f28] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
+              aria-label={`\u0625\u0632\u0627\u0644\u0629 ${file.name}`}
+            >
+              <X className="size-3 stroke-[2.2]" aria-hidden="true" />
+            </button>
+            <span className="truncate">{file.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -134,7 +208,7 @@ export const InvestmentOpportunityTextField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              'h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
               error &&
                 'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               (icon || addon) && 'pl-14',
@@ -180,7 +254,7 @@ export const InvestmentOpportunityTextareaField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'min-h-[124px] w-full resize-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              'min-h-[124px] w-full resize-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
               error &&
                 'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               icon && 'pl-14',
@@ -226,7 +300,7 @@ export const InvestmentOpportunitySelectField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'h-12 w-full appearance-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] py-3.5 pr-3 pl-12 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20',
+              'h-12 w-full appearance-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] pr-3 pl-12 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20',
               error &&
                 'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               selectClassName,
@@ -268,9 +342,22 @@ export const InvestmentOpportunitySelectField = forwardRef(
 
 export const InvestmentOpportunityFilePickerField = forwardRef(
   function InvestmentOpportunityFilePickerField(
-    { id, label, required = false, placeholder, className, error, ...props },
+    {
+      id,
+      label,
+      required = false,
+      placeholder,
+      className,
+      error,
+      selectedFiles,
+      isLoading = false,
+      onRemoveFile,
+      ...props
+    },
     ref,
   ) {
+    const files = normalizeFiles(selectedFiles)
+
     return (
       <InvestmentOpportunityFieldShell
         id={id}
@@ -287,12 +374,27 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
             error && 'border-[#b93815] hover:border-[#b93815]',
           )}
         >
-          <UploadCloud
-            className="size-5 shrink-0 stroke-[1.8]"
-            aria-hidden="true"
-          />
-          <span className="min-w-0 flex-1 truncate">{placeholder}</span>
+          {isLoading ? (
+            <LoaderCircle
+              className="size-5 shrink-0 animate-spin stroke-[1.8]"
+              aria-hidden="true"
+            />
+          ) : (
+            <UploadCloud
+              className="size-5 shrink-0 stroke-[1.8]"
+              aria-hidden="true"
+            />
+          )}
+          <span className="min-w-0 flex-1 truncate">
+            {files[0]?.name ?? placeholder}
+          </span>
         </label>
+        <FileSelectionSummary
+          selectedFiles={selectedFiles}
+          isLoading={isLoading}
+          loadingMessage="\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0645\u0644\u0641..."
+          onRemoveFile={onRemoveFile}
+        />
       </InvestmentOpportunityFieldShell>
     )
   },
@@ -300,9 +402,20 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
 
 export const InvestmentOpportunityDropzoneField = forwardRef(
   function InvestmentOpportunityDropzoneField(
-    { id, label, className, error, ...props },
+    {
+      id,
+      label,
+      className,
+      error,
+      selectedFiles,
+      isLoading = false,
+      onRemoveFile,
+      ...props
+    },
     ref,
   ) {
+    const files = normalizeFiles(selectedFiles)
+
     return (
       <InvestmentOpportunityFieldShell
         id={id}
@@ -320,16 +433,39 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
           )}
         >
           <span className="mb-3 flex size-10 items-center justify-center rounded-lg border border-[#d6cbb2] text-[#6d4f3b] shadow-[var(--dashboard-shadow)]">
-            <UploadCloud className="size-5 stroke-[1.8]" aria-hidden="true" />
+            {isLoading ? (
+              <LoaderCircle
+                className="size-5 animate-spin stroke-[1.8]"
+                aria-hidden="true"
+              />
+            ) : (
+              <UploadCloud className="size-5 stroke-[1.8]" aria-hidden="true" />
+            )}
           </span>
           <span className="flex flex-wrap items-center justify-center gap-1 text-sm leading-5">
-            <span className="font-semibold text-[#6d4f3b]">انقر للرفع</span>
-            <span className="font-normal text-[#535862]">أو اسحب وأفلت</span>
+            <span className="font-semibold text-[#6d4f3b]">
+              {files.length
+                ? '\u062A\u0645 \u0631\u0641\u0639 \u0627\u0644\u0635\u0648\u0631'
+                : '\u0627\u0646\u0642\u0631 \u0644\u0644\u0631\u0641\u0639'}
+            </span>
+            <span className="font-normal text-[#535862]">
+              {files.length
+                ? `${files.length} \u0635\u0648\u0631\u0629`
+                : '\u0623\u0648 \u0627\u0633\u062D\u0628 \u0648\u0623\u0641\u0644\u062A'}
+            </span>
           </span>
           <span className="mt-1 text-xs leading-[18px] text-[#535862]">
-            SVG أو PNG أو JPG أو GIF (بحد أقصى 800×400 بكسل)
+            {isLoading
+              ? '\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0635\u0648\u0631 \u0627\u0644\u0645\u0631\u0641\u0648\u0639\u0629...'
+              : 'SVG \u0623\u0648 PNG \u0623\u0648 JPG \u0623\u0648 GIF (\u0628\u062D\u062F \u0623\u0642\u0635\u0649 800\u00D7400 \u0628\u0643\u0633\u0644)'}
           </span>
         </label>
+        <FileSelectionSummary
+          selectedFiles={selectedFiles}
+          isLoading={isLoading}
+          loadingMessage="\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0635\u0648\u0631..."
+          onRemoveFile={onRemoveFile}
+        />
       </InvestmentOpportunityFieldShell>
     )
   },
@@ -348,14 +484,16 @@ export function InvestmentOpportunityFormActions({
   const { dir } = useDirection()
 
   return (
-    <div className="flex items-start justify-start gap-2.5 pt-[30px]" dir={dir}>
+    <div className="flex items-start justify-end gap-2.5 pt-[30px]" dir={dir}>
       <button
-        type="submit"
-        disabled={disableSubmit}
-        className="h-[47px] w-[176px] rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+        type="button"
+        disabled={disableCancel}
+        onClick={onCancel}
+        className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#ded6c4] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
       >
-        {submitLabel}
+        {cancelLabel}
       </button>
+
       {onDraft && draftLabel ? (
         <button
           type="button"
@@ -366,13 +504,13 @@ export function InvestmentOpportunityFormActions({
           {draftLabel}
         </button>
       ) : null}
+
       <button
-        type="button"
-        disabled={disableCancel}
-        onClick={onCancel}
-        className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#ded6c4] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+        type="submit"
+        disabled={disableSubmit}
+        className="h-[47px] w-[176px] rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
       >
-        {cancelLabel}
+        {submitLabel}
       </button>
     </div>
   )

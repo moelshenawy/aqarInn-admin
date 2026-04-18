@@ -50,6 +50,8 @@ export function InvestmentOpportunityForm({
   onCancel,
   cityOptions = [],
   isSubmitting = false,
+  fileFields = {},
+  fileUploadState = {},
   onOpenNeighborhoodMap,
   isNeighborhoodMapDisabled = false,
 }) {
@@ -184,7 +186,10 @@ export function InvestmentOpportunityForm({
               multiple
               required
               error={errors.propertyDocuments?.message}
-              {...register('propertyDocuments')}
+              selectedFiles={fileUploadState.propertyDocuments?.files}
+              isLoading={fileUploadState.propertyDocuments?.isLoading}
+              onRemoveFile={fileUploadState.propertyDocuments?.onRemoveFile}
+              {...(fileFields.propertyDocuments ?? register('propertyDocuments'))}
             />
             <InvestmentOpportunityDropzoneField
               id="propertyImages"
@@ -193,7 +198,10 @@ export function InvestmentOpportunityForm({
               multiple
               required
               error={errors.propertyImages?.message}
-              {...register('propertyImages')}
+              selectedFiles={fileUploadState.propertyImages?.files}
+              isLoading={fileUploadState.propertyImages?.isLoading}
+              onRemoveFile={fileUploadState.propertyImages?.onRemoveFile}
+              {...(fileFields.propertyImages ?? register('propertyImages'))}
             />
             <InvestmentOpportunityFilePickerField
               id="virtualTour"
@@ -201,7 +209,10 @@ export function InvestmentOpportunityForm({
               placeholder="ارفع صورة 360 (اختياري)"
               accept="image/png,image/jpeg"
               error={errors.virtualTour?.message}
-              {...register('virtualTour')}
+              selectedFiles={fileUploadState.virtualTour?.files}
+              isLoading={fileUploadState.virtualTour?.isLoading}
+              onRemoveFile={fileUploadState.virtualTour?.onRemoveFile}
+              {...(fileFields.virtualTour ?? register('virtualTour'))}
             />
           </InvestmentOpportunityFormGrid>
         </InvestmentOpportunityFormSection>
@@ -253,7 +264,10 @@ export function InvestmentOpportunityForm({
               placeholder="قم برفع شعار المطوّر"
               accept="image/svg+xml,image/png,image/jpeg"
               error={errors.developerLogo?.message}
-              {...register('developerLogo')}
+              selectedFiles={fileUploadState.developerLogo?.files}
+              isLoading={fileUploadState.developerLogo?.isLoading}
+              onRemoveFile={fileUploadState.developerLogo?.onRemoveFile}
+              {...(fileFields.developerLogo ?? register('developerLogo'))}
             />
             <InvestmentOpportunityTextField
               id="developerPhone"

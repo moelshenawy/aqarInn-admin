@@ -22,7 +22,10 @@ import {
   createInvestmentOpportunityPublishSchema,
 } from '@/features/investment-opportunities/schemas/investment-opportunity-form-schema'
 import { buildOpportunityFormData } from '@/features/investment-opportunities/services/build-opportunity-form-data'
-import { investmentOpportunityDefaultDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
+import {
+  investmentOpportunityDefaultDetails,
+  investmentOpportunityGalleryTileClassNames,
+} from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
 const addOpportunityDescription =
   'يمكنك إضافة فرصة استثمارية جديدة من خلال تعبئة البيانات المطلوبة، ثم حفظها ليتم تسجيلها في النظام وإتاحتها للمستخدمين المصرح لهم.'
@@ -38,6 +41,13 @@ const publishSuccessToast = {
   description: 'تم إنشاء الفرصة الاستثمارية وتحويل حالتها إلى منشورة.',
   actionLabel: 'إغلاق',
 }
+
+const FILE_UPLOAD_FIELD_NAMES = [
+  'propertyDocuments',
+  'propertyImages',
+  'virtualTour',
+  'developerLogo',
+]
 
 function resolveApiErrorMessage(error, t) {
   const message = error?.message
@@ -76,62 +86,97 @@ function mapSchemaErrorsToForm(parsedResult, setError, clearErrors) {
   return false
 }
 
-function buildReviewDetails(values, cityName) {
+function normalizeFiles(value) {
+  if (!value) {
+    return []
+  }
+
+  if (Array.isArray(value)) {
+    return value.filter(Boolean)
+  }
+
+  if (typeof FileList !== 'undefined' && value instanceof FileList) {
+    return Array.from(value)
+  }
+
+  return []
+}
+
+function buildReviewGallery(previewUrls = []) {
+  return previewUrls
+    .slice(0, investmentOpportunityGalleryTileClassNames.length)
+    .map((src, index) => ({
+      src,
+      alt: investmentOpportunityDefaultDetails.gallery[index]?.alt ?? '',
+      tileClassName: investmentOpportunityGalleryTileClassNames[index],
+    }))
+}
+
+function buildReviewDetails(values, cityName, previewUrls = []) {
   return {
     ...investmentOpportunityDefaultDetails,
     titleAr: values.titleAr || investmentOpportunityDefaultDetails.titleAr,
     titleEn: values.titleEn || investmentOpportunityDefaultDetails.titleEn,
     propertyType:
-      values.propertyType === 'commercial' ? 'عقار تجاري' : 'عقار سكني',
+      values.propertyType === 'commercial'
+        ? '\u0639\u0642\u0627\u0631 \u062A\u062C\u0627\u0631\u064A'
+        : '\u0639\u0642\u0627\u0631 \u0633\u0643\u0646\u064A',
     floors: values.floorCount
-      ? `${values.floorCount} أدوار`
+      ? `${values.floorCount} \u0623\u062F\u0648\u0627\u0631`
       : investmentOpportunityDefaultDetails.floors,
     totalArea: values.propertyArea
-      ? `${values.propertyArea} م² مساحة إجمالية`
+      ? `${values.propertyArea} \u0645\u00B2 \u0645\u0633\u0627\u062D\u0629 \u0625\u062C\u0645\u0627\u0644\u064A\u0629`
       : investmentOpportunityDefaultDetails.totalArea,
     buildYear: values.buildYear || investmentOpportunityDefaultDetails.buildYear,
     location:
-      [values.neighborhood, cityName].filter(Boolean).join('، ') ||
+      [values.neighborhood, cityName].filter(Boolean).join('\u060C ') ||
       values.propertyLocation ||
       investmentOpportunityDefaultDetails.location,
     metrics: [
       {
-        label: 'العائد الصافي المتوقع',
+        label:
+          '\u0627\u0644\u0639\u0627\u0626\u062F \u0627\u0644\u0635\u0627\u0641\u064A \u0627\u0644\u0645\u062A\u0648\u0642\u0639',
         value:
           values.expectedNetReturn ||
           investmentOpportunityDefaultDetails.metrics[0].value,
       },
       {
-        label: 'العائد المتوقع',
+        label: '\u0627\u0644\u0639\u0627\u0626\u062F \u0627\u0644\u0645\u062A\u0648\u0642\u0639',
         value:
           values.expectedReturn || investmentOpportunityDefaultDetails.metrics[1].value,
       },
       {
-        label: 'عدد الحصص',
+        label: '\u0639\u062F\u062F \u0627\u0644\u062D\u0635\u0635',
         value: values.shareCount || investmentOpportunityDefaultDetails.metrics[2].value,
       },
       {
-        label: 'سعر الحصة',
+        label: '\u0633\u0639\u0631 \u0627\u0644\u062D\u0635\u0629',
         value: values.sharePrice || investmentOpportunityDefaultDetails.metrics[3].value,
       },
       {
-        label: 'سعر العقار',
+        label: '\u0633\u0639\u0631 \u0627\u0644\u0639\u0642\u0627\u0631',
         value:
           values.propertyPrice ||
           investmentOpportunityDefaultDetails.metrics[4].value,
         currency: true,
       },
     ],
+    gallery: buildReviewGallery(previewUrls),
     investmentSettings: [
       {
-        label: 'تاريخ بداية الاستثمار',
+        label:
+          '\u062A\u0627\u0631\u064A\u062E \u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u0627\u0633\u062A\u062B\u0645\u0627\u0631',
         value:
           values.investmentStartDate ||
           investmentOpportunityDefaultDetails.investmentSettings[0].value,
       },
       {
-        label: 'جدولة بداية الاستثمار',
-        value: values.scheduleInvestmentStart === 'no' ? 'لا' : 'نعم',
+        label:
+          '\u062C\u062F\u0648\u0644\u0629 \u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u0627\u0633\u062A\u062B\u0645\u0627\u0631',
+        value:
+          values.scheduleInvestmentStart === 'no'
+            ? '\u0644\u0627'
+            : '\u0646\u0639\u0645',
       },
     ],
     operator: {
@@ -167,7 +212,17 @@ export default function InvestmentOpportunityAddPage() {
   const [reviewDetails, setReviewDetails] = useState(
     investmentOpportunityDefaultDetails,
   )
+  const [uploadingFields, setUploadingFields] = useState({})
+  const [selectedFilesByField, setSelectedFilesByField] = useState(() =>
+    FILE_UPLOAD_FIELD_NAMES.reduce(
+      (accumulator, fieldName) => ({ ...accumulator, [fieldName]: [] }),
+      {},
+    ),
+  )
+  const [propertyImagePreviewUrls, setPropertyImagePreviewUrls] = useState([])
   const previousCityIdRef = useRef('')
+  const uploadTimeoutsRef = useRef({})
+  const fileInputRefs = useRef({})
   const { data: cities = [] } = useCitiesQuery()
   const createOpportunityMutation = useCreateOpportunityMutation()
   const createDraftMutation = useCreateOpportunityDraftMutation()
@@ -224,8 +279,105 @@ export default function InvestmentOpportunityAddPage() {
     setIsNeighborhoodMapOpen(true)
   }, [cityLookup, selectedCityId, setValue])
 
+  useEffect(() => {
+    const files = normalizeFiles(selectedFilesByField.propertyImages)
+
+    if (!files.length) {
+      setPropertyImagePreviewUrls([])
+      return
+    }
+
+    const nextPreviewUrls = files.map((file) => URL.createObjectURL(file))
+    setPropertyImagePreviewUrls(nextPreviewUrls)
+
+    return () => {
+      nextPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [selectedFilesByField.propertyImages])
+
+  useEffect(
+    () => () => {
+      Object.values(uploadTimeoutsRef.current).forEach((timeoutId) => {
+        window.clearTimeout(timeoutId)
+      })
+    },
+    [],
+  )
+
   const isSubmitting =
     createOpportunityMutation.isPending || createDraftMutation.isPending
+
+  const setFieldUploading = (fieldName) => {
+    window.clearTimeout(uploadTimeoutsRef.current[fieldName])
+    setUploadingFields((current) => ({ ...current, [fieldName]: true }))
+    uploadTimeoutsRef.current[fieldName] = window.setTimeout(() => {
+      setUploadingFields((current) => ({ ...current, [fieldName]: false }))
+    }, 450)
+  }
+
+  const setManagedFiles = (fieldName, files) => {
+    setSelectedFilesByField((current) => ({
+      ...current,
+      [fieldName]: files,
+    }))
+    setValue(fieldName, files, {
+      shouldDirty: true,
+      shouldValidate: true,
+    })
+  }
+
+  const registerFileField = (fieldName) => {
+    const field = register(fieldName)
+
+    return {
+      ...field,
+      ref: (element) => {
+        field.ref(element)
+        fileInputRefs.current[fieldName] = element
+      },
+      onChange: (event) => {
+        const nextFiles = normalizeFiles(event.target.files)
+        setFieldUploading(fieldName)
+        setManagedFiles(fieldName, nextFiles)
+        event.target.value = ''
+      },
+    }
+  }
+
+  const removeSelectedFile = (fieldName, index) => {
+    const nextFiles = normalizeFiles(selectedFilesByField[fieldName]).filter(
+      (_, fileIndex) => fileIndex !== index,
+    )
+
+    setManagedFiles(fieldName, nextFiles)
+
+    if (fileInputRefs.current[fieldName]) {
+      fileInputRefs.current[fieldName].value = ''
+    }
+  }
+
+  const fileUploadState = {
+    propertyDocuments: {
+      files: normalizeFiles(selectedFilesByField.propertyDocuments),
+      isLoading: Boolean(uploadingFields.propertyDocuments),
+      onRemoveFile: (index) => removeSelectedFile('propertyDocuments', index),
+    },
+    propertyImages: {
+      files: normalizeFiles(selectedFilesByField.propertyImages),
+      isLoading: Boolean(uploadingFields.propertyImages),
+      onRemoveFile: (index) => removeSelectedFile('propertyImages', index),
+    },
+    virtualTour: {
+      files: normalizeFiles(selectedFilesByField.virtualTour),
+      isLoading: Boolean(uploadingFields.virtualTour),
+      onRemoveFile: (index) => removeSelectedFile('virtualTour', index),
+    },
+    developerLogo: {
+      files: normalizeFiles(selectedFilesByField.developerLogo),
+      isLoading: Boolean(uploadingFields.developerLogo),
+      onRemoveFile: (index) => removeSelectedFile('developerLogo', index),
+    },
+  }
 
   const navigateToList = () => {
     navigate(
@@ -255,7 +407,9 @@ export default function InvestmentOpportunityAddPage() {
     const cityName =
       cityOptions.find((cityOption) => cityOption.value === formValues.cityId)
         ?.label ?? ''
-    setReviewDetails(buildReviewDetails(formValues, cityName))
+    setReviewDetails(
+      buildReviewDetails(formValues, cityName, propertyImagePreviewUrls),
+    )
     setReviewOpen(true)
   }
 
@@ -354,6 +508,13 @@ export default function InvestmentOpportunityAddPage() {
         title="إضافة فرصة استثمارية جديدة"
         description={addOpportunityDescription}
         register={register}
+        fileFields={{
+          propertyDocuments: registerFileField('propertyDocuments'),
+          propertyImages: registerFileField('propertyImages'),
+          virtualTour: registerFileField('virtualTour'),
+          developerLogo: registerFileField('developerLogo'),
+        }}
+        fileUploadState={fileUploadState}
         errors={errors}
         onSubmit={handleContinue}
         submitLabel="التالي"

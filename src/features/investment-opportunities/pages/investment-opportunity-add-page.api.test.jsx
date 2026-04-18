@@ -1,5 +1,5 @@
 ﻿import { act } from 'react'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -92,11 +92,10 @@ function renderAddPage() {
 }
 
 function getMainButtons() {
-  const allButtons = screen.getAllByRole('button')
+  const form = document.querySelector('form')
+  const allButtons = Array.from(form.querySelectorAll('button'))
   const submitButton = allButtons.find((button) => button.type === 'submit')
-  const draftButton = allButtons.find(
-    (button) => button.type === 'button' && /draft|مسودة/i.test(button.textContent || ''),
-  )
+  const draftButton = allButtons.filter((button) => button.type === 'button').at(-1)
 
   return { submitButton, draftButton }
 }
@@ -124,14 +123,34 @@ async function fillPublishRequiredFields() {
   fireEvent.change(document.getElementById('cityId'), {
     target: { value: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6' },
   })
+  const mapDialog = await screen.findByRole('dialog')
+  fireEvent.click(mapDialog.querySelectorAll('button')[0])
+  await waitFor(() => {
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
   fireEvent.change(document.getElementById('neighborhood'), {
     target: { value: 'Al Malqa' },
+  })
+  fireEvent.change(document.querySelector('input[name="latitude"]'), {
+    target: { value: '24.7136' },
+  })
+  fireEvent.change(document.querySelector('input[name="longitude"]'), {
+    target: { value: '46.6753' },
   })
   fireEvent.change(document.getElementById('propertyType'), {
     target: { value: 'residential' },
   })
+  fireEvent.change(document.getElementById('propertyArea'), {
+    target: { value: '3250' },
+  })
+  fireEvent.change(document.getElementById('propertyLocation'), {
+    target: { value: 'Al Malqa, Riyadh' },
+  })
   fireEvent.change(document.getElementById('propertyPrice'), {
     target: { value: '3500000' },
+  })
+  fireEvent.change(document.getElementById('currency'), {
+    target: { value: 'SAR' },
   })
   fireEvent.change(document.getElementById('shareCount'), {
     target: { value: '1000' },
@@ -150,6 +169,9 @@ async function fillPublishRequiredFields() {
   })
   fireEvent.change(document.getElementById('expectedReturn'), {
     target: { value: '12.5' },
+  })
+  fireEvent.change(document.getElementById('expectedNetReturn'), {
+    target: { value: '437500' },
   })
   fireEvent.change(document.getElementById('returnFrequency'), {
     target: { value: 'quarterly' },
@@ -175,6 +197,12 @@ async function fillPublishRequiredFields() {
 
   const cover = new File(['cover'], 'cover.png', { type: 'image/png' })
   const gallery = new File(['gallery'], 'gallery.png', { type: 'image/png' })
+  const documentFile = new File(['doc'], 'brochure.pdf', {
+    type: 'application/pdf',
+  })
+  fireEvent.change(document.getElementById('propertyDocuments'), {
+    target: { files: [documentFile] },
+  })
   fireEvent.change(document.getElementById('propertyImages'), {
     target: { files: [cover, gallery] },
   })
@@ -269,9 +297,8 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     fireEvent.click(submitButton)
 
     expect(createOpportunity).not.toHaveBeenCalled()
-    const publishButton = await screen.findByRole('button', {
-      name: /publish|نشر/i,
-    })
+    const dialog = await screen.findByRole('dialog')
+    const publishButton = dialog.querySelector('button.w-full')
     fireEvent.click(publishButton)
 
     await waitFor(() => {
@@ -280,6 +307,26 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     expect(router.state.location.pathname).toBe(
       ROUTE_PATHS.investmentOpportunities,
     )
+  })
+
+  it('shows uploaded files and renders only uploaded gallery images in review', async () => {
+    renderAddPage()
+
+    await fillPublishRequiredFields()
+
+    await waitFor(() => {
+      expect(screen.getByText(/cover\.png/)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/gallery\.png/)).toBeInTheDocument()
+
+    fireEvent.click(getMainButtons().submitButton)
+
+    const dialog = await screen.findByRole('dialog')
+    const gallerySection = within(dialog).getByLabelText(/ØµÙˆØ±|gallery/i)
+
+    await waitFor(() => {
+      expect(gallerySection.querySelectorAll('img[src^="blob:"]')).toHaveLength(2)
+    })
   })
 })
 

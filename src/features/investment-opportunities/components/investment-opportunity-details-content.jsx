@@ -67,6 +67,10 @@ function DetailValue({ label, value, className }) {
 }
 
 function GalleryTile({ image }) {
+  if (!image?.src) {
+    return null
+  }
+
   return (
     <div
       className={cn(
@@ -76,7 +80,7 @@ function GalleryTile({ image }) {
     >
       <img
         src={image.src}
-        alt={image.alt}
+        alt={image.alt || ''}
         className="pointer-events-none absolute top-0 left-0 h-full w-full max-w-none object-cover"
       />
     </div>
@@ -124,6 +128,11 @@ export function InvestmentOpportunityDetailsActions({ onDelete, onEdit }) {
 
 export function InvestmentOpportunityDetailsBody({ details }) {
   const { dir } = useDirection()
+  const gallery = Array.isArray(details.gallery)
+    ? details.gallery.filter((image) => image?.src)
+    : []
+  const primaryGallery = gallery.slice(0, 2)
+  const secondaryGallery = gallery.slice(2, 5)
 
   return (
     <>
@@ -204,21 +213,42 @@ export function InvestmentOpportunityDetailsBody({ details }) {
           ))}
         </div>
 
-        <div
-          dir={dir}
-          className="flex w-full flex-col gap-4"
-          aria-label="صور الفرصة الاستثمارية"
-        >
-          <div className="flex w-full gap-3">
-            <GalleryTile image={details.gallery[0]} />
-            <GalleryTile image={details.gallery[1]} />
+        {gallery.length ? (
+          <div
+            dir={dir}
+            className="flex w-full flex-col gap-4"
+            aria-label="صور الفرصة الاستثمارية"
+          >
+            {primaryGallery.length ? (
+              <div
+                className={cn(
+                  'grid w-full gap-3',
+                  primaryGallery.length === 1 ? 'grid-cols-1' : 'grid-cols-2',
+                )}
+              >
+                {primaryGallery.map((image) => (
+                  <GalleryTile key={image.src} image={image} />
+                ))}
+              </div>
+            ) : null}
+            {secondaryGallery.length ? (
+              <div
+                className={cn(
+                  'grid w-full gap-3.5',
+                  secondaryGallery.length === 1
+                    ? 'grid-cols-1'
+                    : secondaryGallery.length === 2
+                      ? 'grid-cols-2'
+                      : 'grid-cols-3',
+                )}
+              >
+                {secondaryGallery.map((image) => (
+                  <GalleryTile key={image.src} image={image} />
+                ))}
+              </div>
+            ) : null}
           </div>
-          <div className="flex w-full gap-3.5">
-            <GalleryTile image={details.gallery[2]} />
-            <GalleryTile image={details.gallery[3]} />
-            <GalleryTile image={details.gallery[4]} />
-          </div>
-        </div>
+        ) : null}
       </section>
 
       <section

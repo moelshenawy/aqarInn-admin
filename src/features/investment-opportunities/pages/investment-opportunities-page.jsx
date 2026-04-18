@@ -48,7 +48,8 @@ function formatPrice(value) {
 function buildCardOpportunity(opportunity, index, language) {
   const fundedShares = toNumber(opportunity.funded_shares)
   const totalShares = toNumber(opportunity.total_shares)
-  const progress = totalShares > 0 ? Math.round((fundedShares / totalShares) * 100) : 0
+  const progress =
+    totalShares > 0 ? Math.round((fundedShares / totalShares) * 100) : 0
   const clampedProgress = Math.max(0, Math.min(100, progress))
 
   return {
