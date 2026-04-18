@@ -7,14 +7,17 @@ import {
   useMatches,
 } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { XIcon } from 'lucide-react'
 import { LocalizedLink } from '@/shared/components/localized-link'
 
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
+import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
 import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
@@ -40,6 +43,7 @@ function DashboardBrand({
   collapsed = false,
   canCollapse = false,
   onToggleCollapse,
+  mobileClose = false,
 }) {
   const isExpanded = !collapsed
 
@@ -84,6 +88,19 @@ function DashboardBrand({
             aria-hidden="true"
           />
         </button>
+      ) : mobileClose ? (
+        <SheetClose data-slot="sheet-close" asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="إغلاق القائمة"
+            className="size-7 rounded-[min(var(--radius-md),12px)]"
+          >
+            <XIcon />
+            <span className="sr-only">Close</span>
+          </Button>
+        </SheetClose>
       ) : (
         <span
           aria-hidden="true"
@@ -103,6 +120,7 @@ function DashboardSidebar({
   canCollapse = false,
   onToggleCollapse,
   locale,
+  mobileClose = false,
 }) {
   return (
     <div
@@ -118,6 +136,7 @@ function DashboardSidebar({
         collapsed={collapsed}
         canCollapse={canCollapse}
         onToggleCollapse={onToggleCollapse}
+        mobileClose={mobileClose}
       />
 
       <div
@@ -223,6 +242,7 @@ export function DashboardLayout() {
       pathname={location.pathname}
       onNavigate={() => setSidebarOpen(false)}
       locale={i18n.resolvedLanguage}
+      mobileClose
     />
   )
 
@@ -256,6 +276,7 @@ export function DashboardLayout() {
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetContent
             side="right"
+            showCloseButton={false}
             className="w-full max-w-[290px] border-none bg-[color:var(--dashboard-bg)] p-4"
           >
             <SheetHeader className="sr-only">
