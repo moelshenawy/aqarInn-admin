@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   Dialog,
@@ -6,30 +6,45 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import { showDashboardErrorToast } from '@/components/ui/dashboard-toast'
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 
-const defaultDistributionDate = '22/1/2026'
-const distributionSuccessToast = {
-  title: 'تم اضافة توزيعات ارباح المستثمرين بنجاح',
-  description:
-    'تم اضافة صافي العائد من توزيعات الارباح على المحافظ الاستثمارية',
-  actionLabel: 'إغلاق',
+function getTodayIsoDate() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function isValidNetProfitAmount(value) {
+  const normalized = String(value ?? '').trim()
+  if (!normalized) {
+    return false
+  }
+
+  const regex = /^\d{1,10}(\.\d{1,2})?$/
+  if (!regex.test(normalized)) {
+    return false
+  }
+
+  return Number(normalized) > 0
 }
 
 export function InvestmentOpportunityAddDistributionDialog({
   open,
   onOpenChange,
+  isSubmitting = false,
+  onSubmitDistribution,
 }) {
   const [netReturn, setNetReturn] = useState('')
-  const [distributionDate, setDistributionDate] = useState(
-    defaultDistributionDate,
-  )
+  const todayIsoDate = useMemo(() => getTodayIsoDate(), [])
 
   const resetForm = () => {
     setNetReturn('')
-    setDistributionDate(defaultDistributionDate)
   }
+
+  useEffect(() => {
+    if (!open) {
+      resetForm()
+    }
+  }, [open])
 
   const handleOpenChange = (nextOpen) => {
     if (!nextOpen) {
@@ -39,11 +54,25 @@ export function InvestmentOpportunityAddDistributionDialog({
     onOpenChange(nextOpen)
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    resetForm()
-    onOpenChange(false)
-    showDashboardSuccessToast(distributionSuccessToast)
+
+    if (!isValidNetProfitAmount(netReturn)) {
+      showDashboardErrorToast({
+        title: 'قيمة صافي الربح غير صحيحة',
+        description: 'أدخل قيمة رقمية أكبر من صفر بصيغة صحيحة مثل 10000.56',
+        actionLabel: 'إغلاق',
+      })
+      return
+    }
+
+    await onSubmitDistribution?.({
+      type: 'profit',
+      net_profit_amount: Number(netReturn),
+      currency: 'SAR',
+      distribution_date: todayIsoDate,
+      notes: '',
+    })
   }
 
   const handleCancel = () => {
@@ -94,11 +123,10 @@ export function InvestmentOpportunityAddDistributionDialog({
                 className="flex h-12 w-[189px] shrink-0 items-center justify-start rounded-lg border border-[#d6cbb2] bg-[#f8f3e8] px-3.5 text-left text-sm leading-5 font-medium text-[#5c4437] shadow-[var(--dashboard-shadow)]"
               >
                 <input
-                  value={distributionDate}
-                  onChange={(event) => setDistributionDate(event.target.value)}
-                  inputMode="numeric"
+                  value={todayIsoDate}
+                  readOnly
                   aria-label="تاريخ التوزيع"
-                  className="h-full min-w-0 flex-1 bg-transparent text-left text-sm leading-5 font-medium text-[#5c4437] outline-none"
+                  className="h-full min-w-0 flex-1 cursor-not-allowed bg-transparent text-left text-sm leading-5 font-medium text-[#5c4437] outline-none"
                 />
               </div>
             </div>
@@ -107,14 +135,16 @@ export function InvestmentOpportunityAddDistributionDialog({
           <div className="flex h-[47px] w-full items-start gap-2.5" dir="ltr">
             <button
               type="submit"
-              className="relative flex h-full w-[141px] items-center justify-center overflow-hidden rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold whitespace-nowrap text-white shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+              disabled={isSubmitting}
+              className="relative flex h-full w-[141px] items-center justify-center overflow-hidden rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold whitespace-nowrap text-white shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               اضافة التوزيعات
             </button>
             <button
               type="button"
+              disabled={isSubmitting}
               onClick={handleCancel}
-              className="relative flex h-full w-[127px] items-center justify-center overflow-hidden rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#ded6c4] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+              className="relative flex h-full w-[127px] items-center justify-center overflow-hidden rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#ded6c4] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               الغاء
             </button>

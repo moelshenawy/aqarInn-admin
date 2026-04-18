@@ -1,4 +1,3 @@
-import reviewCloseIcon from '/assets/investment-opportunities/review-icon-close.svg'
 import {
   Dialog,
   DialogClose,
@@ -9,10 +8,14 @@ import {
 import { InvestmentOpportunityDetailsBody } from '@/features/investment-opportunities/components/investment-opportunity-details-content'
 import { investmentOpportunityDefaultDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
+const reviewCloseIcon = '/assets/investment-opportunities/review-icon-close.svg'
+
 export function InvestmentOpportunityReviewDialog({
   open,
   onOpenChange,
   onPublish,
+  details = investmentOpportunityDefaultDetails,
+  isPublishing = false,
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,16 +54,15 @@ export function InvestmentOpportunityReviewDialog({
             </DialogDescription>
           </header>
 
-          <InvestmentOpportunityDetailsBody
-            details={investmentOpportunityDefaultDetails}
-          />
+          <InvestmentOpportunityDetailsBody details={details} />
 
           <button
             type="button"
             onClick={onPublish}
-            className="relative flex h-[52px] w-full items-center justify-center overflow-hidden rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+            disabled={isPublishing}
+            className="relative flex h-[52px] w-full items-center justify-center overflow-hidden rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70"
           >
-            نشر الفرصة
+            {isPublishing ? 'جاري النشر...' : 'نشر الفرصة'}
           </button>
         </div>
       </DialogContent>

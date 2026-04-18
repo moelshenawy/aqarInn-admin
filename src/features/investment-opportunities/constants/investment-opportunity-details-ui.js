@@ -1,14 +1,18 @@
-import reviewGallery1 from '/assets/investment-opportunities/review-gallery-1.png'
-import reviewGallery2 from '/assets/investment-opportunities/review-gallery-2.png'
-import reviewGallery3 from '/assets/investment-opportunities/review-gallery-3.png'
-import reviewGallery4 from '/assets/investment-opportunities/review-gallery-4.png'
-import reviewGallery5 from '/assets/investment-opportunities/review-gallery-5.png'
-import reviewChevronIcon from '/assets/investment-opportunities/review-icon-chevron-up.svg'
-import reviewEditIcon from '/assets/investment-opportunities/review-icon-edit.svg'
-import reviewMapPinIcon from '/assets/investment-opportunities/review-icon-map-pin.svg'
-import reviewTrashIcon from '/assets/investment-opportunities/review-icon-trash.svg'
-import reviewOperatorLogo from '/assets/investment-opportunities/review-operator-logo.png'
 import { investmentOpportunities } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
+
+const reviewGallery1 = '/assets/investment-opportunities/review-gallery-1.png'
+const reviewGallery2 = '/assets/investment-opportunities/review-gallery-2.png'
+const reviewGallery3 = '/assets/investment-opportunities/review-gallery-3.png'
+const reviewGallery4 = '/assets/investment-opportunities/review-gallery-4.png'
+const reviewGallery5 = '/assets/investment-opportunities/review-gallery-5.png'
+const reviewChevronIcon =
+  '/assets/investment-opportunities/review-icon-chevron-up.svg'
+const reviewEditIcon = '/assets/investment-opportunities/review-icon-edit.svg'
+const reviewMapPinIcon =
+  '/assets/investment-opportunities/review-icon-map-pin.svg'
+const reviewTrashIcon = '/assets/investment-opportunities/review-icon-trash.svg'
+const reviewOperatorLogo =
+  '/assets/investment-opportunities/review-operator-logo.png'
 
 export const investmentOpportunityDetailsAssets = {
   chevron: reviewChevronIcon,
@@ -97,6 +101,149 @@ export function getInvestmentOpportunityDetails(opportunityId) {
       id: opportunityId ?? investmentOpportunityDefaultDetails.id,
     }
   )
+}
+
+function asNumber(value) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function formatNumber(value, digits = 0) {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(asNumber(value))
+}
+
+function formatIsoDate(value, fallbackValue) {
+  if (!value) {
+    return fallbackValue
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return fallbackValue
+  }
+
+  return date.toISOString().slice(0, 10)
+}
+
+function mapAssetType(assetType) {
+  const mapping = {
+    residential: 'عقار سكني',
+    commercial: 'عقار تجاري',
+    office: 'عقار مكتبي',
+    land: 'أرض',
+  }
+
+  return mapping[assetType] ?? assetType ?? investmentOpportunityDefaultDetails.propertyType
+}
+
+/**
+ * @param {import('@/features/investment-opportunities/services/investment-opportunity-service').OpportunityItem | null} opportunity
+ * @param {{ opportunityId?: string | null, language?: string }} options
+ */
+export function mapOpportunityApiToDetails(
+  opportunity,
+  { opportunityId, language = 'ar' } = {},
+) {
+  if (!opportunity) {
+    return {
+      ...investmentOpportunityDefaultDetails,
+      id: opportunityId ?? investmentOpportunityDefaultDetails.id,
+    }
+  }
+
+  const propertyPrice = asNumber(opportunity.property_price)
+  const expectedAnnualReturnPct = asNumber(opportunity.expected_annual_return_pct)
+  const expectedNetReturn = (propertyPrice * expectedAnnualReturnPct) / 100
+
+  const defaultGallery = investmentOpportunityDefaultDetails.gallery
+  const apiGallery = Array.isArray(opportunity.gallery) ? opportunity.gallery : []
+  const gallerySources = [opportunity.cover_image_url, ...apiGallery].filter(Boolean)
+  const gallery = defaultGallery.map((galleryItem, index) => ({
+    ...galleryItem,
+    src: gallerySources[index] ?? galleryItem.src,
+  }))
+
+  const cityName =
+    language === 'en'
+      ? opportunity.city?.name_en || opportunity.city?.name_ar
+      : opportunity.city?.name_ar || opportunity.city?.name_en
+
+  return {
+    ...investmentOpportunityDefaultDetails,
+    id: opportunity.id || opportunityId || investmentOpportunityDefaultDetails.id,
+    titleAr: opportunity.title_ar || investmentOpportunityDefaultDetails.titleAr,
+    titleEn: opportunity.title_en || investmentOpportunityDefaultDetails.titleEn,
+    propertyType: mapAssetType(opportunity.asset_type),
+    floors: `${opportunity.floors ?? 0} ادوار`,
+    totalArea: `${formatNumber(opportunity.area_m2, 2)} م²  مساحة اجمالية`,
+    buildYear:
+      String(opportunity.build_year ?? '') ||
+      investmentOpportunityDefaultDetails.buildYear,
+    location:
+      opportunity.location_text ||
+      [opportunity.neighborhood, cityName].filter(Boolean).join('، ') ||
+      investmentOpportunityDefaultDetails.location,
+    metrics: [
+      {
+        label: 'العائد الصافي المتوقع',
+        value: formatNumber(expectedNetReturn, 0),
+      },
+      {
+        label: 'العائد المتوقع',
+        value: formatNumber(expectedAnnualReturnPct, 2),
+      },
+      {
+        label: 'عدد الحصص',
+        value: formatNumber(opportunity.total_shares, 0),
+      },
+      {
+        label: 'سعر الحصة',
+        value: formatNumber(opportunity.share_price, 0),
+      },
+      {
+        label: 'سعر العقار',
+        value: formatNumber(opportunity.property_price, 0),
+        currency: true,
+      },
+    ],
+    gallery,
+    investmentSettings: [
+      {
+        label: 'تاريخ بداية الاستثمار',
+        value: formatIsoDate(
+          opportunity.investment_start_at,
+          investmentOpportunityDefaultDetails.investmentSettings[0].value,
+        ),
+      },
+      {
+        label: 'جدولة بداية الاستثمار',
+        value: opportunity.schedule_investment_start ? 'نعم' : 'لا',
+      },
+    ],
+    operator: {
+      ...investmentOpportunityDefaultDetails.operator,
+      nameAr:
+        opportunity.operator_name_ar || investmentOpportunityDefaultDetails.operator.nameAr,
+      nameEn:
+        opportunity.operator_name_en || investmentOpportunityDefaultDetails.operator.nameEn,
+      descriptionAr:
+        opportunity.operator_description_ar ||
+        investmentOpportunityDefaultDetails.operator.descriptionAr,
+      descriptionEn:
+        opportunity.operator_description_en ||
+        investmentOpportunityDefaultDetails.operator.descriptionEn,
+      email:
+        opportunity.operator_email || investmentOpportunityDefaultDetails.operator.email,
+      phone:
+        opportunity.operator_phone || investmentOpportunityDefaultDetails.operator.phone,
+      location:
+        opportunity.operator_location_text ||
+        investmentOpportunityDefaultDetails.operator.location,
+    },
+  }
 }
 
 const distributionNames = [

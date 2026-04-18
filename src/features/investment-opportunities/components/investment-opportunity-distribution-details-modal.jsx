@@ -1,5 +1,7 @@
-import { ChevronUp, User } from 'lucide-react'
+import { AlertCircle, ChevronUp, User } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { investmentOpportunityDistributionDetailDefaults } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { cn } from '@/lib/utils'
@@ -47,6 +49,42 @@ function DistributionSummary({ details }) {
         {details.shareCount}
       </DistributionSummaryItem>
     </div>
+  )
+}
+
+function DistributionDetailsLoadingState() {
+  return (
+    <section
+      className="flex w-full flex-col gap-6"
+      data-testid="distribution-details-modal-skeleton"
+    >
+      <Skeleton className="h-8 w-48 rounded-md bg-[#d6cbb2]" />
+      <Skeleton className="h-14 w-full rounded-xl bg-[#eae5d7]" />
+      <Skeleton className="h-24 w-full rounded-xl bg-[#eae5d7]" />
+      <Skeleton className="h-64 w-full rounded-xl bg-[#eae5d7]" />
+    </section>
+  )
+}
+
+function DistributionDetailsErrorState({ onRetry }) {
+  return (
+    <section
+      className="flex w-full flex-col items-center gap-4 rounded-xl border border-[#eae5d7] bg-[#f8f3e8] p-6 text-center"
+      data-testid="distribution-details-modal-error"
+    >
+      <AlertCircle className="size-6 text-[#b54708]" aria-hidden="true" />
+      <p className="text-sm font-semibold text-[#6d4f3b]">
+        تعذر تحميل تفاصيل التوزيع. حاول مرة أخرى.
+      </p>
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={onRetry}
+        className="bg-[#eae5d7] text-[#402f28] hover:bg-[#d6cbb2]"
+      >
+        إعادة المحاولة
+      </Button>
+    </section>
   )
 }
 
@@ -160,9 +198,12 @@ export function InvestmentOpportunityDistributionDetailsModal({
   open,
   onOpenChange,
   distribution,
+  isLoading = false,
+  error = null,
+  onRetry,
 }) {
   const details =
-    distribution?.details ?? investmentOpportunityDistributionDetailDefaults
+    distribution ?? investmentOpportunityDistributionDetailDefaults
 
   return (
     <SideModalShell
@@ -174,23 +215,32 @@ export function InvestmentOpportunityDistributionDetailsModal({
       closeButtonClassName="max-sm:right-auto max-sm:left-4"
       className="flex h-full min-h-full flex-col items-end gap-[30px] overflow-x-hidden overflow-y-auto px-6 py-8 text-right sm:px-8 sm:py-[38px]"
     >
-      <section className="flex w-full flex-col items-start gap-[30px]">
-        <div className="flex w-full flex-col items-start gap-5">
-          <header className="flex w-full items-center justify-end py-5">
-            <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]">
-              {details.title}
-            </h2>
-          </header>
-          <p className="w-full text-start text-lg leading-7 font-semibold text-[#6d4f3b]">
-            {details.description}
-          </p>
-        </div>
+      <p className="sr-only">{details.description}</p>
+      {isLoading ? <DistributionDetailsLoadingState /> : null}
+      {!isLoading && error ? (
+        <DistributionDetailsErrorState onRetry={onRetry} />
+      ) : null}
+      {!isLoading && !error ? (
+        <>
+          <section className="flex w-full flex-col items-start gap-[30px]">
+            <div className="flex w-full flex-col items-start gap-5">
+              <header className="flex w-full items-center justify-end py-5">
+                <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]">
+                  {details.title}
+                </h2>
+              </header>
+              <p className="w-full text-start text-lg leading-7 font-semibold text-[#6d4f3b]">
+                {details.description}
+              </p>
+            </div>
 
-        <DistributionSummary details={details} />
-      </section>
+            <DistributionSummary details={details} />
+          </section>
 
-      <ExecutorDetails details={details} />
-      <InvestorsTable details={details} />
+          <ExecutorDetails details={details} />
+          <InvestorsTable details={details} />
+        </>
+      ) : null}
     </SideModalShell>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -7,12 +7,17 @@ import {
   ROUTE_PATHS,
 } from '@/app/router/route-paths'
 import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   InvestmentOpportunityDetailsActions,
   InvestmentOpportunityDetailsBody,
 } from '@/features/investment-opportunities/components/investment-opportunity-details-content'
 import { InvestmentOpportunityDetailsTabs } from '@/features/investment-opportunities/components/investment-opportunity-details-tabs'
-import { getInvestmentOpportunityDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
+import {
+  investmentOpportunityDefaultDetails,
+  mapOpportunityApiToDetails,
+} from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
+import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/hooks/use-opportunity-details-query'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const deleteSuccessToast = {
@@ -25,8 +30,18 @@ export default function InvestmentOpportunityDetailsPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
-  const details = getInvestmentOpportunityDetails(opportunityId)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const { data: opportunity, isLoading } =
+    useOpportunityDetailsQuery(opportunityId)
+
+  const details = useMemo(
+    () =>
+      mapOpportunityApiToDetails(opportunity, {
+        opportunityId,
+        language: i18n.resolvedLanguage,
+      }),
+    [i18n.resolvedLanguage, opportunity, opportunityId],
+  )
 
   const handleConfirmDelete = () => {
     setDeleteOpen(false)
@@ -42,7 +57,7 @@ export default function InvestmentOpportunityDetailsPage() {
   return (
     <div className="-mt-[17px] space-y-4 text-start" dir="rtl">
       <InvestmentOpportunityDetailsTabs
-        opportunityId={details.id}
+        opportunityId={details.id || investmentOpportunityDefaultDetails.id}
         activeTab="details"
       />
 
@@ -71,7 +86,26 @@ export default function InvestmentOpportunityDetailsPage() {
             </h1>
           </header>
 
-          <InvestmentOpportunityDetailsBody details={details} />
+          {isLoading && !opportunity ? (
+            <div className="grid min-h-[240px] gap-4 rounded-xl border border-[#eae5d7] bg-[#f8f3e8] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <Skeleton className="h-8 w-1/3 rounded-full bg-[#d6cbb2]" />
+                <Skeleton className="h-8 w-1/4 rounded-full bg-[#d6cbb2]" />
+              </div>
+              <div className="grid gap-3">
+                <Skeleton className="h-5 w-full rounded-md bg-[#d6cbb2]" />
+                <Skeleton className="h-5 w-5/6 rounded-md bg-[#d6cbb2]" />
+                <Skeleton className="h-5 w-2/3 rounded-md bg-[#d6cbb2]" />
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Skeleton className="h-10 w-28 rounded-full bg-[#d6cbb2]" />
+                <Skeleton className="h-10 w-20 rounded-full bg-[#d6cbb2]" />
+                <Skeleton className="h-10 w-24 rounded-full bg-[#d6cbb2]" />
+              </div>
+            </div>
+          ) : (
+            <InvestmentOpportunityDetailsBody details={details} />
+          )}
         </div>
       </section>
 

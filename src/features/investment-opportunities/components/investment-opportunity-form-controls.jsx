@@ -8,6 +8,7 @@ function InvestmentOpportunityFieldShell({
   label,
   required = false,
   className,
+  error,
   children,
 }) {
   return (
@@ -21,6 +22,9 @@ function InvestmentOpportunityFieldShell({
         {required ? <span className="text-[#876647]">*</span> : null}
       </label>
       {children}
+      {error ? (
+        <p className="text-xs leading-5 font-medium text-[#b93815]">{error}</p>
+      ) : null}
     </div>
   )
 }
@@ -107,6 +111,7 @@ export const InvestmentOpportunityTextField = forwardRef(
       addon,
       className,
       inputClassName,
+      error,
       type = 'text',
       ...props
     },
@@ -118,6 +123,7 @@ export const InvestmentOpportunityTextField = forwardRef(
         label={label}
         required={required}
         className={className}
+        error={error}
       >
         <div className="relative">
           <input
@@ -151,6 +157,7 @@ export const InvestmentOpportunityTextareaField = forwardRef(
       icon,
       className,
       textareaClassName,
+      error,
       ...props
     },
     ref,
@@ -161,6 +168,7 @@ export const InvestmentOpportunityTextareaField = forwardRef(
         label={label}
         required={required}
         className={className}
+        error={error}
       >
         <div className="relative">
           <textarea
@@ -193,6 +201,7 @@ export const InvestmentOpportunitySelectField = forwardRef(
       className,
       selectClassName,
       icon: Icon,
+      error,
       ...props
     },
     ref,
@@ -203,6 +212,7 @@ export const InvestmentOpportunitySelectField = forwardRef(
         label={label}
         required={required}
         className={className}
+        error={error}
       >
         <div className="relative">
           <select
@@ -251,7 +261,7 @@ export const InvestmentOpportunitySelectField = forwardRef(
 
 export const InvestmentOpportunityFilePickerField = forwardRef(
   function InvestmentOpportunityFilePickerField(
-    { id, label, required = false, placeholder, className, ...props },
+    { id, label, required = false, placeholder, className, error, ...props },
     ref,
   ) {
     return (
@@ -260,6 +270,7 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
         label={label}
         required={required}
         className={className}
+        error={error}
       >
         <input ref={ref} id={id} type="file" className="sr-only" {...props} />
         <label
@@ -279,7 +290,7 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
 
 export const InvestmentOpportunityDropzoneField = forwardRef(
   function InvestmentOpportunityDropzoneField(
-    { id, label, className, ...props },
+    { id, label, className, error, ...props },
     ref,
   ) {
     return (
@@ -287,6 +298,7 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
         id={id}
         label={label}
         className={cn('md:col-span-2', className)}
+        error={error}
       >
         <input ref={ref} id={id} type="file" className="sr-only" {...props} />
         <label
@@ -316,11 +328,15 @@ export function InvestmentOpportunityFormActions({
   onDraft,
   cancelLabel,
   onCancel,
+  disableSubmit = false,
+  disableDraft = false,
+  disableCancel = false,
 }) {
   return (
     <div className="flex items-start justify-start gap-2.5 pt-[30px]" dir="ltr">
       <button
         type="submit"
+        disabled={disableSubmit}
         className="h-[47px] w-[176px] rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
       >
         {submitLabel}
@@ -328,6 +344,7 @@ export function InvestmentOpportunityFormActions({
       {onDraft && draftLabel ? (
         <button
           type="button"
+          disabled={disableDraft}
           onClick={onDraft}
           className="h-[47px] w-[176px] rounded-lg bg-[#f1ead8] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#e5dac2] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
         >
@@ -336,6 +353,7 @@ export function InvestmentOpportunityFormActions({
       ) : null}
       <button
         type="button"
+        disabled={disableCancel}
         onClick={onCancel}
         className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#ded6c4] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
       >
