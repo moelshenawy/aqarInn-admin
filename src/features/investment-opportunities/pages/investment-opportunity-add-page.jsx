@@ -42,13 +42,6 @@ const publishSuccessToast = {
   actionLabel: 'إغلاق',
 }
 
-const FILE_UPLOAD_FIELD_NAMES = [
-  'propertyDocuments',
-  'propertyImages',
-  'virtualTour',
-  'developerLogo',
-]
-
 function resolveApiErrorMessage(error, t) {
   const message = error?.message
 
@@ -128,6 +121,10 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
       ? `${values.propertyArea} \u0645\u00B2 \u0645\u0633\u0627\u062D\u0629 \u0625\u062C\u0645\u0627\u0644\u064A\u0629`
       : investmentOpportunityDefaultDetails.totalArea,
     buildYear: values.buildYear || investmentOpportunityDefaultDetails.buildYear,
+    locationDisplay:
+      [values.neighborhood, cityName].filter(Boolean).join('\u060C ') ||
+      values.propertyLocation ||
+      investmentOpportunityDefaultDetails.locationDisplay,
     location:
       [values.neighborhood, cityName].filter(Boolean).join('\u060C ') ||
       values.propertyLocation ||
@@ -213,12 +210,6 @@ export default function InvestmentOpportunityAddPage() {
     investmentOpportunityDefaultDetails,
   )
   const [uploadingFields, setUploadingFields] = useState({})
-  const [selectedFilesByField, setSelectedFilesByField] = useState(() =>
-    FILE_UPLOAD_FIELD_NAMES.reduce(
-      (accumulator, fieldName) => ({ ...accumulator, [fieldName]: [] }),
-      {},
-    ),
-  )
   const [propertyImagePreviewUrls, setPropertyImagePreviewUrls] = useState([])
   const previousCityIdRef = useRef('')
   const uploadTimeoutsRef = useRef({})
@@ -239,6 +230,10 @@ export default function InvestmentOpportunityAddPage() {
   })
 
   const selectedCityId = watch('cityId')
+  const propertyDocumentsValue = watch('propertyDocuments')
+  const propertyImagesValue = watch('propertyImages')
+  const virtualTourValue = watch('virtualTour')
+  const developerLogoValue = watch('developerLogo')
 
   const publishSchema = useMemo(
     () => createInvestmentOpportunityPublishSchema(t),
@@ -280,7 +275,7 @@ export default function InvestmentOpportunityAddPage() {
   }, [cityLookup, selectedCityId, setValue])
 
   useEffect(() => {
-    const files = normalizeFiles(selectedFilesByField.propertyImages)
+    const files = normalizeFiles(propertyImagesValue)
 
     if (!files.length) {
       setPropertyImagePreviewUrls([])
@@ -293,7 +288,7 @@ export default function InvestmentOpportunityAddPage() {
     return () => {
       nextPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
     }
-  }, [selectedFilesByField.propertyImages])
+  }, [propertyImagesValue])
 
   useEffect(
     () => () => {
@@ -316,14 +311,11 @@ export default function InvestmentOpportunityAddPage() {
   }
 
   const setManagedFiles = (fieldName, files) => {
-    setSelectedFilesByField((current) => ({
-      ...current,
-      [fieldName]: files,
-    }))
     setValue(fieldName, files, {
       shouldDirty: true,
       shouldValidate: true,
     })
+    clearErrors(fieldName)
   }
 
   const registerFileField = (fieldName) => {
@@ -345,7 +337,7 @@ export default function InvestmentOpportunityAddPage() {
   }
 
   const removeSelectedFile = (fieldName, index) => {
-    const nextFiles = normalizeFiles(selectedFilesByField[fieldName]).filter(
+    const nextFiles = normalizeFiles(getValues(fieldName)).filter(
       (_, fileIndex) => fileIndex !== index,
     )
 
@@ -358,22 +350,22 @@ export default function InvestmentOpportunityAddPage() {
 
   const fileUploadState = {
     propertyDocuments: {
-      files: normalizeFiles(selectedFilesByField.propertyDocuments),
+      files: normalizeFiles(propertyDocumentsValue),
       isLoading: Boolean(uploadingFields.propertyDocuments),
       onRemoveFile: (index) => removeSelectedFile('propertyDocuments', index),
     },
     propertyImages: {
-      files: normalizeFiles(selectedFilesByField.propertyImages),
+      files: normalizeFiles(propertyImagesValue),
       isLoading: Boolean(uploadingFields.propertyImages),
       onRemoveFile: (index) => removeSelectedFile('propertyImages', index),
     },
     virtualTour: {
-      files: normalizeFiles(selectedFilesByField.virtualTour),
+      files: normalizeFiles(virtualTourValue),
       isLoading: Boolean(uploadingFields.virtualTour),
       onRemoveFile: (index) => removeSelectedFile('virtualTour', index),
     },
     developerLogo: {
-      files: normalizeFiles(selectedFilesByField.developerLogo),
+      files: normalizeFiles(developerLogoValue),
       isLoading: Boolean(uploadingFields.developerLogo),
       onRemoveFile: (index) => removeSelectedFile('developerLogo', index),
     },

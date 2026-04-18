@@ -100,6 +100,19 @@ function getMainButtons() {
   return { submitButton, draftButton }
 }
 
+function getFieldShell(inputId) {
+  return document.getElementById(inputId).closest('.space-y-3')
+}
+
+function setNativeInputValue(element, value) {
+  const prototype = Object.getPrototypeOf(element)
+  const valueSetter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set
+
+  valueSetter?.call(element, value)
+  fireEvent.input(element, { target: { value } })
+  fireEvent.change(element, { target: { value } })
+}
+
 async function fillPublishRequiredFields() {
   await waitFor(() => {
     const citySelect = document.getElementById('cityId')
@@ -128,15 +141,9 @@ async function fillPublishRequiredFields() {
   await waitFor(() => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
-  fireEvent.change(document.getElementById('neighborhood'), {
-    target: { value: 'Al Malqa' },
-  })
-  fireEvent.change(document.querySelector('input[name="latitude"]'), {
-    target: { value: '24.7136' },
-  })
-  fireEvent.change(document.querySelector('input[name="longitude"]'), {
-    target: { value: '46.6753' },
-  })
+  setNativeInputValue(document.getElementById('neighborhood'), 'Al Malqa')
+  setNativeInputValue(document.querySelector('input[name="latitude"]'), '24.7136')
+  setNativeInputValue(document.querySelector('input[name="longitude"]'), '46.6753')
   fireEvent.change(document.getElementById('propertyType'), {
     target: { value: 'residential' },
   })
@@ -205,6 +212,21 @@ async function fillPublishRequiredFields() {
   })
   fireEvent.change(document.getElementById('propertyImages'), {
     target: { files: [cover, gallery] },
+  })
+
+  const propertyDocumentsField = getFieldShell('propertyDocuments')
+  const propertyImagesField = getFieldShell('propertyImages')
+
+  await waitFor(() => {
+    expect(
+      within(propertyDocumentsField).getAllByText(/brochure\.pdf/i).length,
+    ).toBeGreaterThan(0)
+    expect(
+      within(propertyImagesField).getAllByText(/cover\.png/i).length,
+    ).toBeGreaterThan(0)
+    expect(
+      within(propertyImagesField).getAllByText(/gallery\.png/i).length,
+    ).toBeGreaterThan(0)
   })
 }
 
@@ -313,11 +335,16 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     renderAddPage()
 
     await fillPublishRequiredFields()
+    const propertyImagesField = getFieldShell('propertyImages')
 
     await waitFor(() => {
-      expect(screen.getByText(/cover\.png/)).toBeInTheDocument()
+      expect(
+        within(propertyImagesField).getAllByText(/cover\.png/i).length,
+      ).toBeGreaterThan(0)
     })
-    expect(screen.getByText(/gallery\.png/)).toBeInTheDocument()
+    expect(
+      within(propertyImagesField).getAllByText(/gallery\.png/i).length,
+    ).toBeGreaterThan(0)
 
     fireEvent.click(getMainButtons().submitButton)
 
@@ -327,6 +354,88 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     await waitFor(() => {
       expect(gallerySection.querySelectorAll('img[src^="blob:"]')).toHaveLength(2)
     })
+  })
+
+  it('keeps RHF file values in sync when removing and re-uploading required files', async () => {
+    renderAddPage()
+
+    await fillPublishRequiredFields()
+
+    const propertyDocumentsField = getFieldShell('propertyDocuments')
+    const propertyImagesField = getFieldShell('propertyImages')
+
+    await waitFor(() => {
+      expect(
+        within(propertyDocumentsField).getByRole('button', {
+          name: /إزالة brochure\.pdf/i,
+        }),
+      ).toBeInTheDocument()
+      expect(
+        within(propertyImagesField).getByRole('button', {
+          name: /إزالة cover\.png/i,
+        }),
+      ).toBeInTheDocument()
+      expect(
+        within(propertyImagesField).getByRole('button', {
+          name: /إزالة gallery\.png/i,
+        }),
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(
+      within(propertyDocumentsField).getByRole('button', { name: /إزالة brochure\.pdf/i }),
+    )
+    fireEvent.click(
+      within(propertyImagesField).getByRole('button', { name: /إزالة cover\.png/i }),
+    )
+    fireEvent.click(
+      within(propertyImagesField).getByRole('button', { name: /إزالة gallery\.png/i }),
+    )
+
+    await waitFor(() => {
+      expect(within(propertyDocumentsField).queryByText(/brochure\.pdf/i)).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(within(propertyImagesField).queryByText(/cover\.png/i)).not.toBeInTheDocument()
+      expect(within(propertyImagesField).queryByText(/gallery\.png/i)).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(getMainButtons().submitButton)
+
+    await waitFor(() => {
+      expect(within(propertyDocumentsField).getByText('هذا الحقل مطلوب.')).toBeInTheDocument()
+      expect(within(propertyImagesField).getByText('هذا الحقل مطلوب.')).toBeInTheDocument()
+    })
+
+    const replacementDocument = new File(['doc-2'], 'replacement.pdf', {
+      type: 'application/pdf',
+    })
+    const replacementImage = new File(['cover-2'], 'replacement.png', {
+      type: 'image/png',
+    })
+
+    fireEvent.change(document.getElementById('propertyDocuments'), {
+      target: { files: [replacementDocument] },
+    })
+    fireEvent.change(document.getElementById('propertyImages'), {
+      target: { files: [replacementImage] },
+    })
+
+    await waitFor(() => {
+      expect(
+        within(propertyDocumentsField).getAllByText(/replacement\.pdf/i).length,
+      ).toBeGreaterThan(0)
+      expect(
+        within(propertyImagesField).getAllByText(/replacement\.png/i).length,
+      ).toBeGreaterThan(0)
+      expect(within(propertyDocumentsField).queryByText('هذا الحقل مطلوب.')).not.toBeInTheDocument()
+      expect(within(propertyImagesField).queryByText('هذا الحقل مطلوب.')).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(getMainButtons().submitButton)
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toBeInTheDocument()
   })
 })
 

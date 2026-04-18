@@ -68,6 +68,12 @@ export default function InvestmentOpportunityDetailsPage() {
             dir={dir}
             className="flex w-full items-center justify-end gap-[58px] py-2.5"
           >
+            <h1
+              dir="rtl"
+              className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
+            >
+              عرض تفاصيل الفرصة الاستثمارية
+            </h1>
             <InvestmentOpportunityDetailsActions
               onDelete={() => setDeleteOpen(true)}
               onEdit={() =>
@@ -79,12 +85,6 @@ export default function InvestmentOpportunityDetailsPage() {
                 )
               }
             />
-            <h1
-              dir="rtl"
-              className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
-            >
-              عرض تفاصيل الفرصة الاستثمارية
-            </h1>
           </header>
 
           {isLoading && !opportunity ? (

@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+﻿import { Fragment } from 'react'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { useDirection } from '@/lib/i18n/direction-provider'
@@ -133,6 +133,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
     : []
   const primaryGallery = gallery.slice(0, 2)
   const secondaryGallery = gallery.slice(2, 5)
+  const locationDisplay = details.locationDisplay || details.location
 
   return (
     <>
@@ -140,63 +141,42 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         className="flex w-full flex-col gap-[30px]"
         aria-label="تفاصيل العقار"
       >
-        <div className="flex w-full flex-col gap-5">
-          <div className="flex w-full flex-col gap-5">
-            <div dir={dir} className="flex w-full items-center gap-5 lg:gap-[240px]">
-              <div
-                dir={dir}
-                className="flex shrink-0 items-center gap-5 text-start"
-              >
-                <p className="max-w-[105px] truncate text-xl leading-[30px] font-semibold text-[#402f28]">
-                  {details.floors}
-                </p>
-                <span
-                  className="h-6 w-px rotate-[1.13deg] bg-[#d6cbb2]"
-                  aria-hidden="true"
-                />
-                <p className="max-w-[120px] truncate text-xl leading-[30px] font-semibold text-[#402f28]">
-                  {details.propertyType}
-                </p>
-              </div>
-              <h2
-                dir="rtl"
-                className="min-w-0 flex-1 truncate text-start text-xl leading-[30px] font-semibold text-[#402f28]"
-              >
-                {details.titleAr}
-              </h2>
-            </div>
-
-            <div
-              dir={dir}
-              className="flex h-[30px] w-full items-center text-start text-xl leading-[30px] font-semibold text-[#402f28]"
-            >
-              <p className="shrink-0 truncate whitespace-pre">
-                {details.totalArea}
-              </p>
-              <p className="min-w-0 flex-1 truncate text-start">
-                {details.titleEn}
-              </p>
-            </div>
-          </div>
-
-          <div dir={dir} className="flex w-full items-center justify-end">
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
-              <p className="min-w-0 flex-1 truncate text-left text-lg leading-7 font-semibold text-[#402f28]">
-                {details.buildYear}
-              </p>
-              <p
-                dir="rtl"
-                className="shrink-0 truncate text-start text-lg leading-7 font-semibold text-[#402f28]"
-              >
-                {details.location}
-              </p>
+        <div
+          dir="rtl"
+          className="flex w-full flex-col gap-5 md:flex-row md:items-start md:justify-between"
+        >
+          <div className="flex min-w-0 flex-1 flex-col items-end gap-4 text-right">
+            <h2 className="w-full text-xl leading-[30px] font-semibold text-[#402f28]">
+              {details.titleAr}
+            </h2>
+            <p className="w-full text-xl leading-[30px] font-semibold text-[#402f28]">
+              {details.titleEn}
+            </p>
+            <div className="flex w-full items-center justify-start gap-2.5">
               <img
                 src={investmentOpportunityDetailsAssets.mapPin}
                 alt=""
                 className="size-[22px] shrink-0"
                 aria-hidden="true"
               />
+              <p className="min-w-0 truncate text-lg leading-7 font-semibold text-[#402f28]">
+                {locationDisplay}
+              </p>
             </div>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-end gap-4 text-end">
+            <div className="flex items-center gap-5 text-xl leading-[30px] font-semibold text-[#402f28]">
+              <p className="truncate">{details.propertyType}</p>
+              <span className="h-6 w-px bg-[#d6cbb2]" aria-hidden="true" />
+              <p className="truncate">{details.floors}</p>
+            </div>
+            <p className="text-xl leading-[30px] font-semibold text-[#402f28]">
+              {details.totalArea}
+            </p>
+            <p className="text-xl leading-[30px] font-semibold text-[#402f28]">
+              {details.buildYear}
+            </p>
           </div>
         </div>
 

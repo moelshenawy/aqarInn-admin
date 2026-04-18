@@ -1,4 +1,4 @@
-import { investmentOpportunities } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
+﻿import { investmentOpportunities } from '@/features/investment-opportunities/constants/investment-opportunities-ui'
 
 const reviewGallery1 = '/assets/investment-opportunities/review-gallery-1.png'
 const reviewGallery2 = '/assets/investment-opportunities/review-gallery-2.png'
@@ -28,9 +28,10 @@ export const investmentOpportunityDefaultDetails = {
   titleEn: 'Modern Residential Complex in North Riyadh',
   propertyType: 'عقار سكني',
   floors: '3 ادوار',
-  totalArea: '185.75 م²  مساحة اجمالية',
+  totalArea: '185.75 م² مساحة اجمالية',
   buildYear: '2021',
   location: 'حي الياسمين، شمال الرياض',
+  locationDisplay: 'حي الياسمين، شمال الرياض',
   metrics: [
     { label: 'العائد الصافي المتوقع', value: '275000' },
     { label: 'العائد المتوقع', value: '11' },
@@ -188,7 +189,7 @@ export function mapOpportunityApiToDetails(
     titleEn: opportunity.title_en || investmentOpportunityDefaultDetails.titleEn,
     propertyType: mapAssetType(opportunity.asset_type),
     floors: `${opportunity.floors ?? 0} ادوار`,
-    totalArea: `${formatNumber(opportunity.area_m2, 2)} م²  مساحة اجمالية`,
+    totalArea: `${formatNumber(opportunity.area_m2, 2)} م² مساحة اجمالية`,
     buildYear:
       String(opportunity.build_year ?? '') ||
       investmentOpportunityDefaultDetails.buildYear,
@@ -323,3 +324,5 @@ export const investmentOpportunityDistributionRows = distributionNames.map(
     details: investmentOpportunityDistributionDetailDefaults,
   }),
 )
+
+
