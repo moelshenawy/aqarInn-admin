@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { cn } from '@/lib/utils'
@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 const opportunityOverlay = '/assets/dashboard/opportunity-overlay.png'
 
 export function DashboardOpportunityCard({
-  code,
+  referenceCode,
   title,
   soldShares,
   price,
@@ -14,12 +14,9 @@ export function DashboardOpportunityCard({
   progress,
   image,
   sharesDot,
-  accentIcon: AccentIcon,
   className,
   to,
 }) {
-  const AccentIconComponent = AccentIcon
-
   const card = (
     <article
       dir="rtl"
@@ -29,7 +26,11 @@ export function DashboardOpportunityCard({
       )}
     >
       <div className="relative aspect-[358/131] overflow-hidden">
-        <img src={image} alt={title} className="size-full object-cover" />
+        <img
+          src={image || 'https://placehold.co/358x131'}
+          alt={title}
+          className="size-full object-cover"
+        />
         <div
           className="absolute inset-0 opacity-10 mix-blend-soft-light"
           style={{
@@ -41,7 +42,7 @@ export function DashboardOpportunityCard({
       </div>
 
       <div className="flex flex-col gap-3 px-4 pt-3 pb-[14px]">
-        <p className="text-right text-lg leading-7 font-semibold text-[#181927]">
+        <p className="line-clamp-2 text-right text-lg leading-7 font-semibold text-[#181927]">
           {title}
         </p>
 
@@ -53,13 +54,12 @@ export function DashboardOpportunityCard({
             </span>
           </div>
           <span className="rounded-full border border-[color:var(--dashboard-border)] bg-[color:var(--dashboard-bg)] px-2 py-0.5 text-xs leading-[18px] font-medium text-[color:var(--dashboard-text)]">
-            {code}
+            {referenceCode}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 text-sm leading-5 font-medium text-[#181927]">
-            <AccentIconComponent className="size-4 stroke-[1.8] text-[color:var(--dashboard-text-soft)]" />
             <span>{status}</span>
           </div>
           <div className="flex items-center gap-1 text-base leading-6 font-semibold text-black">

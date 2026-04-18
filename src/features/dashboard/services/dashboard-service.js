@@ -10,6 +10,37 @@ import { apiGet } from '@/lib/api/http-methods'
  * @property {number} total_withdrawals_requested
  * @property {number} [opportunities_count]
  * @property {Record<string, number>} [opportunities_by_status]
+ * @property {Array<{key: string, label: string, value: number, value_type: 'count' | 'currency'}>} [summary_cards]
+ * @property {{
+ *   title: string,
+ *   total: number,
+ *   statuses: Array<{key: string, label: string, count: number, share_pct: number, bar_pct: number}>
+ * }} [opportunities_status_overview]
+ * @property {{
+ *   title: string,
+ *   items: Array<{
+ *     id: string,
+ *     reference_code: string,
+ *     title: string,
+ *     status: string,
+ *     status_label: string,
+ *     city: string,
+ *     neighborhood: string,
+ *     cover_image_url: string | null,
+ *     funded_amount: number,
+ *     currency: string,
+ *     funded_shares: number,
+ *     total_shares: number,
+ *     investors_count: number,
+ *     funding_progress_pct: number
+ *   }>
+ * }} [featured_opportunities]
+ * @property {{
+ *   title: string,
+ *   selected_filter: string,
+ *   filters: Array<{ key: string, label: string, is_selected: boolean }>,
+ *   cards: Array<{ key: string, label: string, count: number, amount: number, currency: string }>
+ * }} [transactions_overview]
  */
 
 /**
@@ -19,10 +50,15 @@ import { apiGet } from '@/lib/api/http-methods'
  */
 
 /**
+ * @param {string | null} [transactionsFilter]
  * @returns {Promise<DashboardOverview | null>}
  */
-export async function getDashboardOverview() {
+export async function getDashboardOverview(transactionsFilter = null) {
   /** @type {DashboardOverviewResponse} */
-  const response = await apiGet('dashboard')
+  const response = await apiGet('dashboard', {
+    params: transactionsFilter
+      ? { transactions_filter: transactionsFilter }
+      : undefined,
+  })
   return response?.data ?? null
 }

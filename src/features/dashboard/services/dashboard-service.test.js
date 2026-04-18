@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+﻿import { describe, expect, it, vi } from 'vitest'
 
 import { apiGet } from '@/lib/api/http-methods'
 import { getDashboardOverview } from '@/features/dashboard/services/dashboard-service'
@@ -24,7 +24,18 @@ describe('getDashboardOverview', () => {
 
     const result = await getDashboardOverview()
 
-    expect(apiGet).toHaveBeenCalledWith('dashboard')
+    expect(apiGet).toHaveBeenCalledWith('dashboard', { params: undefined })
     expect(result).toEqual(responsePayload.data)
+  })
+
+  it('passes transactions filter as query params when provided', async () => {
+    const responsePayload = { message: 'OK', data: {} }
+    vi.mocked(apiGet).mockResolvedValue(responsePayload)
+
+    await getDashboardOverview('today')
+
+    expect(apiGet).toHaveBeenCalledWith('dashboard', {
+      params: { transactions_filter: 'today' },
+    })
   })
 })

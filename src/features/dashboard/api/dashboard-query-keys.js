@@ -1,4 +1,8 @@
 export const dashboardQueryKeys = {
   all: ['dashboard'],
-  overview: () => [...dashboardQueryKeys.all, 'overview'],
+  overview: (transactionsFilter = null) => [
+    ...dashboardQueryKeys.all,
+    'overview',
+    { transactionsFilter: transactionsFilter ?? null },
+  ],
 }

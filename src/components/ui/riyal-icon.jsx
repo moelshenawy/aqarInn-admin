@@ -19,4 +19,3 @@ export function RiyalIcon({ className, alt = 'ريال', style, ...props }) {
     </span>
   )
 }
-
