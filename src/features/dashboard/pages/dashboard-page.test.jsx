@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   act,
   fireEvent,
@@ -7,6 +7,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { I18nextProvider } from 'react-i18next'
 
@@ -16,9 +17,33 @@ import { AuthProvider } from '@/features/auth/context/auth-provider'
 import { DASHBOARD_SIDEBAR_COLLAPSED_STORAGE_KEY } from '@/features/dashboard/constants/dashboard-storage'
 import DashboardPage from '@/features/dashboard/pages/dashboard-page'
 import { dashboardRouteMeta } from '@/features/dashboard/routes/dashboard.route'
+import { getDashboardOverview } from '@/features/dashboard/services/dashboard-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
+
+vi.mock('@/features/dashboard/services/dashboard-service', () => ({
+  getDashboardOverview: vi.fn(),
+}))
+
+const dashboardOverviewFixture = {
+  total_users: 1,
+  verified_users: 0,
+  total_invested_amount: 10500,
+  total_returns_distributed: 0,
+  total_withdrawals_paid: 0,
+  total_withdrawals_requested: 0,
+}
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
+}
 
 async function renderDashboardRoute({
   initialEntries = ['/app/dashboard'],
@@ -87,13 +112,15 @@ async function renderDashboardRoute({
 
   return render(
     <I18nextProvider i18n={i18n}>
-      <AuthProvider>
-        <AppDirectionProvider>
-          <TooltipProvider delayDuration={0}>
-            <RouterProvider router={router} />
-          </TooltipProvider>
-        </AppDirectionProvider>
-      </AuthProvider>
+      <QueryClientProvider client={createTestQueryClient()}>
+        <AuthProvider>
+          <AppDirectionProvider>
+            <TooltipProvider delayDuration={0}>
+              <RouterProvider router={router} />
+            </TooltipProvider>
+          </AppDirectionProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </I18nextProvider>,
   )
 }
@@ -142,8 +169,26 @@ function expectPanelSummary(title, { count, amount }) {
   return panel
 }
 
+function createDeferred() {
+  /** @type {(value: any) => void} */
+  let resolve
+  /** @type {(reason?: any) => void} */
+  let reject
+  const promise = new Promise((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+
+  return { promise, resolve, reject }
+}
+
 describe('DashboardPage route', () => {
+  beforeEach(() => {
+    vi.mocked(getDashboardOverview).mockResolvedValue(dashboardOverviewFixture)
+  })
+
   afterEach(async () => {
+    vi.clearAllMocks()
     vi.useRealTimers()
     window.localStorage.clear()
     await act(async () => {
@@ -206,6 +251,51 @@ describe('DashboardPage route', () => {
     expect(depositMadeRow).not.toBeNull()
     expect(within(depositMadeRow).getAllByText('0')).not.toHaveLength(0)
     expect(screen.queryByText('English')).not.toBeInTheDocument()
+  })
+
+  it('shows metric card skeletons while dashboard overview is loading', async () => {
+    const deferred = createDeferred()
+    vi.mocked(getDashboardOverview).mockReturnValue(deferred.promise)
+
+    await renderDashboardRouteAtFrozenTime()
+
+    expect(
+      document.querySelectorAll('[data-slot="dashboard-metric-card-skeleton"]'),
+    ).toHaveLength(6)
+
+    deferred.resolve(dashboardOverviewFixture)
+
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('[data-slot="dashboard-metric-card-skeleton"]'),
+      ).toHaveLength(0)
+    })
+  })
+
+  it('renders top summary metric cards from dashboard overview API', async () => {
+    await renderDashboardRouteAtFrozenTime()
+    const metricsSection = screen.getByLabelText('بطاقات مؤشرات الأداء')
+
+    await waitFor(() => {
+      expect(screen.getByText('10,500')).toBeInTheDocument()
+    })
+
+    expect(within(metricsSection).getAllByText('1')).not.toHaveLength(0)
+    expect(screen.getAllByText('0')).not.toHaveLength(0)
+  })
+
+  it('falls back to zero values for top summary cards when dashboard overview API fails', async () => {
+    vi.mocked(getDashboardOverview).mockRejectedValue(new Error('network-failed'))
+
+    await renderDashboardRouteAtFrozenTime()
+
+    await waitFor(() => {
+      expect(
+        document.querySelectorAll('[data-slot="dashboard-metric-card-skeleton"]'),
+      ).toHaveLength(0)
+    })
+
+    expect(screen.getAllByText('0')).not.toHaveLength(0)
   })
 
   it('shows custom date fields, validates them, and clears errors when switching back to a preset', async () => {

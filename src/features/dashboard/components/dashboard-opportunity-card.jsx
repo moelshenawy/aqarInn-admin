@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
 
-import opportunityOverlay from '/assets/dashboard/opportunity-overlay.png'
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { cn } from '@/lib/utils'
+
+const opportunityOverlay = '/assets/dashboard/opportunity-overlay.png'
 
 export function DashboardOpportunityCard({
   code,
