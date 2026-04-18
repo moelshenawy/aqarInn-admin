@@ -12,10 +12,8 @@ import {
 } from '@/features/investment-opportunities/routes/investment-opportunities.route'
 import { notificationsRoute } from '@/features/notifications/routes/notifications.route'
 import { profitDistributionsRoute } from '@/features/profit-distributions/routes/profit-distributions.route'
-import {
-  usersAddRoute,
-  usersRoute,
-} from '@/features/users/routes/users.route'
+import { usersAddRoute, usersRoute } from '@/features/users/routes/users.route'
+import { citiesRoute } from '@/features/cities/routes/cities.route'
 
 export const publicRoutes = [
   loginRoute,
@@ -26,6 +24,7 @@ export const protectedRoutes = [
   dashboardRoute,
   usersRoute,
   usersAddRoute,
+  citiesRoute,
   investmentOpportunitiesRoute,
   investmentOpportunityAddRoute,
   investmentOpportunityDetailsRoute,

@@ -3,6 +3,34 @@
   "users": "Users Management",
   "investmentOpportunities": "Investment Opportunities",
   "addInvestmentOpportunity": "Add investment opportunity",
+  "cities": "Cities",
+  "citiesPage": {
+    "description": "Manage cities available in the admin panel.",
+    "tableTitle": "Cities list",
+    "tableSubtitle": "{{count}} cities currently configured.",
+    "emptyTitle": "No cities found",
+    "emptyDescription": "No cities are currently listed. Refresh to try again.",
+    "loading": "Loading cities...",
+    "errorMessage": "Unable to load cities at the moment. Please try again.",
+    "refresh": "Refresh",
+    "deleteCityConfirmDescription": "Are you sure you want to delete this city? This action cannot be undone.",
+    "cityDeletedTitle": "City deleted",
+    "cityDeletedDescription": "The city {{name}} was deleted successfully.",
+    "cityDeleteErrorTitle": "Delete failed",
+    "cityDeleteErrorDescription": "We could not delete the city. Please try again.",
+    "table": {
+      "columns": {
+        "nameAr": "Name (AR)",
+        "nameEn": "Name (EN)",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "coverImage": "Cover image",
+        "createdAt": "Created at",
+        "actions": "Actions"
+      },
+      "delete": "Delete"
+    }
+  },
   "profitDistributions": "Profit Distributions",
   "activityLogs": "Activity Logs",
   "notifications": "Notifications",

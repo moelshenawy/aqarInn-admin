@@ -11,6 +11,7 @@ export const APP_RESOURCES = Object.freeze({
   auth: 'auth',
   dashboard: 'dashboard',
   users: 'users',
+  cities: 'cities',
   investmentOpportunities: 'investment_opportunities',
   profitDistributions: 'profit_distributions',
   activityLogs: 'activity_logs',

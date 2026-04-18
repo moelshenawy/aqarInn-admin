@@ -37,8 +37,89 @@ function normalizeAuthUser(user) {
   }
 }
 
+function getRoleFromAuthUser(user) {
+  if (!user) {
+    return APP_ROLES.operationsAdmin
+  }
+
+  if (
+    user.is_super_admin ||
+    user.isSuperAdmin ||
+    user.is_admin ||
+    user.isAdmin
+  ) {
+    return APP_ROLES.superAdmin
+  }
+
+  const possibleRoles = []
+
+  if (typeof user.role === 'string') possibleRoles.push(user.role)
+  if (typeof user.roleName === 'string') possibleRoles.push(user.roleName)
+  if (typeof user.role_name === 'string') possibleRoles.push(user.role_name)
+  if (typeof user.type === 'string') possibleRoles.push(user.type)
+
+  if (Array.isArray(user.roles)) {
+    user.roles.forEach((role) => {
+      if (typeof role === 'string') {
+        possibleRoles.push(role)
+      } else if (role && typeof role.name === 'string') {
+        possibleRoles.push(role.name)
+      }
+    })
+  }
+
+  const normalizedRoles = new Set(
+    possibleRoles
+      .filter(Boolean)
+      .map((value) =>
+        value.toString().trim().toLowerCase().replace(/[-\s]/g, '_'),
+      ),
+  )
+
+  if (
+    normalizedRoles.has(APP_ROLES.superAdmin) ||
+    normalizedRoles.has('superadmin') ||
+    normalizedRoles.has('admin')
+  ) {
+    return APP_ROLES.superAdmin
+  }
+
+  if (
+    normalizedRoles.has(APP_ROLES.operationsAdmin) ||
+    normalizedRoles.has('operationsadmin') ||
+    normalizedRoles.has('operations') ||
+    normalizedRoles.has('operationadmin')
+  ) {
+    return APP_ROLES.operationsAdmin
+  }
+
+  if (
+    normalizedRoles.has(APP_ROLES.investmentManager) ||
+    normalizedRoles.has('investmentmanager')
+  ) {
+    return APP_ROLES.investmentManager
+  }
+
+  if (
+    normalizedRoles.has(APP_ROLES.readOnlyViewer) ||
+    normalizedRoles.has('readonlyviewer')
+  ) {
+    return APP_ROLES.readOnlyViewer
+  }
+
+  return APP_ROLES.operationsAdmin
+}
+
 export function AuthProvider({ children }) {
-  const [role, setRole] = useState(APP_ROLES.operationsAdmin)
+  const [role, setRole] = useState(() => {
+    try {
+      const raw = localStorage.getItem('authUser')
+      const storedUser = raw ? normalizeAuthUser(JSON.parse(raw)) : null
+      return getRoleFromAuthUser(storedUser)
+    } catch (e) {
+      return APP_ROLES.operationsAdmin
+    }
+  })
 
   const [user, setUser] = useState(() => {
     try {
@@ -61,8 +142,10 @@ export function AuthProvider({ children }) {
     setRole(APP_ROLES.operationsAdmin)
   }, [])
 
-  const login = useCallback(({ token, admin }) => {
-    const nextUser = normalizeAuthUser(admin)
+  const login = useCallback(({ token, admin, user }) => {
+    const authUser = admin ?? user
+    const nextUser = normalizeAuthUser(authUser)
+    const nextRole = getRoleFromAuthUser(authUser)
 
     try {
       localStorage.setItem('authToken', token)
@@ -72,6 +155,7 @@ export function AuthProvider({ children }) {
     }
 
     setUser(nextUser)
+    setRole(nextRole)
     setIsAuthenticated(true)
   }, [])
 

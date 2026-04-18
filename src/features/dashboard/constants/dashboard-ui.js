@@ -4,6 +4,7 @@ import {
   CreditCard,
   Grid2x2,
   LayoutDashboard,
+  MapPin,
   Megaphone,
   RefreshCw,
   Search,
@@ -57,6 +58,7 @@ export const dashboardRouteTitles = {
   'activity-logs': 'سجل النشاطات',
   users: 'ادارة المستخدمين',
   'users-add': 'ادارة المستخدمين',
+  cities: 'جميع المدن',
 }
 
 export const dashboardActions = {
@@ -86,6 +88,12 @@ export const dashboardNavItems = [
     label: 'ادارة المستخدمين',
     path: ROUTE_PATHS.users,
     icon: Users,
+  },
+  {
+    key: 'cities',
+    label: 'جميع المدن',
+    path: ROUTE_PATHS.cities,
+    icon: MapPin,
   },
 ]
 

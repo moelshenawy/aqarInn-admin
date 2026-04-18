@@ -15,6 +15,7 @@ export const ROUTE_PATHS = {
   dashboard: '/app/dashboard',
   users: '/app/users',
   usersAdd: '/app/users/add',
+  cities: '/app/cities',
   investmentOpportunities: '/app/investment-opportunities',
   investmentOpportunityAdd: '/app/investment-opportunities/add',
   investmentOpportunityDetails: '/app/investment-opportunities/:opportunityId',

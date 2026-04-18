@@ -3,6 +3,34 @@
   "users": "إدارة المستخدمين",
   "investmentOpportunities": "الفرص الاستثمارية",
   "addInvestmentOpportunity": "إضافة فرصة استثمارية",
+  "cities": "جميع المدن",
+  "citiesPage": {
+    "description": "إدارة المدن المتاحة في لوحة التحكم.",
+    "tableTitle": "قائمة المدن",
+    "tableSubtitle": "{{count}} مدينة مُدرجة حالياً.",
+    "emptyTitle": "لا توجد مدن",
+    "emptyDescription": "لا توجد مدن مدرجة حالياً. حاول التحديث مرة أخرى.",
+    "loading": "جاري تحميل المدن...",
+    "errorMessage": "تعذر تحميل المدن في الوقت الحالي. حاول مرة أخرى.",
+    "refresh": "تحديث",
+    "deleteCityConfirmDescription": "هل أنت متأكد من حذف هذه المدينة؟ لا يمكن التراجع عن هذا الإجراء.",
+    "cityDeletedTitle": "تم حذف المدينة",
+    "cityDeletedDescription": "تم حذف المدينة {{name}} بنجاح.",
+    "cityDeleteErrorTitle": "فشل الحذف",
+    "cityDeleteErrorDescription": "تعذر حذف المدينة. حاول مرة أخرى.",
+    "table": {
+      "columns": {
+        "nameAr": "الاسم (عربي)",
+        "nameEn": "الاسم (إنجليزي)",
+        "latitude": "خط العرض",
+        "longitude": "خط الطول",
+        "coverImage": "الصورة",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "إجراءات"
+      },
+      "delete": "حذف"
+    }
+  },
   "profitDistributions": "توزيعات الأرباح",
   "activityLogs": "سجل النشاطات",
   "notifications": "الإشعارات",

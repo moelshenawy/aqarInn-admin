@@ -50,7 +50,7 @@ export default function LoginPage() {
       const resp = await authService.login({ email, password })
 
       const token = resp?.data?.token
-      const admin = resp?.data?.admin
+      const authUser = resp?.data?.admin ?? resp?.data?.user ?? resp?.data
 
       if (!token) {
         throw new Error('validation.unexpectedError')
@@ -58,7 +58,7 @@ export default function LoginPage() {
 
       try {
         localStorage.setItem('authToken', token)
-        localStorage.setItem('authUser', JSON.stringify(admin))
+        localStorage.setItem('authUser', JSON.stringify(authUser))
       } catch {
         // ignore storage errors
       }
@@ -73,7 +73,7 @@ export default function LoginPage() {
         localStorage.removeItem('rememberedEmail')
       }
 
-      auth.login({ token, admin })
+      auth.login({ token, admin: authUser })
 
       toast.dismiss(loadingId)
       showDashboardSuccessToast({ title: t('loginSuccess') })
