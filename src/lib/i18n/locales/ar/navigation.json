@@ -28,8 +28,45 @@
         "createdAt": "تاريخ الإنشاء",
         "actions": "إجراءات"
       },
+      "edit": "تعديل",
       "delete": "حذف"
-    }
+    },
+    "form": {
+      "openCreate": "إضافة مدينة",
+      "createTitle": "إضافة مدينة",
+      "editTitle": "تعديل مدينة",
+      "description": "أدخل بيانات المدينة واحفظ التغييرات.",
+      "submitCreate": "إنشاء المدينة",
+      "submitEdit": "حفظ التعديلات",
+      "cancel": "إلغاء",
+      "validationTitle": "بيانات غير مكتملة",
+      "validationDescription": "يرجى تعبئة جميع الحقول المطلوبة قبل الحفظ.",
+      "createSuccessTitle": "تم إنشاء المدينة",
+      "createSuccessDescription": "تمت إضافة {{name}} بنجاح.",
+      "createErrorTitle": "فشل الإنشاء",
+      "createErrorDescription": "تعذر إنشاء المدينة. حاول مرة أخرى.",
+      "updateSuccessTitle": "تم تحديث المدينة",
+      "updateSuccessDescription": "تم تحديث بيانات {{name}} بنجاح.",
+      "updateErrorTitle": "فشل التحديث",
+      "updateErrorDescription": "تعذر تحديث بيانات المدينة. حاول مرة أخرى.",
+      "fields": {
+        "nameAr": "الاسم بالعربي",
+        "nameEn": "الاسم بالإنجليزي",
+        "latitude": "خط العرض",
+        "longitude": "خط الطول",
+        "coverImage": "صورة الغلاف"
+      },
+      "placeholders": {
+        "nameAr": "مثال: الرياض",
+        "nameEn": "Example: Riyadh",
+        "latitude": "24.7136",
+        "longitude": "46.6753"
+      }
+    },
+    "deleteCityConfirmTitle": "حذف المدينة",
+    "deleteCityConfirmConfirm": "حذف",
+    "deleteCityConfirmCancel": "إلغاء",
+    "deleteCityConfirmClose": "إغلاق النافذة"
   },
   "profitDistributions": "توزيعات الأرباح",
   "activityLogs": "سجل النشاطات",

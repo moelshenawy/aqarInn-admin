@@ -36,7 +36,6 @@ import {
 import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import { cn } from '@/lib/utils'
-import { canAccessRoute } from '@/lib/permissions/helpers'
 
 const logoMark = '/assets/dashboard/logo-mark.svg'
 
@@ -190,7 +189,7 @@ function DashboardSidebar({
 export function DashboardLayout() {
   const matches = useMatches()
   const location = useLocation()
-  const { role, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useAuth()
   const { i18n } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
@@ -206,21 +205,6 @@ export function DashboardLayout() {
     return (
       <Navigate
         to={ROUTE_PATHS.withLocale(ROUTE_PATHS.login, i18n.resolvedLanguage)}
-        replace
-      />
-    )
-  }
-
-  if (
-    activeRoute?.handle &&
-    !canAccessRoute(role, activeRoute.handle.requiredPermissions)
-  ) {
-    return (
-      <Navigate
-        to={ROUTE_PATHS.withLocale(
-          ROUTE_PATHS.unauthorized,
-          i18n.resolvedLanguage,
-        )}
         replace
       />
     )

@@ -2,17 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { navigationItems } from '@/app/navigation/navigation.config'
-import { useAuth } from '@/features/auth/context/auth-provider'
-import { canAccessRoute } from '@/lib/permissions/helpers'
 import { cn } from '@/lib/utils'
 
 export function SidebarNav({ onNavigate }) {
   const { t } = useTranslation(['navigation', 'common'])
   const location = useLocation()
-  const { role } = useAuth()
-  const items = navigationItems.filter((item) =>
-    canAccessRoute(role, item.requiredPermissions),
-  )
+  const items = navigationItems
 
   return (
     <nav className="space-y-1">

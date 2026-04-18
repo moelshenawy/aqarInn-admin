@@ -1,13 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, EyeOff } from 'lucide-react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { Button } from '@/components/ui/button'
-import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import {
+  showDashboardErrorToast,
+  showDashboardSuccessToast,
+} from '@/components/ui/dashboard-toast'
 import i18n from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { useCreateUserMutation } from '@/features/users/hooks/use-create-user-mutation'
+import { useUpdateUserMutation } from '@/features/users/hooks/use-update-user-mutation'
+import { useUserQuery } from '@/features/users/hooks/use-user-query'
 
 function getToastDirection() {
   return i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
@@ -16,10 +22,10 @@ function getToastDirection() {
 const dir = getToastDirection()
 
 const addUserSuccessToast = {
-  title: 'تم اضافة المستخدم بنجاح',
+  title: 'تم إضافة المستخدم بنجاح',
   description:
-    'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه',
-  actionLabel: 'اغلاق',
+    'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه.',
+  actionLabel: 'إغلاق',
 }
 
 const roleOptions = [
@@ -46,7 +52,7 @@ const initialFormValues = {
   email: '',
   mobile: '',
   roles: [],
-  active: false,
+  active: true,
   investmentOpportunities: [],
 }
 
@@ -72,8 +78,7 @@ function getInitialFormValues(prefillValues) {
     ...prefillValues,
     roles: normalizeMultiSelectInput(prefillValues.roles ?? prefillValues.role),
     investmentOpportunities: normalizeMultiSelectInput(
-      prefillValues.investmentOpportunities ??
-        prefillValues.investmentOpportunity,
+      prefillValues.investmentOpportunities ?? prefillValues.investmentOpportunity,
     ),
     active: Boolean(prefillValues.active),
   }
@@ -110,25 +115,63 @@ function UsersAddTextField({
 }) {
   return (
     <UsersAddFieldShell id={id} label={label}>
-      <div className="relative w-full">
-        <input
-          id={id}
-          type={type}
-          inputMode={inputMode}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          aria-required="true"
-          dir={dir}
-          className="h-[50px] w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-right text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
-        />
-        <EyeOff
-          className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 stroke-[1.8] text-[#bfab85]"
-          aria-hidden="true"
-        />
-      </div>
+      <input
+        id={id}
+        type={type}
+        inputMode={inputMode}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        aria-required="true"
+        dir={dir}
+        className="h-[50px] w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] px-3.5 py-3.5 text-right text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
+      />
     </UsersAddFieldShell>
   )
+}
+
+function generateSystemPassword(length = 10) {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+  const lower = 'abcdefghijkmnopqrstuvwxyz'
+  const digits = '23456789'
+  const symbols = '@#$%&*!?'
+  const all = upper + lower + digits + symbols
+  const pick = (chars) => chars[Math.floor(Math.random() * chars.length)]
+
+  const passwordChars = [pick(upper), pick(digits), pick(symbols)]
+
+  while (passwordChars.length < length) {
+    passwordChars.push(pick(all))
+  }
+
+  for (let i = passwordChars.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]]
+  }
+
+  return passwordChars.join('')
+}
+
+function normalizeSaudiMobile(rawValue) {
+  const digits = String(rawValue ?? '').replace(/\D/g, '')
+  if (!digits) return null
+
+  if (digits.startsWith('966')) {
+    const localNine = digits.slice(3)
+    if (localNine.length === 9 && localNine.startsWith('5')) {
+      return `0${localNine}`
+    }
+  }
+
+  if (digits.length === 10 && digits.startsWith('05')) {
+    return digits
+  }
+
+  if (digits.length === 9 && digits.startsWith('5')) {
+    return `0${digits}`
+  }
+
+  return null
 }
 
 function UsersAddMultiSelectField({
@@ -260,9 +303,7 @@ function UsersAddStatusField({ active, onChange }) {
         htmlFor="user-status"
         className="flex h-[50px] w-full cursor-pointer items-center justify-end gap-2 rounded-lg border border-[#bfab85] bg-[#f8f3e8] p-3.5 text-right text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition focus-within:border-[#9d7e55] focus-within:ring-3 focus-within:ring-[#9d7e55]/20"
       >
-        <span className="min-w-0 flex-1 truncate">
-          {active ? 'نشط' : 'غير نشط'}
-        </span>
+        <span className="min-w-0 flex-1 truncate">{active ? 'نشط' : 'غير نشط'}</span>
         <span className="relative inline-flex h-4 w-8 shrink-0 items-center rounded-full bg-[#eae5d7]">
           <input
             id="user-status"
@@ -282,11 +323,19 @@ export default function UsersAddPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const prefillValues = location.state?.userFormPrefill
-  const isEditMode = location.state?.mode === 'edit' && Boolean(prefillValues)
+  const userId = location.state?.userId
+  const isEditMode = location.state?.mode === 'edit' && Boolean(userId)
   const [formValues, setFormValues] = useState(() =>
     getInitialFormValues(prefillValues),
   )
   const { i18n } = useTranslation()
+  const createUserMutation = useCreateUserMutation()
+  const updateUserMutation = useUpdateUserMutation()
+  const { data: userDetails } = useUserQuery(userId, isEditMode)
+
+  const isSubmitting =
+    Boolean(createUserMutation.isLoading ?? createUserMutation.isPending) ||
+    Boolean(updateUserMutation.isLoading ?? updateUserMutation.isPending)
 
   function updateField(field, value) {
     setFormValues((currentValues) => ({
@@ -295,19 +344,104 @@ export default function UsersAddPage() {
     }))
   }
 
+  useEffect(() => {
+    if (!isEditMode || !userDetails?.data) {
+      return
+    }
+
+    const user = userDetails.data
+    setFormValues((currentValues) => ({
+      ...currentValues,
+      fullNameAr: user.full_name ?? currentValues.fullNameAr,
+      fullNameEn: user.full_name ?? currentValues.fullNameEn,
+      email: user.email ?? currentValues.email,
+      mobile: user.mobile_number ?? currentValues.mobile,
+      active: (user.account_status ?? 'active') === 'active',
+    }))
+  }, [isEditMode, userDetails])
+
   function handleSubmit(event) {
     event.preventDefault()
-    showDashboardSuccessToast(
-      isEditMode
-        ? {
-            title: 'تم تعديل المستخدم بنجاح',
+
+    const fullName = formValues.fullNameAr.trim() || formValues.fullNameEn.trim()
+    const email = formValues.email.trim()
+    const saudiMobile = normalizeSaudiMobile(formValues.mobile)
+
+    if (!fullName || !email || !saudiMobile) {
+      showDashboardErrorToast({
+        title: 'بيانات غير مكتملة',
+        description:
+          'يرجى إدخال الاسم والبريد الإلكتروني ورقم جوال سعودي صحيح (05xxxxxxxx أو +9665xxxxxxxx).',
+      })
+      return
+    }
+
+    if (isEditMode) {
+      updateUserMutation.mutate(
+        {
+          userId,
+          payload: {
+            full_name: fullName,
+            email,
+            mobile_number: saudiMobile,
+            city_id: null,
+            account_status: formValues.active ? 'active' : 'inactive',
+          },
+        },
+        {
+          onSuccess: () => {
+            showDashboardSuccessToast({
+              title: 'تم تعديل المستخدم بنجاح',
+              description:
+                'تم حفظ بيانات المستخدم المحدثة بنجاح، ويمكنك متابعة صلاحياته من قائمة المستخدمين.',
+              actionLabel: 'إغلاق',
+            })
+            navigate(
+              ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
+            )
+          },
+          onError: () => {
+            showDashboardErrorToast({
+              title: 'فشل التعديل',
+              description: 'تعذر تحديث بيانات المستخدم. حاول مرة أخرى.',
+            })
+          },
+        },
+      )
+      return
+    }
+
+    const nationalId = saudiMobile.replace(/^0/, '').padStart(10, '0')
+    const password = generateSystemPassword(10)
+
+    createUserMutation.mutate(
+      {
+        national_id: nationalId,
+        full_name: fullName,
+        email,
+        mobile_number: saudiMobile,
+        city_id: null,
+        password,
+      },
+      {
+        onSuccess: () => {
+          showDashboardSuccessToast({
+            ...addUserSuccessToast,
             description:
-              'تم حفظ بيانات المستخدم المحدثة بنجاح، ويمكنك متابعة صلاحياته من قائمة المستخدمين.',
-            actionLabel: 'اغلاق',
-          }
-        : addUserSuccessToast,
+              'تمت إضافة المستخدم إلى النظام بنجاح، وتم توليد كلمة مرور تلقائية.',
+          })
+          navigate(
+            ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
+          )
+        },
+        onError: () => {
+          showDashboardErrorToast({
+            title: 'فشل الإضافة',
+            description: 'تعذر إضافة المستخدم. حاول مرة أخرى.',
+          })
+        },
+      },
     )
-    navigate(ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage))
   }
 
   return (
@@ -363,10 +497,12 @@ export default function UsersAddPage() {
               id="user-mobile"
               label="رقم الجوال"
               value={formValues.mobile}
-              onChange={(value) => updateField('mobile', value)}
+              onChange={(value) =>
+                updateField('mobile', value.replace(/[^\d+]/g, '').slice(0, 13))
+              }
               placeholder="أدخل رقم الجوال بصيغة سعودية"
-              type="tel"
-              inputMode="tel"
+              type="text"
+              inputMode="numeric"
             />
             <UsersAddTextField
               id="user-email"
@@ -392,9 +528,7 @@ export default function UsersAddPage() {
               id="user-investment-opportunity"
               label="قائمة الفرص الاستثمارية"
               values={formValues.investmentOpportunities}
-              onChange={(value) =>
-                updateField('investmentOpportunities', value)
-              }
+              onChange={(value) => updateField('investmentOpportunities', value)}
               options={investmentOpportunityOptions}
               placeholder="اختر الفرص الاستثمارية"
               className="md:col-span-2"
@@ -405,23 +539,21 @@ export default function UsersAddPage() {
         <div className="flex h-[47px] w-full items-start gap-2.5" dir="ltr">
           <Button
             type="submit"
+            disabled={isSubmitting}
             className="h-[47px] w-[176px] rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 py-2.5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
           >
-            {isEditMode ? 'حفظ التعديلات' : 'اضافة المستخدم'}
+            {isEditMode ? 'حفظ التعديلات' : 'إضافة المستخدم'}
           </Button>
           <Button
             type="button"
             onClick={() =>
               navigate(
-                ROUTE_PATHS.withLocale(
-                  ROUTE_PATHS.users,
-                  i18n.resolvedLanguage,
-                ),
+                ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
               )
             }
             className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] hover:bg-[#ded6c4] focus-visible:ring-[#9d7e55]/25"
           >
-            الغاء
+            إلغاء
           </Button>
         </div>
       </form>

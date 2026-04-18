@@ -1,4 +1,4 @@
-import { act } from 'react'
+﻿import { act } from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
@@ -95,7 +95,7 @@ function getMainButtons() {
   const allButtons = screen.getAllByRole('button')
   const submitButton = allButtons.find((button) => button.type === 'submit')
   const draftButton = allButtons.find(
-    (button) => button.type === 'button' && /draft|مسودة|Ù…Ø³ÙˆØ¯Ø©/i.test(button.textContent || ''),
+    (button) => button.type === 'button' && /draft|مسودة/i.test(button.textContent || ''),
   )
 
   return { submitButton, draftButton }
@@ -270,7 +270,7 @@ describe('InvestmentOpportunityAddPage API integration', () => {
 
     expect(createOpportunity).not.toHaveBeenCalled()
     const publishButton = await screen.findByRole('button', {
-      name: /publish|نشر|Ù†Ø´Ø±/i,
+      name: /publish|نشر/i,
     })
     fireEvent.click(publishButton)
 
@@ -282,3 +282,4 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     )
   })
 })
+

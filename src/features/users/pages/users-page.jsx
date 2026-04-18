@@ -28,6 +28,9 @@ import {
 import { cn } from '@/lib/utils'
 import { UserDetailsModal } from '@/features/users/components/user-details-modal'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
+import { useUsersQuery } from '@/features/users/hooks/use-users-query'
+import { useDeleteUserMutation } from '@/features/users/hooks/use-delete-user-mutation'
+import { useUserQuery } from '@/features/users/hooks/use-user-query'
 
 const USERS_PAGE_SIZE = 10
 const TOTAL_USERS = 100
@@ -320,12 +323,62 @@ const recentActivitiesByBaseUserId = {
   ],
 }
 
+function mapApiUserToRow(user, index, isArabic) {
+  const statusLabelMap = {
+    active: isArabic ? 'نشط' : 'Active',
+    inactive: isArabic ? 'غير نشط' : 'Inactive',
+    suspended: isArabic ? 'موقوف' : 'Suspended',
+  }
+
+  return {
+    id: user.id,
+    fullName: user.full_name ?? '-',
+    identifier: String(user.id ?? '').slice(0, 8).toUpperCase() || '-',
+    role:
+      user.city?.name_ar ??
+      user.city?.name_en ??
+      (isArabic ? 'بدون مدينة' : 'No city'),
+    email: user.email ?? '-',
+    phone: user.mobile_number ?? '-',
+    status: statusLabelMap[user.account_status] ?? user.account_status ?? '-',
+    highlighted: (index + 1) % USERS_PAGE_SIZE === 3,
+    fullNameEn: user.full_name ?? '-',
+    secondaryRole: user.verification_status ?? '-',
+    activities: [
+      {
+        date: user.last_login_at
+          ? new Date(user.last_login_at).toLocaleDateString()
+          : '-',
+        title: isArabic ? 'آخر تسجيل دخول' : 'Last login',
+        description: user.last_login_at
+          ? new Date(user.last_login_at).toLocaleString()
+          : isArabic
+            ? 'لا يوجد تسجيل دخول بعد'
+            : 'No login yet',
+        icon: 'account',
+      },
+      {
+        date: user.registration_date
+          ? new Date(user.registration_date).toLocaleDateString()
+          : '-',
+        title: isArabic ? 'تاريخ التسجيل' : 'Registration date',
+        description: user.registration_date
+          ? new Date(user.registration_date).toLocaleString()
+          : '-',
+        icon: 'notification',
+      },
+    ],
+    fromApi: true,
+    originalUser: user,
+  }
+}
+
 function getBaseUserId(rowId) {
   return `user-${((Number.parseInt(rowId.split('-')[1], 10) - 1) % 10) + 1}`
 }
 
 function buildEditFormPrefill(row) {
-  const baseUserId = getBaseUserId(row.id)
+  const baseUserId = row.id?.startsWith('user-') ? getBaseUserId(row.id) : null
   const mappedRole = roleLabelToValue[row.role] ?? 'operation-admin'
   const mappedRoles = row.isFixedSuperAdmin
     ? ['super-admin', mappedRole]
@@ -334,7 +387,10 @@ function buildEditFormPrefill(row) {
   return {
     fullNameAr: row.fullName,
     fullNameEn:
-      mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name',
+      row.fullNameEn ??
+      (baseUserId
+        ? mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name'
+        : 'Generated User Name'),
     email: row.email,
     mobile: row.phone,
     roles: mappedRoles,
@@ -504,12 +560,27 @@ function UsersManagementTable() {
   const [deletedUserIds, setDeletedUserIds] = useState([])
   const [pendingDeleteUser, setPendingDeleteUser] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUserId, setSelectedUserId] = useState(null)
   const isArabic = i18n.resolvedLanguage !== 'en'
   const copy = isArabic ? usersCopy.ar : usersCopy.en
+  const { data: usersResponse } = useUsersQuery()
+  const deleteUserMutation = useDeleteUserMutation()
+  const { data: selectedUserDetailsResponse } = useUserQuery(
+    selectedUserId,
+    Boolean(selectedUserId),
+  )
+
+  const apiUsersRows = useMemo(() => {
+    const users = Array.isArray(usersResponse?.data) ? usersResponse.data : []
+    return users.map((user, index) => mapApiUserToRow(user, index, isArabic))
+  }, [isArabic, usersResponse])
 
   const activeUsersRows = useMemo(
-    () => usersRows.filter((row) => !deletedUserIds.includes(row.id)),
-    [deletedUserIds],
+    () => {
+      const sourceRows = apiUsersRows.length > 0 ? apiUsersRows : usersRows
+      return sourceRows.filter((row) => !deletedUserIds.includes(row.id))
+    },
+    [apiUsersRows, deletedUserIds],
   )
 
   const totalPages = Math.max(
@@ -539,6 +610,7 @@ function UsersManagementTable() {
       {
         state: {
           mode: 'edit',
+          userId: row.id,
           userFormPrefill: buildEditFormPrefill(row),
         },
       },
@@ -546,6 +618,7 @@ function UsersManagementTable() {
   }
 
   function handleOpenUserDetails(row) {
+    setSelectedUserId(row.id)
     setSelectedUser(row)
   }
 
@@ -609,17 +682,45 @@ function UsersManagementTable() {
       return
     }
 
-    setDeletedUserIds((prev) => [...prev, pendingDeleteUser.id])
-    if (selectedUser?.id === pendingDeleteUser.id) {
-      setSelectedUser(null)
-    }
-    setPendingDeleteUser(null)
-    showDashboardSuccessToast({
-      title: copy.toasts.deletedTitle,
-      description: copy.toasts.deletedDescription,
-      actionLabel: copy.toasts.actionLabel,
+    deleteUserMutation.mutate(pendingDeleteUser.id, {
+      onSuccess: () => {
+        setDeletedUserIds((prev) => [...prev, pendingDeleteUser.id])
+        if (selectedUser?.id === pendingDeleteUser.id) {
+          setSelectedUser(null)
+          setSelectedUserId(null)
+        }
+        setPendingDeleteUser(null)
+        showDashboardSuccessToast({
+          title: copy.toasts.deletedTitle,
+          description: copy.toasts.deletedDescription,
+          actionLabel: copy.toasts.actionLabel,
+        })
+      },
+      onError: () => {
+        setPendingDeleteUser(null)
+        showDashboardErrorToast({
+          title: isArabic ? 'فشل الحذف' : 'Delete failed',
+          description: isArabic
+            ? 'تعذر حذف المستخدم. حاول مرة أخرى.'
+            : 'Unable to delete user. Please try again.',
+          actionLabel: copy.toasts.actionLabel,
+        })
+      },
     })
   }
+
+  useEffect(() => {
+    if (!selectedUserDetailsResponse?.data || !selectedUserId) {
+      return
+    }
+
+    const detailsRow = mapApiUserToRow(
+      selectedUserDetailsResponse.data,
+      0,
+      isArabic,
+    )
+    setSelectedUser(detailsRow)
+  }, [isArabic, selectedUserDetailsResponse, selectedUserId])
 
   return (
     <section
@@ -701,16 +802,21 @@ function UsersManagementTable() {
           </thead>
           <tbody>
             {visibleUsersRows.map((row) => {
-              const baseUserId = getBaseUserId(row.id)
+              const baseUserId =
+                row.id?.startsWith('user-') ? getBaseUserId(row.id) : null
               const rowWithDetails = {
                 ...row,
-                fullNameEn:
-                  mockEnglishNamesByBaseUserId[baseUserId] ??
-                  'Generated User Name',
-                secondaryRole: mockSecondaryRoleByBaseUserId[baseUserId],
-                activities:
-                  recentActivitiesByBaseUserId[baseUserId] ??
-                  defaultRecentActivities,
+                fullNameEn: row.fullNameEn
+                  ? row.fullNameEn
+                  : mockEnglishNamesByBaseUserId[baseUserId] ??
+                    'Generated User Name',
+                secondaryRole: row.secondaryRole
+                  ? row.secondaryRole
+                  : mockSecondaryRoleByBaseUserId[baseUserId],
+                activities: Array.isArray(row.activities)
+                  ? row.activities
+                  : recentActivitiesByBaseUserId[baseUserId] ??
+                    defaultRecentActivities,
               }
 
               return (

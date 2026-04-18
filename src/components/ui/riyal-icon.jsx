@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+﻿import { cn } from '@/lib/utils'
 
 export function RiyalIcon({ className, alt = 'ريال', style, ...props }) {
   return (
@@ -19,3 +19,4 @@ export function RiyalIcon({ className, alt = 'ريال', style, ...props }) {
     </span>
   )
 }
+
