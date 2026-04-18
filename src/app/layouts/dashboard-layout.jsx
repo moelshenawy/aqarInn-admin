@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
 import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
+import { DashboardUserMenu } from '@/features/dashboard/components/dashboard-user-menu'
 import {
   dashboardActions,
   dashboardNavItems,
@@ -121,6 +122,7 @@ function DashboardSidebar({
   onToggleCollapse,
   locale,
   mobileClose = false,
+  user = null,
 }) {
   return (
     <div
@@ -165,12 +167,22 @@ function DashboardSidebar({
         })}
       </div>
 
-      <DashboardSidebarItem
-        icon={dashboardSettingsItem.icon}
-        label={dashboardSettingsItem.label}
-        collapsed={collapsed}
-        disabled
-      />
+      {mobileClose && user ? (
+        <div className="space-y-3 border-t border-[color:var(--dashboard-border)] pt-6">
+          <DashboardUserMenu
+            user={user}
+            triggerClassName="w-full min-w-0"
+            contentClassName="w-[calc(100vw-48px)] max-w-[320px] sm:w-[320px]"
+          />
+        </div>
+      ) : (
+        <DashboardSidebarItem
+          icon={dashboardSettingsItem.icon}
+          label={dashboardSettingsItem.label}
+          collapsed={collapsed}
+          disabled
+        />
+      )}
     </div>
   )
 }
@@ -243,6 +255,7 @@ export function DashboardLayout() {
       onNavigate={() => setSidebarOpen(false)}
       locale={i18n.resolvedLanguage}
       mobileClose
+      user={dashboardTopbarUser}
     />
   )
 
