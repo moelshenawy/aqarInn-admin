@@ -78,7 +78,8 @@ function getInitialFormValues(prefillValues) {
     ...prefillValues,
     roles: normalizeMultiSelectInput(prefillValues.roles ?? prefillValues.role),
     investmentOpportunities: normalizeMultiSelectInput(
-      prefillValues.investmentOpportunities ?? prefillValues.investmentOpportunity,
+      prefillValues.investmentOpportunities ??
+        prefillValues.investmentOpportunity,
     ),
     active: Boolean(prefillValues.active),
   }
@@ -94,7 +95,7 @@ function UsersAddFieldShell({ id, label, children, className }) {
     >
       <label
         htmlFor={id}
-        className="inline-flex items-start justify-end gap-0.5 text-right text-sm leading-5 font-medium text-[#402f28]"
+        className="inline-flex items-start justify-end gap-0.5 text-start text-sm leading-5 font-medium text-[#402f28]"
       >
         <span className="text-[#876647]">*</span>
         <span>{label}</span>
@@ -124,7 +125,7 @@ function UsersAddTextField({
         placeholder={placeholder}
         aria-required="true"
         dir={dir}
-        className="h-[50px] w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] px-3.5 py-3.5 text-right text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
+        className="h-[50px] w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] px-3.5 py-3.5 text-start text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
       />
     </UsersAddFieldShell>
   )
@@ -238,11 +239,11 @@ function UsersAddMultiSelectField({
           aria-haspopup="listbox"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
-          className="flex h-[50px] w-full items-center justify-end rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-right text-sm leading-5 font-medium shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
+          className="flex h-[50px] w-full items-center justify-end rounded-lg border border-[#bfab85] bg-[#f8f3e8] py-3.5 pr-3.5 pl-11 text-start text-sm leading-5 font-medium shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
         >
           <span
             className={cn(
-              'line-clamp-1 min-w-0 flex-1 text-right',
+              'line-clamp-1 min-w-0 flex-1 text-start',
               selectedLabels.length > 0 ? 'text-[#402f28]' : 'text-[#bfab85]',
             )}
           >
@@ -273,7 +274,7 @@ function UsersAddMultiSelectField({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => toggleValue(option.value)}
-                  className="flex w-full items-center justify-end gap-2 rounded-md px-3 py-2 text-right text-sm leading-5 text-[#402f28] transition hover:bg-[#eae5d7] focus-visible:bg-[#eae5d7] focus-visible:outline-none"
+                  className="flex w-full items-center justify-end gap-2 rounded-md px-3 py-2 text-start text-sm leading-5 text-[#402f28] transition hover:bg-[#eae5d7] focus-visible:bg-[#eae5d7] focus-visible:outline-none"
                 >
                   <span className="min-w-0 flex-1">{option.label}</span>
                   <span
@@ -301,9 +302,11 @@ function UsersAddStatusField({ active, onChange }) {
     <UsersAddFieldShell id="user-status" label="الحالة">
       <label
         htmlFor="user-status"
-        className="flex h-[50px] w-full cursor-pointer items-center justify-end gap-2 rounded-lg border border-[#bfab85] bg-[#f8f3e8] p-3.5 text-right text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition focus-within:border-[#9d7e55] focus-within:ring-3 focus-within:ring-[#9d7e55]/20"
+        className="flex h-[50px] w-full cursor-pointer items-center justify-end gap-2 rounded-lg border border-[#bfab85] bg-[#f8f3e8] p-3.5 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition focus-within:border-[#9d7e55] focus-within:ring-3 focus-within:ring-[#9d7e55]/20"
       >
-        <span className="min-w-0 flex-1 truncate">{active ? 'نشط' : 'غير نشط'}</span>
+        <span className="min-w-0 flex-1 truncate">
+          {active ? 'نشط' : 'غير نشط'}
+        </span>
         <span className="relative inline-flex h-4 w-8 shrink-0 items-center rounded-full bg-[#eae5d7]">
           <input
             id="user-status"
@@ -363,7 +366,8 @@ export default function UsersAddPage() {
   function handleSubmit(event) {
     event.preventDefault()
 
-    const fullName = formValues.fullNameAr.trim() || formValues.fullNameEn.trim()
+    const fullName =
+      formValues.fullNameAr.trim() || formValues.fullNameEn.trim()
     const email = formValues.email.trim()
     const saudiMobile = normalizeSaudiMobile(formValues.mobile)
 
@@ -467,10 +471,10 @@ export default function UsersAddPage() {
             </nav>
 
             <div className="flex w-full flex-col items-start gap-3">
-              <h1 className="w-full text-right text-[30px] leading-[38px] font-semibold text-[#181927]">
+              <h1 className="w-full text-start text-[30px] leading-[38px] font-semibold text-[#181927]">
                 {isEditMode ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
               </h1>
-              <p className="w-full text-right text-lg leading-7 font-medium text-[#717680]">
+              <p className="w-full text-start text-lg leading-7 font-medium text-[#717680]">
                 {isEditMode
                   ? 'قم بتحديث بيانات المستخدم ثم احفظ التعديلات.'
                   : 'قم بإكمال الحقول المطلوبة لإضافة مستخدم جديد إلى النظام'}
@@ -528,7 +532,9 @@ export default function UsersAddPage() {
               id="user-investment-opportunity"
               label="قائمة الفرص الاستثمارية"
               values={formValues.investmentOpportunities}
-              onChange={(value) => updateField('investmentOpportunities', value)}
+              onChange={(value) =>
+                updateField('investmentOpportunities', value)
+              }
               options={investmentOpportunityOptions}
               placeholder="اختر الفرص الاستثمارية"
               className="md:col-span-2"
@@ -548,7 +554,10 @@ export default function UsersAddPage() {
             type="button"
             onClick={() =>
               navigate(
-                ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
+                ROUTE_PATHS.withLocale(
+                  ROUTE_PATHS.users,
+                  i18n.resolvedLanguage,
+                ),
               )
             }
             className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] hover:bg-[#ded6c4] focus-visible:ring-[#9d7e55]/25"

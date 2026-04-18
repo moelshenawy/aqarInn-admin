@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -78,6 +78,9 @@ function buildCardOpportunity(opportunity, index, language) {
 export default function InvestmentOpportunitiesPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const outletContext = useOutletContext()
+  const opportunitySearchQuery = outletContext?.opportunitySearchQuery ?? ''
+  const normalizedSearchQuery = opportunitySearchQuery.trim()
   const { hasAllPermissions } = useAuthorization()
   const [selectedFilter, setSelectedFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
@@ -89,7 +92,7 @@ export default function InvestmentOpportunitiesPage() {
     data: opportunitiesPayload,
     isLoading,
     isFetching,
-  } = useOpportunitiesQuery(currentPage)
+  } = useOpportunitiesQuery(currentPage, normalizedSearchQuery)
 
   const opportunities = useMemo(
     () =>
@@ -142,6 +145,10 @@ export default function InvestmentOpportunitiesPage() {
   const totalPages = Math.max(1, opportunitiesPayload?.last_page ?? 1)
   const hasData = (opportunitiesPayload?.data?.length ?? 0) > 0
   const shouldShowSkeleton = (isLoading || isFetching) && !hasData
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [normalizedSearchQuery])
 
   const handleFilterChange = (filterKey) => {
     setSelectedFilter(filterKey)

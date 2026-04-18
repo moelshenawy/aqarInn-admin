@@ -155,7 +155,7 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
   }
 
   return (
-    <div className="-mt-[17px] space-y-4 text-right" dir="rtl">
+    <div className="-mt-[17px] space-y-4 text-start" dir="rtl">
       <InvestmentOpportunityDetailsTabs
         opportunityId={opportunityId}
         activeTab="profit-distributions"
@@ -176,7 +176,9 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
         open={isDetailsModalOpen}
         onOpenChange={handleDistributionDetailsOpenChange}
         distribution={mapDistributionDetailsToModal(distributionDetails)}
-        isLoading={isDistributionDetailsLoading || isDistributionDetailsFetching}
+        isLoading={
+          isDistributionDetailsLoading || isDistributionDetailsFetching
+        }
         error={distributionDetailsError}
         onRetry={refetchDistributionDetails}
       />

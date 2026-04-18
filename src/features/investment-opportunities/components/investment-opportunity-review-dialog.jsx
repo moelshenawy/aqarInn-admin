@@ -22,7 +22,7 @@ export function InvestmentOpportunityReviewDialog({
       <DialogContent
         dir="rtl"
         showCloseButton={false}
-        className="block max-h-[calc(100vh-48px)] w-[min(1100px,calc(100vw-32px))] max-w-none overflow-x-hidden overflow-y-auto rounded-[20px] border-0 bg-[#f8f3e8] px-[30px] py-5 text-right text-[#402f28] shadow-[0_24px_80px_rgba(64,47,40,0.18)] ring-0"
+        className="block max-h-[calc(100vh-48px)] w-[min(1100px,calc(100vw-32px))] max-w-none overflow-x-hidden overflow-y-auto rounded-[20px] border-0 bg-[#f8f3e8] px-[30px] py-5 text-start text-[#402f28] shadow-[0_24px_80px_rgba(64,47,40,0.18)] ring-0"
       >
         <div className="flex flex-col gap-[30px]">
           <header
@@ -45,7 +45,7 @@ export function InvestmentOpportunityReviewDialog({
             </DialogClose>
             <DialogTitle
               dir="rtl"
-              className="min-w-0 flex-1 text-right text-2xl leading-8 font-semibold text-[#181927]"
+              className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
             >
               عرض تفاصيل الفرصة الاستثمارية
             </DialogTitle>

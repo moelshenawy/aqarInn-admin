@@ -408,7 +408,7 @@ export default function CitiesPage() {
           className="max-w-2xl rounded-[24px] border border-[#d6cbb2] bg-[#f8f3e8] p-0"
           dir={dir}
         >
-          <DialogHeader className="border-b border-[#d6cbb2] px-6 py-5 text-right">
+          <DialogHeader className="border-b border-[#d6cbb2] px-6 py-5 text-start">
             <DialogTitle className="text-lg font-semibold text-[#181927]">
               {dialogTitle}
             </DialogTitle>

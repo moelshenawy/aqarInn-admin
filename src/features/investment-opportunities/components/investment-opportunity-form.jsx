@@ -50,6 +50,8 @@ export function InvestmentOpportunityForm({
   onCancel,
   cityOptions = [],
   isSubmitting = false,
+  onOpenNeighborhoodMap,
+  isNeighborhoodMapDisabled = false,
 }) {
   return (
     <form className="px-0 sm:px-4 lg:px-[26px]" onSubmit={onSubmit} noValidate>
@@ -111,11 +113,22 @@ export function InvestmentOpportunityForm({
           <InvestmentOpportunityTextField
             id="neighborhood"
             label="الحي"
-            placeholder="قم بإدخال اسم الحي"
+            placeholder="يتم تحديد الحي من الخريطة"
             required
+            readOnly
             error={errors.neighborhood?.message}
             {...register('neighborhood')}
           />
+          <div className="-mt-2 flex items-center justify-end md:col-span-2">
+            {/* <button
+              type="button"
+              onClick={onOpenNeighborhoodMap}
+              disabled={isNeighborhoodMapDisabled}
+              className="rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-2 text-sm font-medium text-[#402f28] transition hover:border-[#9d7e55] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              اختر الحي من الخريطة
+            </button> */}
+          </div>
         </InvestmentOpportunityFormGrid>
 
         <InvestmentOpportunityFormSection title="تفاصيل العقار">
@@ -134,6 +147,7 @@ export function InvestmentOpportunityForm({
               label="مساحة العقار (م²)"
               placeholder="قم بإدخال مساحة العقار"
               inputMode="decimal"
+              required
               error={errors.propertyArea?.message}
               {...register('propertyArea')}
             />
@@ -158,6 +172,7 @@ export function InvestmentOpportunityForm({
               label="موقع العقار"
               placeholder="قم بتحديد موقع العقار"
               icon={MapPin}
+              required
               error={errors.propertyLocation?.message}
               {...register('propertyLocation')}
             />
@@ -165,23 +180,26 @@ export function InvestmentOpportunityForm({
               id="propertyDocuments"
               label="المستندات المتاحة"
               placeholder="أضف المستندات المتاحة للعقار"
-              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              accept=".pdf,.png,.jpg,.jpeg"
+              multiple
+              required
               error={errors.propertyDocuments?.message}
               {...register('propertyDocuments')}
             />
             <InvestmentOpportunityDropzoneField
               id="propertyImages"
               label="صور العقار"
-              accept="image/svg+xml,image/png,image/jpeg,image/gif"
+              accept="image/png,image/jpeg"
               multiple
+              required
               error={errors.propertyImages?.message}
               {...register('propertyImages')}
             />
             <InvestmentOpportunityFilePickerField
               id="virtualTour"
-              label="الجولة الافتراضية"
-              placeholder="ارفع ملف الجولة الافتراضية (اختياري)"
-              accept=".mp4,.mov,.avi,.mkv,.pdf"
+              label="صورة 360"
+              placeholder="ارفع صورة 360 (اختياري)"
+              accept="image/png,image/jpeg"
               error={errors.virtualTour?.message}
               {...register('virtualTour')}
             />
@@ -242,7 +260,7 @@ export function InvestmentOpportunityForm({
               label="رقم الجوال"
               placeholder="قم بإدخال رقم الجوال"
               addon="+966"
-              inputMode="tel"
+              inputMode="numeric"
               required
               error={errors.developerPhone?.message}
               {...register('developerPhone')}
@@ -331,6 +349,7 @@ export function InvestmentOpportunityForm({
               placeholder="قم بإدخال قيمة العائد الصافي"
               addon={<RiyalIcon className="text-xl" />}
               inputMode="decimal"
+              required
               error={errors.expectedNetReturn?.message}
               {...register('expectedNetReturn')}
             />
@@ -396,6 +415,8 @@ export function InvestmentOpportunityForm({
         disableDraft={isSubmitting}
         disableCancel={isSubmitting}
       />
+      <input type="hidden" {...register('latitude')} />
+      <input type="hidden" {...register('longitude')} />
     </form>
   )
 }

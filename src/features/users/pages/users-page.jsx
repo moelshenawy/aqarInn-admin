@@ -333,7 +333,10 @@ function mapApiUserToRow(user, index, isArabic) {
   return {
     id: user.id,
     fullName: user.full_name ?? '-',
-    identifier: String(user.id ?? '').slice(0, 8).toUpperCase() || '-',
+    identifier:
+      String(user.id ?? '')
+        .slice(0, 8)
+        .toUpperCase() || '-',
     role:
       user.city?.name_ar ??
       user.city?.name_en ??
@@ -389,7 +392,7 @@ function buildEditFormPrefill(row) {
     fullNameEn:
       row.fullNameEn ??
       (baseUserId
-        ? mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name'
+        ? (mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name')
         : 'Generated User Name'),
     email: row.email,
     mobile: row.phone,
@@ -575,13 +578,10 @@ function UsersManagementTable() {
     return users.map((user, index) => mapApiUserToRow(user, index, isArabic))
   }, [isArabic, usersResponse])
 
-  const activeUsersRows = useMemo(
-    () => {
-      const sourceRows = apiUsersRows.length > 0 ? apiUsersRows : usersRows
-      return sourceRows.filter((row) => !deletedUserIds.includes(row.id))
-    },
-    [apiUsersRows, deletedUserIds],
-  )
+  const activeUsersRows = useMemo(() => {
+    const sourceRows = apiUsersRows.length > 0 ? apiUsersRows : usersRows
+    return sourceRows.filter((row) => !deletedUserIds.includes(row.id))
+  }, [apiUsersRows, deletedUserIds])
 
   const totalPages = Math.max(
     1,
@@ -767,7 +767,7 @@ function UsersManagementTable() {
       </header>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1116px] table-fixed border-collapse text-right">
+        <table className="w-full min-w-[1116px] table-fixed border-collapse text-start">
           <colgroup>
             <col className="w-[329px]" />
             <col className="w-[85px]" />
@@ -802,21 +802,22 @@ function UsersManagementTable() {
           </thead>
           <tbody>
             {visibleUsersRows.map((row) => {
-              const baseUserId =
-                row.id?.startsWith('user-') ? getBaseUserId(row.id) : null
+              const baseUserId = row.id?.startsWith('user-')
+                ? getBaseUserId(row.id)
+                : null
               const rowWithDetails = {
                 ...row,
                 fullNameEn: row.fullNameEn
                   ? row.fullNameEn
-                  : mockEnglishNamesByBaseUserId[baseUserId] ??
-                    'Generated User Name',
+                  : (mockEnglishNamesByBaseUserId[baseUserId] ??
+                    'Generated User Name'),
                 secondaryRole: row.secondaryRole
                   ? row.secondaryRole
                   : mockSecondaryRoleByBaseUserId[baseUserId],
                 activities: Array.isArray(row.activities)
                   ? row.activities
-                  : recentActivitiesByBaseUserId[baseUserId] ??
-                    defaultRecentActivities,
+                  : (recentActivitiesByBaseUserId[baseUserId] ??
+                    defaultRecentActivities),
               }
 
               return (

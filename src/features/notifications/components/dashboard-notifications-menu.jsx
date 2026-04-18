@@ -85,7 +85,7 @@ export function DashboardNotificationsMenu({
               <p
                 className={cn(
                   'text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]',
-                  dir === 'ltr' ? 'text-left' : 'text-right',
+                  dir === 'ltr' ? 'text-left' : 'text-start',
                 )}
               >
                 {t('notificationsBar.title')}

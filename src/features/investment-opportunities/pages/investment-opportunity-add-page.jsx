@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -9,6 +9,7 @@ import {
   showDashboardSuccessToast,
 } from '@/components/ui/dashboard-toast'
 import { InvestmentOpportunityForm } from '@/features/investment-opportunities/components/investment-opportunity-form'
+import { InvestmentOpportunityNeighborhoodMapDialog } from '@/features/investment-opportunities/components/investment-opportunity-neighborhood-map-dialog'
 import { InvestmentOpportunityReviewDialog } from '@/features/investment-opportunities/components/investment-opportunity-review-dialog'
 import { INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES } from '@/features/investment-opportunities/constants/investment-opportunity-form-values'
 import { useCitiesQuery } from '@/features/investment-opportunities/hooks/use-cities-query'
@@ -161,21 +162,28 @@ export default function InvestmentOpportunityAddPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation(['validation'])
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
+  const [selectedCityForMap, setSelectedCityForMap] = useState(null)
   const [reviewDetails, setReviewDetails] = useState(
     investmentOpportunityDefaultDetails,
   )
+  const previousCityIdRef = useRef('')
   const { data: cities = [] } = useCitiesQuery()
   const createOpportunityMutation = useCreateOpportunityMutation()
   const createDraftMutation = useCreateOpportunityDraftMutation()
   const {
     register,
     getValues,
+    setValue,
+    watch,
     setError,
     clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
   })
+
+  const selectedCityId = watch('cityId')
 
   const publishSchema = useMemo(
     () => createInvestmentOpportunityPublishSchema(t),
@@ -191,6 +199,30 @@ export default function InvestmentOpportunityAddPage() {
       })),
     [cities, i18n.resolvedLanguage],
   )
+
+  const cityLookup = useMemo(
+    () => new Map(cities.map((city) => [city.id, city])),
+    [cities],
+  )
+
+  useEffect(() => {
+    if (!selectedCityId) {
+      previousCityIdRef.current = ''
+      return
+    }
+
+    if (previousCityIdRef.current === selectedCityId) {
+      return
+    }
+
+    previousCityIdRef.current = selectedCityId
+    const city = cityLookup.get(selectedCityId) ?? null
+    setSelectedCityForMap(city)
+    setValue('neighborhood', '', { shouldValidate: true, shouldDirty: true })
+    setValue('latitude', '', { shouldDirty: true })
+    setValue('longitude', '', { shouldDirty: true })
+    setIsNeighborhoodMapOpen(true)
+  }, [cityLookup, selectedCityId, setValue])
 
   const isSubmitting =
     createOpportunityMutation.isPending || createDraftMutation.isPending
@@ -273,6 +305,48 @@ export default function InvestmentOpportunityAddPage() {
     }
   }
 
+  function handleOpenNeighborhoodMap() {
+    if (!selectedCityId) {
+      showDashboardErrorToast({
+        title: 'المدينة مطلوبة',
+        description: 'اختر المدينة أولاً قبل تحديد الحي من الخريطة.',
+        actionLabel: 'إغلاق',
+      })
+      return
+    }
+
+    setSelectedCityForMap(cityLookup.get(selectedCityId) ?? null)
+    setIsNeighborhoodMapOpen(true)
+  }
+
+  function handleConfirmNeighborhoodSelection(selection) {
+    if (!selection) {
+      return
+    }
+
+    setValue('neighborhood', selection.neighborhood, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('latitude', String(selection.latitude), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('longitude', String(selection.longitude), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+
+    const currentLocationText = getValues('propertyLocation')
+    if (!String(currentLocationText ?? '').trim()) {
+      setValue('propertyLocation', selection.locationText, {
+        shouldDirty: true,
+      })
+    }
+
+    clearErrors(['neighborhood', 'latitude', 'longitude'])
+  }
+
   return (
     <div className="pb-8 text-start" dir="rtl">
       <InvestmentOpportunityForm
@@ -288,7 +362,16 @@ export default function InvestmentOpportunityAddPage() {
         cancelLabel="الغاء"
         isSubmitting={isSubmitting}
         cityOptions={cityOptions}
+        onOpenNeighborhoodMap={handleOpenNeighborhoodMap}
+        isNeighborhoodMapDisabled={!selectedCityId}
         onCancel={navigateToList}
+      />
+      <InvestmentOpportunityNeighborhoodMapDialog
+        open={isNeighborhoodMapOpen}
+        onOpenChange={setIsNeighborhoodMapOpen}
+        city={selectedCityForMap}
+        locale={i18n.resolvedLanguage}
+        onConfirm={handleConfirmNeighborhoodSelection}
       />
       <InvestmentOpportunityReviewDialog
         open={reviewOpen}

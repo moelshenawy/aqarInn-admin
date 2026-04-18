@@ -22,6 +22,7 @@ import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
 import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
 import { DashboardUserMenu } from '@/features/dashboard/components/dashboard-user-menu'
+import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import {
   dashboardActions,
   dashboardNavItems,
@@ -151,12 +152,14 @@ function DashboardSidebar({
           const isActive =
             pathname === localizedBase ||
             pathname.startsWith(`${localizedBase}/`)
+          const sidebarLabel =
+            locale === 'en' ? item.labelEn ?? item.label : item.label
 
           return (
             <DashboardSidebarItem
               key={item.key}
               icon={item.icon}
-              label={item.label}
+              label={sidebarLabel}
               to={localizedBase}
               active={isActive}
               collapsed={collapsed}
@@ -173,14 +176,40 @@ function DashboardSidebar({
             triggerClassName="w-full min-w-0"
             contentClassName="w-[calc(100vw-48px)] max-w-[320px] sm:w-[320px]"
           />
+          <DashboardSidebarItem
+            icon={dashboardSettingsItem.icon}
+            label={
+              locale === 'en'
+                ? dashboardSettingsItem.labelEn ?? dashboardSettingsItem.label
+                : dashboardSettingsItem.label
+            }
+            collapsed={collapsed}
+            disabled
+          />
+          {!collapsed ? (
+            <div className="flex justify-start ps-1" data-slot="sidebar-language-switcher">
+              <LanguageSwitcher compact />
+            </div>
+          ) : null}
         </div>
       ) : (
-        <DashboardSidebarItem
-          icon={dashboardSettingsItem.icon}
-          label={dashboardSettingsItem.label}
-          collapsed={collapsed}
-          disabled
-        />
+        <div className="space-y-3 border-t border-[color:var(--dashboard-border)] pt-6">
+          <DashboardSidebarItem
+            icon={dashboardSettingsItem.icon}
+            label={
+              locale === 'en'
+                ? dashboardSettingsItem.labelEn ?? dashboardSettingsItem.label
+                : dashboardSettingsItem.label
+            }
+            collapsed={collapsed}
+            disabled
+          />
+          {!collapsed ? (
+            <div className="flex justify-start ps-1" data-slot="sidebar-language-switcher">
+              <LanguageSwitcher compact />
+            </div>
+          ) : null}
+        </div>
       )}
     </div>
   )
@@ -192,6 +221,7 @@ export function DashboardLayout() {
   const { isAuthenticated } = useAuth()
   const { i18n } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [opportunitySearchQuery, setOpportunitySearchQuery] = useState('')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
   )
@@ -263,9 +293,11 @@ export function DashboardLayout() {
               title={pageTitle}
               user={dashboardTopbarUser}
               onOpenSidebar={() => setSidebarOpen(true)}
+              opportunitySearchQuery={opportunitySearchQuery}
+              onOpportunitySearchChange={setOpportunitySearchQuery}
             />
             <div className="pt-[31px]">
-              <Outlet />
+              <Outlet context={{ opportunitySearchQuery }} />
             </div>
           </main>
         </div>

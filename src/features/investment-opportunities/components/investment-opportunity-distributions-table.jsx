@@ -120,7 +120,7 @@ export function InvestmentOpportunityDistributionsTable({
       </header>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] table-fixed border-collapse text-right">
+        <table className="w-full min-w-[960px] table-fixed border-collapse text-start">
           <colgroup>
             <col className="w-[240px]" />
             <col className="w-[240px]" />

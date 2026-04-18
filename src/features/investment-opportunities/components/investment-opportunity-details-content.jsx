@@ -8,7 +8,7 @@ function SectionHeading({ children }) {
   return (
     <div
       dir="ltr"
-      className="flex items-center justify-end gap-2.5 py-2 text-right"
+      className="flex items-center justify-end gap-2.5 py-2 text-start"
     >
       <img
         src={investmentOpportunityDetailsAssets.chevron}
@@ -26,7 +26,7 @@ function SectionHeading({ children }) {
 
 function Metric({ label, value, currency = false }) {
   return (
-    <div className="flex w-36 shrink-0 flex-col items-end gap-[13px] text-right">
+    <div className="flex w-36 shrink-0 flex-col items-end gap-[13px] text-start">
       <p className="w-full text-sm leading-5 font-semibold text-[#ac9063]">
         {label}
       </p>
@@ -53,7 +53,7 @@ function Metric({ label, value, currency = false }) {
 function DetailValue({ label, value, className }) {
   return (
     <div
-      className={cn('flex flex-col items-end gap-[13px] text-right', className)}
+      className={cn('flex flex-col items-end gap-[13px] text-start', className)}
     >
       <p className="w-full text-sm leading-5 font-semibold text-[#ac9063]">
         {label}
@@ -136,7 +136,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
             >
               <div
                 dir="ltr"
-                className="flex shrink-0 items-center gap-5 text-right"
+                className="flex shrink-0 items-center gap-5 text-start"
               >
                 <p className="max-w-[105px] truncate text-xl leading-[30px] font-semibold text-[#402f28]">
                   {details.floors}
@@ -151,7 +151,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
               </div>
               <h2
                 dir="rtl"
-                className="min-w-0 flex-1 truncate text-right text-xl leading-[30px] font-semibold text-[#402f28]"
+                className="min-w-0 flex-1 truncate text-start text-xl leading-[30px] font-semibold text-[#402f28]"
               >
                 {details.titleAr}
               </h2>
@@ -159,12 +159,12 @@ export function InvestmentOpportunityDetailsBody({ details }) {
 
             <div
               dir="ltr"
-              className="flex h-[30px] w-full items-center text-right text-xl leading-[30px] font-semibold text-[#402f28]"
+              className="flex h-[30px] w-full items-center text-start text-xl leading-[30px] font-semibold text-[#402f28]"
             >
               <p className="shrink-0 truncate whitespace-pre">
                 {details.totalArea}
               </p>
-              <p className="min-w-0 flex-1 truncate text-right">
+              <p className="min-w-0 flex-1 truncate text-start">
                 {details.titleEn}
               </p>
             </div>
@@ -177,7 +177,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
               </p>
               <p
                 dir="rtl"
-                className="shrink-0 truncate text-right text-lg leading-7 font-semibold text-[#402f28]"
+                className="shrink-0 truncate text-start text-lg leading-7 font-semibold text-[#402f28]"
               >
                 {details.location}
               </p>
@@ -251,7 +251,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
             dir="ltr"
             className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-[60px]"
           >
-            <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-right text-sm leading-5 font-semibold text-[#9d7e55]">
+            <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
               <p className="w-full truncate">{details.operator.email}</p>
               <p className="w-full truncate">{details.operator.phone}</p>
               <p className="w-full truncate">{details.operator.location}</p>
@@ -267,7 +267,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
 
           <div
             dir="ltr"
-            className="grid w-full grid-cols-1 gap-5 text-right md:grid-cols-2 md:gap-[60px]"
+            className="grid w-full grid-cols-1 gap-5 text-start md:grid-cols-2 md:gap-[60px]"
           >
             <div className="flex min-w-0 flex-col items-start gap-2.5">
               <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">

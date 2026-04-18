@@ -51,7 +51,7 @@ function ActivityCard({ activity }) {
       <div className="shrink-0 rounded-full border border-[#d6cbb2] p-2 text-[#6d4f3b]">
         <Icon className="size-5 stroke-[1.8]" aria-hidden="true" />
       </div>
-      <div className="min-w-0 flex-1 text-right">
+      <div className="min-w-0 flex-1 text-start">
         <div className="mb-2 flex items-center justify-between gap-3">
           <h4 className="text-sm leading-5 font-semibold text-black">
             {activity.title}

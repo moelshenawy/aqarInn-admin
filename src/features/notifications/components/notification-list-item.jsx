@@ -26,7 +26,7 @@ export function NotificationListItem({
         className={cn(
           'flex w-full items-start gap-4 rounded-[14px] border text-inherit transition-colors focus-visible:ring-2 focus-visible:ring-[#9d7e55]/20 focus-visible:outline-none',
           isPageItem ? 'p-4 sm:p-5' : 'p-3',
-          dir === 'ltr' ? 'text-left' : 'text-right',
+          dir === 'ltr' ? 'text-left' : 'text-start',
           isUnread
             ? 'border-[#d6cbb2] bg-[#efe7d8] hover:bg-[#e8ddc9]'
             : 'border-[#eae5d7] bg-transparent hover:bg-[#f1eadc]',

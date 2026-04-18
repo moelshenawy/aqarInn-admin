@@ -70,7 +70,6 @@ export default function DashboardPage() {
   const { data, isPending } = useDashboardOverviewQuery(
     selectedTransactionsFilter,
   )
-
   useEffect(() => {
     if (
       !selectedTransactionsFilter &&
@@ -147,7 +146,7 @@ export default function DashboardPage() {
       />
 
       <section className="space-y-6">
-        <h2 className="text-right text-lg leading-7 font-semibold text-[#181927]">
+        <h2 className="text-start text-lg leading-7 font-semibold text-[#181927]">
           {featured.title}
         </h2>
         <div className="grid grid-cols-1 gap-[14px] lg:grid-cols-6">
@@ -170,8 +169,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </section>
-      {/* 
-      <DashboardTransactionsOverviewSection
+      {/* <DashboardTransactionsOverviewSection
         transactionsOverview={transactionsOverview}
         selectedFilter={selectedTransactionsFilter}
         onSelectFilter={setSelectedTransactionsFilter}

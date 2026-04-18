@@ -143,7 +143,7 @@ export function DashboardUserMenu({
                 </span>
               )}
 
-              <div className={cn(dir === 'ltr' ? 'text-left' : 'text-right')}>
+              <div className={cn(dir === 'ltr' ? 'text-left' : 'text-start')}>
                 <p
                   className={cn(
                     'text-[14px] leading-5 font-medium',

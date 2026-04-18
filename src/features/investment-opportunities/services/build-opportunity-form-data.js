@@ -35,6 +35,10 @@ function getFileList(value) {
  * @property {string} cityId
  * @property {string} neighborhood
  * @property {string} propertyType
+ * @property {string} propertyArea
+ * @property {string} floorCount
+ * @property {string} buildYear
+ * @property {string} propertyLocation
  * @property {string} propertyPrice
  * @property {string} currency
  * @property {string} shareCount
@@ -42,9 +46,21 @@ function getFileList(value) {
  * @property {string} minInvestmentShares
  * @property {string} maxSharesPerUser
  * @property {string} maxUserOwnershipPct
+ * @property {string} expectedNetReturn
  * @property {string} expectedReturn
  * @property {string} returnFrequency
  * @property {string} investmentDurationMonths
+ * @property {string} scheduleInvestmentStart
+ * @property {string} investmentStartDate
+ * @property {string} developerNameAr
+ * @property {string} developerNameEn
+ * @property {string} developerDescriptionAr
+ * @property {string} developerDescriptionEn
+ * @property {string} developerEmail
+ * @property {string} developerPhone
+ * @property {string} developerLocation
+ * @property {FileList | File[] | null} [developerLogo]
+ * @property {FileList | File[] | null} [propertyDocuments]
  * @property {FileList | File[] | null} [virtualTour]
  * @property {FileList | File[] | null} [propertyImages]
  */
@@ -65,7 +81,13 @@ export function buildOpportunityFormData(values, { mode }) {
   appendIfValue(formData, 'title_en', values.titleEn)
   appendIfValue(formData, 'city_id', values.cityId)
   appendIfValue(formData, 'neighborhood', values.neighborhood)
+  appendIfValue(formData, 'latitude', values.latitude)
+  appendIfValue(formData, 'longitude', values.longitude)
   appendIfValue(formData, 'asset_type', values.propertyType)
+  appendIfValue(formData, 'area_m2', values.propertyArea)
+  appendIfValue(formData, 'floors', values.floorCount)
+  appendIfValue(formData, 'build_year', values.buildYear)
+  appendIfValue(formData, 'location_text', values.propertyLocation)
   appendIfValue(formData, 'property_price', values.propertyPrice)
   appendIfValue(formData, 'currency', values.currency)
   appendIfValue(formData, 'total_shares', values.shareCount)
@@ -73,6 +95,7 @@ export function buildOpportunityFormData(values, { mode }) {
   appendIfValue(formData, 'min_investment_shares', values.minInvestmentShares)
   appendIfValue(formData, 'max_shares_per_user', values.maxSharesPerUser)
   appendIfValue(formData, 'max_user_ownership_pct', values.maxUserOwnershipPct)
+  appendIfValue(formData, 'expected_net_return', values.expectedNetReturn)
   appendIfValue(formData, 'expected_annual_return_pct', values.expectedReturn)
   appendIfValue(formData, 'return_frequency', values.returnFrequency)
   appendIfValue(
@@ -80,10 +103,49 @@ export function buildOpportunityFormData(values, { mode }) {
     'investment_duration_months',
     values.investmentDurationMonths,
   )
+  appendIfValue(
+    formData,
+    'schedule_investment_start',
+    values.scheduleInvestmentStart === 'yes' ? '1' : '0',
+  )
+  appendIfValue(formData, 'investment_start_at', values.investmentStartDate)
+
+  appendIfValue(formData, 'operator_name_ar', values.developerNameAr)
+  appendIfValue(formData, 'operator_name_en', values.developerNameEn)
+  appendIfValue(formData, 'operator_name', values.developerNameEn)
+  appendIfValue(
+    formData,
+    'operator_description_ar',
+    values.developerDescriptionAr,
+  )
+  appendIfValue(
+    formData,
+    'operator_description_en',
+    values.developerDescriptionEn,
+  )
+  appendIfValue(
+    formData,
+    'operator_description',
+    values.developerDescriptionEn,
+  )
+  appendIfValue(formData, 'operator_email', values.developerEmail)
+  const developerPhone = asTrimmedString(values.developerPhone)
+  appendIfValue(
+    formData,
+    'operator_phone',
+    developerPhone ? `+966${developerPhone}` : '',
+  )
+  appendIfValue(formData, 'operator_location_text', values.developerLocation)
+
+  const developerLogoFiles = getFileList(values.developerLogo)
+  if (developerLogoFiles[0]) {
+    formData.append('operator_logo', developerLogoFiles[0])
+  }
 
   const virtualTourFiles = getFileList(values.virtualTour)
   if (virtualTourFiles[0]) {
     formData.append('virtual_tour', virtualTourFiles[0])
+    formData.append('virtual_tour_image', virtualTourFiles[0])
   }
 
   const propertyImages = getFileList(values.propertyImages)
@@ -96,6 +158,11 @@ export function buildOpportunityFormData(values, { mode }) {
       formData.append('images[]', imageFile)
     })
   }
+
+  const propertyDocuments = getFileList(values.propertyDocuments)
+  propertyDocuments.forEach((documentFile) => {
+    formData.append('documents[]', documentFile)
+  })
 
   return formData
 }

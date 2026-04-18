@@ -111,7 +111,7 @@ function ExecutorDetails({ details }) {
         <div className="flex items-center justify-end gap-[22px]">
           <UserAvatarIcon className="size-[82px]" iconClassName="size-10" />
 
-          <div className="flex w-[345px] flex-col items-end gap-2 text-right text-base leading-6 font-bold">
+          <div className="flex w-[345px] flex-col items-end gap-2 text-start text-base leading-6 font-bold">
             <span className="w-full text-[#181927]">
               {details.executor.nameAr}
             </span>
@@ -139,7 +139,7 @@ function InvestorsTable({ details }) {
     >
       <header className="flex min-h-[71px] items-start border-b border-[#d6cbb2] bg-[#eae5d7] px-6 pt-5">
         <div className="flex w-full items-center justify-end gap-2">
-          <h3 className="min-w-0 flex-1 text-right text-lg leading-7 font-semibold text-[#181927]">
+          <h3 className="min-w-0 flex-1 text-start text-lg leading-7 font-semibold text-[#181927]">
             {details.investorsTitle}
           </h3>
           <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-xs leading-[18px] font-semibold text-[#5c4437]">
@@ -149,7 +149,7 @@ function InvestorsTable({ details }) {
       </header>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] table-fixed border-collapse text-right">
+        <table className="w-full min-w-[760px] table-fixed border-collapse text-start">
           <colgroup>
             <col className="w-[299px]" />
             <col className="w-[126px]" />
@@ -213,7 +213,7 @@ export function InvestmentOpportunityDistributionDetailsModal({
       closeLabel="إغلاق تفاصيل التوزيع"
       contentClassName="h-dvh overflow-visible"
       closeButtonClassName="max-sm:right-auto max-sm:left-4"
-      className="flex h-full min-h-full flex-col items-end gap-[30px] overflow-x-hidden overflow-y-auto px-6 py-8 text-right sm:px-8 sm:py-[38px]"
+      className="flex h-full min-h-full flex-col items-end gap-[30px] overflow-x-hidden overflow-y-auto px-6 py-8 text-start sm:px-8 sm:py-[38px]"
     >
       <p className="sr-only">{details.description}</p>
       {isLoading ? <DistributionDetailsLoadingState /> : null}

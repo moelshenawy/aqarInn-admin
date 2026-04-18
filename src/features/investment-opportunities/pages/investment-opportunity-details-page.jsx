@@ -80,7 +80,7 @@ export default function InvestmentOpportunityDetailsPage() {
             />
             <h1
               dir="rtl"
-              className="min-w-0 flex-1 text-right text-2xl leading-8 font-semibold text-[#181927]"
+              className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
             >
               عرض تفاصيل الفرصة الاستثمارية
             </h1>

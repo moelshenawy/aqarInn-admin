@@ -85,24 +85,24 @@ export function InvestmentOpportunityAddDistributionDialog({
       <DialogContent
         dir="rtl"
         showCloseButton={false}
-        className="block w-[min(626px,calc(100vw-32px))] max-w-none min-w-0 rounded-[17px] border-0 bg-[#f8f3e8] px-[27px] pt-5 pb-[30px] text-right text-[#402f28] shadow-[0_24px_80px_rgba(64,47,40,0.18)] ring-0"
+        className="block w-[min(626px,calc(100vw-32px))] max-w-none min-w-0 rounded-[17px] border-0 bg-[#f8f3e8] px-[27px] pt-5 pb-[30px] text-start text-[#402f28] shadow-[0_24px_80px_rgba(64,47,40,0.18)] ring-0"
       >
         <form onSubmit={handleSubmit} className="flex flex-col gap-10">
           <div className="flex flex-col items-end">
-            <DialogTitle className="w-full text-right text-2xl leading-8 font-semibold text-[#181927]">
+            <DialogTitle className="w-full text-start text-2xl leading-8 font-semibold text-[#181927]">
               اضافة توزيعات ارباح للمستثمرين
             </DialogTitle>
           </div>
 
           <div className="flex w-full flex-col gap-[22px]">
-            <DialogDescription className="w-full text-right text-lg leading-7 font-medium text-[#402f28]">
+            <DialogDescription className="w-full text-start text-lg leading-7 font-medium text-[#402f28]">
               قم بتسجيل صافي العائد ليتم توزيع الأرباح على المحافظ الاستثمارية
             </DialogDescription>
 
             <div className="flex h-12 w-full items-start gap-2">
               <div
                 dir="ltr"
-                className="flex h-12 min-w-0 flex-1 items-center rounded-lg border border-[#bfab85] bg-[#f8f3e8] text-right shadow-[var(--dashboard-shadow)]"
+                className="flex h-12 min-w-0 flex-1 items-center rounded-lg border border-[#bfab85] bg-[#f8f3e8] text-start shadow-[var(--dashboard-shadow)]"
               >
                 <span className="shrink-0 px-3.5">
                   <RiyalIcon className="text-xl text-[#ac9063]" />
@@ -114,7 +114,7 @@ export function InvestmentOpportunityAddDistributionDialog({
                   placeholder="قم بإدخال صافي العائد"
                   inputMode="decimal"
                   aria-label="صافي العائد"
-                  className="h-full min-w-0 flex-1 bg-transparent px-3 text-right text-sm leading-5 font-medium text-[#6d4f3b] outline-none placeholder:text-[#6d4f3b]"
+                  className="h-full min-w-0 flex-1 bg-transparent px-3 text-start text-sm leading-5 font-medium text-[#6d4f3b] outline-none placeholder:text-[#6d4f3b]"
                 />
               </div>
 

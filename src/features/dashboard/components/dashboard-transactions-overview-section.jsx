@@ -53,7 +53,10 @@ function TransactionMetricTile({
         <div>
           <p className="text-xs leading-5 font-medium text-[#9d7e55]">Amount</p>
           <div className="mt-1">
-            <TransactionAmount value={amount} numberFormatter={numberFormatter} />
+            <TransactionAmount
+              value={amount}
+              numberFormatter={numberFormatter}
+            />
           </div>
         </div>
       </div>
@@ -97,7 +100,7 @@ export function DashboardTransactionsOverviewSection({
         <h2
           className={cn(
             'text-lg leading-7 font-semibold text-[#181927]',
-            dir === 'ltr' ? 'text-left' : 'text-right',
+            dir === 'ltr' ? 'text-left' : 'text-start',
           )}
         >
           {transactionsOverview?.title ?? 'Transactions overview'}
@@ -129,7 +132,10 @@ export function DashboardTransactionsOverviewSection({
             >
               <header className="flex items-center justify-between gap-3">
                 <div className="flex size-11 items-center justify-center rounded-full bg-[#eae5d7] text-[#6d4f3b]">
-                  <SummaryIcon className="size-5 stroke-[1.8]" aria-hidden="true" />
+                  <SummaryIcon
+                    className="size-5 stroke-[1.8]"
+                    aria-hidden="true"
+                  />
                 </div>
                 <h3 className="flex-1 text-lg leading-7 font-semibold text-[#402f28]">
                   {card.label}

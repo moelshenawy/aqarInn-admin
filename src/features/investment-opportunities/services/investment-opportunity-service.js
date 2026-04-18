@@ -28,7 +28,15 @@ import { apiGet, apiPost } from '@/lib/api/http-methods'
 export async function getCities() {
   /** @type {CitiesResponse} */
   const response = await apiGet('cities')
-  return response?.data?.data ?? []
+  if (Array.isArray(response?.data)) {
+    return response.data
+  }
+
+  if (Array.isArray(response?.data?.data)) {
+    return response.data.data
+  }
+
+  return []
 }
 
 /**
@@ -103,13 +111,16 @@ function normalizeOpportunitiesResponse(response) {
 }
 
 /**
- * @param {{ page?: number }} params
+ * @param {{ page?: number, search?: string }} params
  * @returns {Promise<OpportunitiesPagination>}
  */
-export async function getOpportunities({ page = 1 } = {}) {
+export async function getOpportunities({ page = 1, search = '' } = {}) {
   /** @type {OpportunitiesResponse} */
   const response = await apiGet('opportunities', {
-    params: { page },
+    params: {
+      page,
+      ...(search?.trim() ? { search: search.trim() } : {}),
+    },
   })
 
   return normalizeOpportunitiesResponse(response)

@@ -23,18 +23,22 @@ export const httpClient = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
     'Accept-Language': i18n?.language || 'en',
+    locale: i18n?.language || 'en',
   },
 })
 
 httpClient.interceptors.request.use((config) => {
   const accessToken = accessTokenResolver?.()
+  const currentLocale = i18n?.resolvedLanguage || i18n?.language || 'en'
+
+  config.headers = config.headers ?? {}
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
   }
 
-  config.headers['Accept-Language'] =
-    i18n?.resolvedLanguage || i18n?.language || 'en'
+  config.headers['Accept-Language'] = currentLocale
+  config.headers.locale = currentLocale
   config.headers['X-App-Client'] = 'aqarinn-backoffice'
   return config
 })

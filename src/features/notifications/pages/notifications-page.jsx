@@ -55,7 +55,7 @@ export default function NotificationsPage() {
             <div
               className={cn(
                 'flex flex-wrap items-center gap-3',
-                dir === 'ltr' ? 'text-left' : 'text-right',
+                dir === 'ltr' ? 'text-left' : 'text-start',
               )}
             >
               <h2 className="text-lg leading-7 font-semibold text-[#181927]">

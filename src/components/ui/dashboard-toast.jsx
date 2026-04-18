@@ -32,7 +32,7 @@ export function DashboardToast({
       aria-live="polite"
       className={cn(
         'flex flex-col overflow-hidden rounded-[14px] bg-[#eae5d7] p-5 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)]',
-        dir === 'rtl' ? 'items-end text-right' : 'items-start text-left',
+        dir === 'rtl' ? 'items-end text-start' : 'items-start text-left',
       )}
     >
       <div className={cn('flex w-full items-start justify-start gap-5')}>
@@ -60,7 +60,7 @@ export function DashboardToast({
           <p
             className={cn(
               'w-full text-lg leading-7 font-semibold text-[#181927]',
-              dir === 'rtl' ? 'text-right' : 'text-left',
+              dir === 'rtl' ? 'text-start' : 'text-left',
             )}
           >
             {title}
@@ -71,7 +71,7 @@ export function DashboardToast({
               <p
                 className={cn(
                   'w-[264px] text-sm leading-5 font-normal text-[#402f28]',
-                  dir === 'rtl' ? 'text-right' : 'text-left',
+                  dir === 'rtl' ? 'text-start' : 'text-left',
                 )}
               >
                 {description}
@@ -192,7 +192,7 @@ export function showDashboardLoadingToast({
 //       aria-live="polite"
 //       className={cn(
 //         'flex flex-col overflow-hidden rounded-[14px] bg-[#eae5d7] p-5 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)]',
-//         dir === 'rtl' ? 'items-end text-right' : 'items-start text-left',
+//         dir === 'rtl' ? 'items-end text-start' : 'items-start text-left',
 //       )}
 //     >
 //       <div className={cn('flex w-full items-start justify-start gap-5')}>
@@ -220,7 +220,7 @@ export function showDashboardLoadingToast({
 //           <p
 //             className={cn(
 //               'w-full text-lg leading-7 font-semibold text-[#181927]',
-//               dir === 'rtl' ? 'text-right' : 'text-left',
+//               dir === 'rtl' ? 'text-start' : 'text-left',
 //             )}
 //           >
 //             {title}
@@ -231,7 +231,7 @@ export function showDashboardLoadingToast({
 //               <p
 //                 className={cn(
 //                   'w-[264px] text-sm leading-5 font-normal text-[#402f28]',
-//                   dir === 'rtl' ? 'text-right' : 'text-left',
+//                   dir === 'rtl' ? 'text-start' : 'text-left',
 //                 )}
 //               >
 //                 {description}

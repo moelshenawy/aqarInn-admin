@@ -42,7 +42,7 @@ export function DashboardOpportunityCard({
       </div>
 
       <div className="flex flex-col gap-3 px-4 pt-3 pb-[14px]">
-        <p className="line-clamp-2 text-right text-lg leading-7 font-semibold text-[#181927]">
+        <p className="line-clamp-2 text-start text-lg leading-7 font-semibold text-[#181927]">
           {title}
         </p>
 

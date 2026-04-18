@@ -56,7 +56,7 @@ export function DashboardTransactionsSummaryV2Section({
       className="space-y-6"
     >
       <div className="flex items-start justify-between gap-6">
-        <h3 className="text-right text-lg leading-7 font-semibold text-[#181927]">
+        <h3 className="text-start text-lg leading-7 font-semibold text-[#181927]">
           {transactionsOverview?.title}
         </h3>
         <div
@@ -124,7 +124,7 @@ export function DashboardTransactionsSummaryV2Section({
                       </p>
                     </div>
                   ) : null}
-                  <p className="flex-1 text-right text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
+                  <p className="flex-1 text-start text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
                     {card.label}
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export function DashboardTransactionsSummaryV2Section({
               <div className="flex min-h-0 flex-1 items-end">
                 <div className="flex w-full items-center justify-end gap-2.5">
                   <RiyalIcon className="text-[36px] leading-[54px] text-[#ac9063]" />
-                  <p className="flex-1 text-right text-[45px] leading-11 font-medium text-[#6d4f3b]">
+                  <p className="flex-1 text-start text-[45px] leading-11 font-medium text-[#6d4f3b]">
                     {numberFormatter.format(card.amount ?? 0)}
                   </p>
                 </div>

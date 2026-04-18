@@ -4,6 +4,8 @@ export const INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES = {
   titleEn: '',
   cityId: '',
   neighborhood: '',
+  latitude: '',
+  longitude: '',
   propertyType: '',
   propertyArea: '',
   floorCount: '',

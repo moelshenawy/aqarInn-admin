@@ -12,7 +12,7 @@ function InvestmentOpportunityFieldShell({
   children,
 }) {
   return (
-    <div className={cn('space-y-3 text-right', className)}>
+    <div className={cn('space-y-3 text-start', className)}>
       <label
         htmlFor={id}
         dir="rtl"
@@ -133,7 +133,9 @@ export const InvestmentOpportunityTextField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-right text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              'h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              error &&
+                'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               (icon || addon) && 'pl-14',
               inputClassName,
             )}
@@ -177,7 +179,9 @@ export const InvestmentOpportunityTextareaField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'min-h-[124px] w-full resize-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-right text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              'min-h-[124px] w-full resize-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-3.5 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
+              error &&
+                'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               icon && 'pl-14',
               textareaClassName,
             )}
@@ -221,7 +225,9 @@ export const InvestmentOpportunitySelectField = forwardRef(
             dir="rtl"
             aria-required={required}
             className={cn(
-              'h-12 w-full appearance-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] py-3.5 pr-3 pl-12 text-right text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20',
+              'h-12 w-full appearance-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] py-3.5 pr-3 pl-12 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20',
+              error &&
+                'border-[#b93815] focus-visible:border-[#b93815] focus-visible:ring-[#b93815]/20',
               selectClassName,
             )}
             {...props}
@@ -275,7 +281,10 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
         <input ref={ref} id={id} type="file" className="sr-only" {...props} />
         <label
           htmlFor={id}
-          className="flex h-12 cursor-pointer items-center justify-end gap-2 rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3.5 text-right text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition hover:border-[#9d7e55]"
+          className={cn(
+            'flex h-12 cursor-pointer items-center justify-end gap-2 rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3.5 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition hover:border-[#9d7e55]',
+            error && 'border-[#b93815] hover:border-[#b93815]',
+          )}
         >
           <UploadCloud
             className="size-5 shrink-0 stroke-[1.8]"
@@ -304,7 +313,10 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
         <label
           htmlFor={id}
           data-testid="investment-property-images-upload"
-          className="flex min-h-[126px] cursor-pointer flex-col items-center justify-center rounded-xl border border-[#d6cbb2] bg-[color:var(--dashboard-bg)] px-6 py-4 text-center shadow-[var(--dashboard-shadow)] transition hover:border-[#bfab85]"
+          className={cn(
+            'flex min-h-[126px] cursor-pointer flex-col items-center justify-center rounded-xl border border-[#d6cbb2] bg-[color:var(--dashboard-bg)] px-6 py-4 text-center shadow-[var(--dashboard-shadow)] transition hover:border-[#bfab85]',
+            error && 'border-[#b93815] hover:border-[#b93815]',
+          )}
         >
           <span className="mb-3 flex size-10 items-center justify-center rounded-lg border border-[#d6cbb2] text-[#6d4f3b] shadow-[var(--dashboard-shadow)]">
             <UploadCloud className="size-5 stroke-[1.8]" aria-hidden="true" />
