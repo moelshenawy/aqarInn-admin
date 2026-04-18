@@ -745,7 +745,7 @@ function UsersManagementTable() {
           >
             <Button
               type="button"
-              dir="ltr"
+              dir={isArabic ? 'rtl' : 'ltr'}
               size="lg"
               onClick={() =>
                 navigate(
@@ -780,7 +780,10 @@ function UsersManagementTable() {
           <thead>
             <tr className="h-11 border-b border-[#eae5d7] bg-[#f8f3e8] text-xs leading-[18px] font-bold text-[#5c4437]">
               <th className="px-6 font-bold">
-                <div className="flex items-center justify-end gap-3" dir="ltr">
+                <div
+                  className="flex items-center justify-start gap-3"
+                  dir={isArabic ? 'rtl' : 'ltr'}
+                >
                   <span className="whitespace-nowrap">
                     {copy.fullNameHeader}
                   </span>
@@ -831,14 +834,14 @@ function UsersManagementTable() {
                 >
                   <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
                     <div
-                      className="flex items-center justify-end gap-3"
-                      dir="ltr"
+                      className="flex items-center justify-start gap-3"
+                      dir={isArabic ? 'rtl' : 'ltr'}
                     >
-                      <span className="whitespace-nowrap">{row.fullName}</span>
-                      <UserAvatarIcon />
                       <UserRowCheckbox
                         label={`${copy.selectUser} ${row.fullName}`}
                       />
+                      <UserAvatarIcon />
+                      <span className="whitespace-nowrap">{row.fullName}</span>
                     </div>
                   </td>
                   <td className="px-6 font-normal">{row.identifier}</td>
@@ -856,7 +859,7 @@ function UsersManagementTable() {
                     >
                       <div
                         className="flex items-center justify-start gap-0.5"
-                        dir="ltr"
+                        dir={isArabic ? 'rtl' : 'ltr'}
                       >
                         <UserTableAction
                           label={`${copy.deleteUser} ${row.fullName}`}

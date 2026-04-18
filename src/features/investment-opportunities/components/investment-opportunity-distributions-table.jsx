@@ -183,7 +183,7 @@ export function InvestmentOpportunityDistributionsTable({
                     <td className="px-6 font-normal">{row.executionDate}</td>
                     <td className="px-6 font-normal">{row.userId}</td>
                     <td className="px-6">
-                      <div className="flex items-center justify-end gap-3">
+                      <div className="flex items-center justify-start gap-3">
                         <span className="font-semibold">{row.fullName}</span>
                         <UserAvatarIcon />
                       </div>

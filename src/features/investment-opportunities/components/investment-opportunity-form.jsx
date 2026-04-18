@@ -397,6 +397,10 @@ export function InvestmentOpportunityForm({
               id="investmentStartDate"
               label="تاريخ بداية الاستثمار"
               placeholder="قم بتحديد تاريخ بداية الاستثمار"
+              type="date"
+              onClick={(event) => {
+                event.currentTarget.showPicker?.()
+              }}
               icon={Calendar}
               error={errors.investmentStartDate?.message}
               {...register('investmentStartDate')}

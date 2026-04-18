@@ -14,9 +14,9 @@ const transactionSummaryIcons = {
   distributions: Banknote,
 }
 
-function TransactionAmount({ value, numberFormatter }) {
+function TransactionAmount({ value, numberFormatter, dir }) {
   return (
-    <div className="flex items-center gap-1.5" dir="ltr">
+    <div className="flex items-center gap-1.5" dir={dir}>
       <RiyalIcon className="text-[22px] text-[#9d7e55]" />
       <span className="text-xl leading-8 font-semibold text-[#402f28]">
         {numberFormatter.format(value)}
@@ -31,6 +31,7 @@ function TransactionMetricTile({
   count,
   amount,
   numberFormatter,
+  dir,
 }) {
   return (
     <div
@@ -45,7 +46,7 @@ function TransactionMetricTile({
           <p className="text-xs leading-5 font-medium text-[#9d7e55]">Count</p>
           <p
             className="mt-1 text-[28px] leading-9 font-semibold text-[#402f28]"
-            dir="ltr"
+            dir={dir}
           >
             {numberFormatter.format(count)}
           </p>
@@ -56,6 +57,7 @@ function TransactionMetricTile({
             <TransactionAmount
               value={amount}
               numberFormatter={numberFormatter}
+              dir={dir}
             />
           </div>
         </div>
@@ -149,6 +151,7 @@ export function DashboardTransactionsOverviewSection({
                   count={card.count ?? 0}
                   amount={card.amount ?? 0}
                   numberFormatter={numberFormatter}
+                  dir={dir}
                 />
               </div>
             </section>

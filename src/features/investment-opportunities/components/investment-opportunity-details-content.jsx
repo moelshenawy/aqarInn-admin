@@ -1,13 +1,14 @@
 import { Fragment } from 'react'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
+import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
 import { investmentOpportunityDetailsAssets } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
-function SectionHeading({ children }) {
+function SectionHeading({ children, dir }) {
   return (
     <div
-      dir="ltr"
+      dir={dir}
       className="flex items-center justify-end gap-2.5 py-2 text-start"
     >
       <img
@@ -24,14 +25,14 @@ function SectionHeading({ children }) {
   )
 }
 
-function Metric({ label, value, currency = false }) {
+function Metric({ label, value, currency = false, dir }) {
   return (
     <div className="flex w-36 shrink-0 flex-col items-end gap-[13px] text-start">
       <p className="w-full text-sm leading-5 font-semibold text-[#ac9063]">
         {label}
       </p>
       {currency ? (
-        <div dir="ltr" className="flex items-center justify-end gap-2.5">
+        <div dir={dir} className="flex items-center justify-end gap-2.5">
           <RiyalIcon
             alt=""
             aria-hidden="true"
@@ -122,6 +123,8 @@ export function InvestmentOpportunityDetailsActions({ onDelete, onEdit }) {
 }
 
 export function InvestmentOpportunityDetailsBody({ details }) {
+  const { dir } = useDirection()
+
   return (
     <>
       <section
@@ -130,12 +133,9 @@ export function InvestmentOpportunityDetailsBody({ details }) {
       >
         <div className="flex w-full flex-col gap-5">
           <div className="flex w-full flex-col gap-5">
-            <div
-              dir="ltr"
-              className="flex w-full items-center gap-5 lg:gap-[240px]"
-            >
+            <div dir={dir} className="flex w-full items-center gap-5 lg:gap-[240px]">
               <div
-                dir="ltr"
+                dir={dir}
                 className="flex shrink-0 items-center gap-5 text-start"
               >
                 <p className="max-w-[105px] truncate text-xl leading-[30px] font-semibold text-[#402f28]">
@@ -158,7 +158,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
             </div>
 
             <div
-              dir="ltr"
+              dir={dir}
               className="flex h-[30px] w-full items-center text-start text-xl leading-[30px] font-semibold text-[#402f28]"
             >
               <p className="shrink-0 truncate whitespace-pre">
@@ -170,7 +170,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
             </div>
           </div>
 
-          <div dir="ltr" className="flex w-full items-center justify-end">
+          <div dir={dir} className="flex w-full items-center justify-end">
             <div className="flex min-w-0 flex-1 items-center justify-end gap-2.5">
               <p className="min-w-0 flex-1 truncate text-left text-lg leading-7 font-semibold text-[#402f28]">
                 {details.buildYear}
@@ -192,20 +192,20 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         </div>
 
         <div
-          dir="ltr"
+          dir={dir}
           className="flex w-full items-center justify-between gap-4 py-0.5"
           aria-label="المعلومات المالية"
         >
           {details.metrics.map((metric, index) => (
             <Fragment key={metric.label}>
-              <Metric {...metric} />
+              <Metric {...metric} dir={dir} />
               {index < details.metrics.length - 1 ? <FinancialDivider /> : null}
             </Fragment>
           ))}
         </div>
 
         <div
-          dir="ltr"
+          dir={dir}
           className="flex w-full flex-col gap-4"
           aria-label="صور الفرصة الاستثمارية"
         >
@@ -225,9 +225,9 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         className="flex w-full flex-col gap-[30px]"
         aria-label="اعدادات الاستثمار"
       >
-        <SectionHeading>اعدادات الاستثمار</SectionHeading>
+        <SectionHeading dir={dir}>اعدادات الاستثمار</SectionHeading>
         <div
-          dir="ltr"
+          dir={dir}
           className="grid w-full grid-cols-1 gap-[60px] sm:grid-cols-2"
         >
           {details.investmentSettings.map((setting) => (
@@ -245,10 +245,10 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         className="flex w-full flex-col gap-2.5"
         aria-label="تفاصيل المشغل"
       >
-        <SectionHeading>تفاصيل المشغل</SectionHeading>
+        <SectionHeading dir={dir}>تفاصيل المشغل</SectionHeading>
         <div className="flex w-full flex-col items-end gap-5">
           <div
-            dir="ltr"
+            dir={dir}
             className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-[60px]"
           >
             <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
@@ -266,7 +266,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
           </div>
 
           <div
-            dir="ltr"
+            dir={dir}
             className="grid w-full grid-cols-1 gap-5 text-start md:grid-cols-2 md:gap-[60px]"
           >
             <div className="flex min-w-0 flex-col items-start gap-2.5">

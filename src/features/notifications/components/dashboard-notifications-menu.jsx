@@ -31,7 +31,7 @@ export function DashboardNotificationsMenu({
 
   return (
     <DropdownMenu
-      dir="ltr"
+      dir={dir}
       modal={false}
       open={open}
       onOpenChange={onOpenChange}

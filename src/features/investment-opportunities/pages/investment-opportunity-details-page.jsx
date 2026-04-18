@@ -29,6 +29,7 @@ const deleteSuccessToast = {
 export default function InvestmentOpportunityDetailsPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
+  const dir = i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
   const { opportunityId = 'investment-riyadh-001' } = useParams()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const { data: opportunity, isLoading } =
@@ -64,7 +65,7 @@ export default function InvestmentOpportunityDetailsPage() {
       <section className="overflow-hidden bg-[#f8f3e8] p-2.5">
         <div className="flex flex-col gap-[30px]">
           <header
-            dir="ltr"
+            dir={dir}
             className="flex w-full items-center justify-end gap-[58px] py-2.5"
           >
             <InvestmentOpportunityDetailsActions

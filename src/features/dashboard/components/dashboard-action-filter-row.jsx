@@ -17,7 +17,7 @@ export function DashboardActionFilterRow({
 
   return (
     <section
-      dir="ltr"
+      dir={direction}
       role="group"
       data-slot="dashboard-action-filter-row"
       className="flex w-full min-w-0 items-center gap-3"

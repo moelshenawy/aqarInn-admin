@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useDirection } from '@/lib/i18n/direction-provider'
 import { InvestmentOpportunityDetailsBody } from '@/features/investment-opportunities/components/investment-opportunity-details-content'
 import { investmentOpportunityDefaultDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
@@ -17,6 +18,8 @@ export function InvestmentOpportunityReviewDialog({
   details = investmentOpportunityDefaultDetails,
   isPublishing = false,
 }) {
+  const { dir } = useDirection()
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -26,7 +29,7 @@ export function InvestmentOpportunityReviewDialog({
       >
         <div className="flex flex-col gap-[30px]">
           <header
-            dir="ltr"
+            dir={dir}
             className="flex w-full items-center justify-end gap-[58px] py-2.5"
           >
             <DialogClose asChild>

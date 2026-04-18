@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import { ChevronUp, UploadCloud } from 'lucide-react'
 
+import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
 
 function InvestmentOpportunityFieldShell({
@@ -344,8 +345,10 @@ export function InvestmentOpportunityFormActions({
   disableDraft = false,
   disableCancel = false,
 }) {
+  const { dir } = useDirection()
+
   return (
-    <div className="flex items-start justify-start gap-2.5 pt-[30px]" dir="ltr">
+    <div className="flex items-start justify-start gap-2.5 pt-[30px]" dir={dir}>
       <button
         type="submit"
         disabled={disableSubmit}

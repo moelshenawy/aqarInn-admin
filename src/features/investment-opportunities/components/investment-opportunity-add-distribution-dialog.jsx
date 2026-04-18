@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import { showDashboardErrorToast } from '@/components/ui/dashboard-toast'
 import { RiyalIcon } from '@/components/ui/riyal-icon'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 function getTodayIsoDate() {
   return new Date().toISOString().slice(0, 10)
@@ -33,6 +34,7 @@ export function InvestmentOpportunityAddDistributionDialog({
   isSubmitting = false,
   onSubmitDistribution,
 }) {
+  const { dir } = useDirection()
   const [netReturn, setNetReturn] = useState('')
   const todayIsoDate = useMemo(() => getTodayIsoDate(), [])
 
@@ -101,7 +103,7 @@ export function InvestmentOpportunityAddDistributionDialog({
 
             <div className="flex h-12 w-full items-start gap-2">
               <div
-                dir="ltr"
+                dir={dir}
                 className="flex h-12 min-w-0 flex-1 items-center rounded-lg border border-[#bfab85] bg-[#f8f3e8] text-start shadow-[var(--dashboard-shadow)]"
               >
                 <span className="shrink-0 px-3.5">
@@ -119,7 +121,7 @@ export function InvestmentOpportunityAddDistributionDialog({
               </div>
 
               <div
-                dir="ltr"
+                dir={dir}
                 className="flex h-12 w-[189px] shrink-0 items-center justify-start rounded-lg border border-[#d6cbb2] bg-[#f8f3e8] px-3.5 text-left text-sm leading-5 font-medium text-[#5c4437] shadow-[var(--dashboard-shadow)]"
               >
                 <input
@@ -132,7 +134,7 @@ export function InvestmentOpportunityAddDistributionDialog({
             </div>
           </div>
 
-          <div className="flex h-[47px] w-full items-start gap-2.5" dir="ltr">
+          <div className="flex h-[47px] w-full items-start gap-2.5" dir={dir}>
             <button
               type="submit"
               disabled={isSubmitting}

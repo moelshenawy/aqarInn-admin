@@ -542,7 +542,10 @@ export default function UsersAddPage() {
           </div>
         </div>
 
-        <div className="flex h-[47px] w-full items-start gap-2.5" dir="ltr">
+        <div
+          className="flex h-[47px] w-full items-start gap-2.5"
+          dir={i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'}
+        >
           <Button
             type="submit"
             disabled={isSubmitting}

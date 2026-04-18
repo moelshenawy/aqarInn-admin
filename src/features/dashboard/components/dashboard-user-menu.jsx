@@ -116,7 +116,7 @@ export function DashboardUserMenu({
 
   return (
     <>
-      <DropdownMenu dir="ltr" modal={false} open={open} onOpenChange={setOpen}>
+      <DropdownMenu dir={dir} modal={false} open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
