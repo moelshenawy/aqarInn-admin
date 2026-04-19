@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom'
-import { XIcon } from 'lucide-react'
+import {
+  Navigate,
+  Outlet,
+  useLocation,
+  useMatches,
+  useNavigate,
+} from 'react-router-dom'
+import { Languages, XIcon } from 'lucide-react'
 import { LocalizedLink } from '@/shared/components/localized-link'
 
 import {
@@ -15,12 +21,10 @@ import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { DashboardSidebarItem } from '@/features/dashboard/components/dashboard-sidebar-item'
 import { DashboardTopbar } from '@/features/dashboard/components/dashboard-topbar'
 import { DashboardUserMenu } from '@/features/dashboard/components/dashboard-user-menu'
-import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import {
   dashboardActions,
   dashboardNavItems,
   dashboardRouteTitles,
-  dashboardSettingsItem,
   dashboardTopbarUser,
 } from '@/features/dashboard/constants/dashboard-ui'
 import {
@@ -30,6 +34,7 @@ import {
 import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import { useAuth } from '@/features/auth/context/auth-provider'
 import { useSyncLocaleWithPath } from '@/lib/i18n/use-sync-locale-with-path'
+import { stripLocalePrefix } from '@/lib/i18n/language'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
 import { cn } from '@/lib/utils'
 
@@ -113,6 +118,8 @@ function DashboardBrand({
 
 function DashboardSidebar({
   pathname,
+  search,
+  hash,
   onNavigate,
   collapsed = false,
   canCollapse = false,
@@ -122,6 +129,19 @@ function DashboardSidebar({
   user = null,
   canAccessRoute,
 }) {
+  const navigate = useNavigate()
+  const basePath = stripLocalePrefix(pathname)
+  const nextLocale = locale === 'en' ? 'ar' : 'en'
+  const localeToggleLabel = locale === 'en' ? 'العربية' : 'English'
+  const localeTooltipLabel =
+    locale === 'en' ? 'Switch to Arabic' : 'التبديل إلى الإنجليزية'
+
+  const handleToggleLocale = () => {
+    const nextPath = ROUTE_PATHS.withLocale(basePath, nextLocale)
+    navigate(`${nextPath}${search}${hash}`, { replace: true })
+    onNavigate?.()
+  }
+
   const visibleNavItems = dashboardNavItems.filter((item) =>
     canAccessRoute ? canAccessRoute(item.requiredPermissions ?? []) : true,
   )
@@ -179,44 +199,20 @@ function DashboardSidebar({
             contentClassName="w-[calc(100vw-48px)] max-w-[320px] sm:w-[320px]"
           />
           <DashboardSidebarItem
-            icon={dashboardSettingsItem.icon}
-            label={
-              locale === 'en'
-                ? (dashboardSettingsItem.labelEn ?? dashboardSettingsItem.label)
-                : dashboardSettingsItem.label
-            }
+            icon={Languages}
+            label={collapsed ? localeTooltipLabel : localeToggleLabel}
+            onClick={handleToggleLocale}
             collapsed={collapsed}
-            disabled
           />
-          {!collapsed ? (
-            <div
-              className="flex justify-start ps-1"
-              data-slot="sidebar-language-switcher"
-            >
-              <LanguageSwitcher compact />
-            </div>
-          ) : null}
         </div>
       ) : (
         <div className="space-y-3 border-t border-[color:var(--dashboard-border)] pt-6">
           <DashboardSidebarItem
-            icon={dashboardSettingsItem.icon}
-            label={
-              locale === 'en'
-                ? (dashboardSettingsItem.labelEn ?? dashboardSettingsItem.label)
-                : dashboardSettingsItem.label
-            }
+            icon={Languages}
+            label={collapsed ? localeTooltipLabel : localeToggleLabel}
+            onClick={handleToggleLocale}
             collapsed={collapsed}
-            disabled
           />
-          {!collapsed ? (
-            <div
-              className="flex justify-start ps-1"
-              data-slot="sidebar-language-switcher"
-            >
-              <LanguageSwitcher compact />
-            </div>
-          ) : null}
         </div>
       )}
     </div>
@@ -230,6 +226,10 @@ export function DashboardLayout() {
   const { canAccessRoute } = useAuthorization()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [opportunitySearchQuery, setOpportunitySearchQuery] = useState('')
+  const [opportunityAppliedFilters, setOpportunityAppliedFilters] = useState({
+    cityId: '',
+    status: '',
+  })
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
   )
@@ -279,6 +279,8 @@ export function DashboardLayout() {
   const desktopSidebar = (
     <DashboardSidebar
       pathname={location.pathname}
+      search={location.search}
+      hash={location.hash}
       collapsed={isSidebarCollapsed}
       canCollapse
       onToggleCollapse={handleToggleDesktopSidebar}
@@ -291,6 +293,8 @@ export function DashboardLayout() {
   const mobileSidebar = (
     <DashboardSidebar
       pathname={location.pathname}
+      search={location.search}
+      hash={location.hash}
       onNavigate={() => setSidebarOpen(false)}
       locale={localeFromPath}
       mobileClose
@@ -321,9 +325,16 @@ export function DashboardLayout() {
               onOpenSidebar={() => setSidebarOpen(true)}
               opportunitySearchQuery={opportunitySearchQuery}
               onOpportunitySearchChange={setOpportunitySearchQuery}
+              opportunityAppliedFilters={opportunityAppliedFilters}
+              onOpportunityAppliedFiltersChange={setOpportunityAppliedFilters}
             />
             <div className="pt-[31px]">
-              <Outlet context={{ opportunitySearchQuery }} />
+              <Outlet
+                context={{
+                  opportunitySearchQuery,
+                  opportunityAppliedFilters,
+                }}
+              />
             </div>
           </main>
         </div>

@@ -61,10 +61,17 @@ function getPropertyTypeValue(propertyType) {
 }
 
 export function createInvestmentOpportunityFormValues(details) {
+  const resolvedTitle = details.title ?? details.titleAr ?? details.titleEn ?? ''
+  const resolvedDescription =
+    details.operator.description ??
+    details.operator.descriptionAr ??
+    details.operator.descriptionEn ??
+    ''
+
   return {
     ...INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
-    titleAr: details.titleAr ?? '',
-    titleEn: details.titleEn ?? '',
+    titleAr: details.titleAr ?? resolvedTitle,
+    titleEn: details.titleEn ?? resolvedTitle,
     propertyType: getPropertyTypeValue(details.propertyType),
     propertyArea: details.totalArea?.match(/[\d.]+/)?.[0] ?? '',
     floorCount: details.floors?.match(/\d+/)?.[0] ?? details.floors ?? '',
@@ -72,8 +79,8 @@ export function createInvestmentOpportunityFormValues(details) {
     propertyLocation: details.location ?? '',
     developerNameAr: details.operator.nameAr ?? '',
     developerNameEn: details.operator.nameEn ?? '',
-    developerDescriptionAr: details.operator.descriptionAr ?? '',
-    developerDescriptionEn: details.operator.descriptionEn ?? '',
+    developerDescriptionAr: details.operator.descriptionAr ?? resolvedDescription,
+    developerDescriptionEn: details.operator.descriptionEn ?? resolvedDescription,
     developerEmail: details.operator.email ?? '',
     developerPhone: details.operator.phone?.replace('+966', '').trim() ?? '',
     developerLocation: details.operator.location ?? '',

@@ -5,30 +5,31 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 
 import { cn } from '@/lib/utils'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 export function DashboardActionFilterRow({
   action,
   items,
   activeKey,
   onSelect,
-  direction = 'rtl',
 }) {
   const hasAction = Boolean(action)
+  const { dir } = useDirection()
 
   return (
     <section
-      dir={direction}
+      dir={dir}
       role="group"
       data-slot="dashboard-action-filter-row"
       className="flex w-full min-w-0 items-center gap-3"
     >
       <div
-        dir={direction}
+        dir={dir}
         data-slot="dashboard-filter-swiper"
         className="min-w-0 flex-1"
       >
         <Swiper
-          dir={direction}
+          dir={dir}
           modules={[FreeMode]}
           freeMode
           slidesPerView="auto"
@@ -46,7 +47,7 @@ export function DashboardActionFilterRow({
               >
                 <button
                   type="button"
-                  dir={direction}
+                  dir={dir}
                   data-slot="dashboard-filter-chip"
                   data-state={isActive ? 'active' : 'inactive'}
                   aria-pressed={isActive}
@@ -74,16 +75,25 @@ export function DashboardActionFilterRow({
           })}
         </Swiper>
       </div>
+
+      {hasAction ? (
+        <div
+          aria-hidden="true"
+          data-slot="dashboard-action-filter-divider"
+          className="h-[18px] w-px shrink-0 bg-[#d6cbb2]"
+        />
+      ) : null}
+
       {hasAction ? (
         <button
           type="button"
-          dir={direction}
+          dir={dir}
           data-slot="dashboard-action-filter-trigger"
           aria-label={action.ariaLabel ?? action.label}
           className="inline-flex shrink-0 items-center gap-2.5 rounded-[36px] bg-[#402f28] px-4 py-2 ps-5 text-sm leading-5 font-medium text-[#f8f3e8] transition-colors hover:bg-[#4a3730] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
           onClick={action.onClick}
         >
-          <span dir={direction} className="whitespace-nowrap">
+          <span dir={dir} className="whitespace-nowrap">
             {action.label}
           </span>
 
@@ -93,14 +103,6 @@ export function DashboardActionFilterRow({
             </span>
           ) : null}
         </button>
-      ) : null}
-
-      {hasAction ? (
-        <div
-          aria-hidden="true"
-          data-slot="dashboard-action-filter-divider"
-          className="h-[18px] w-px shrink-0 bg-[#d6cbb2]"
-        />
       ) : null}
     </section>
   )

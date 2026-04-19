@@ -370,7 +370,9 @@ export default function CitiesPage() {
                         >
                           <Edit3 className="size-4" />
                         </Button>
-                        <Button
+                        {/*
+                        Hide Delete button
+                         <Button
                           variant="destructive"
                           size="sm"
                           className="h-8 px-3 leading-none whitespace-nowrap"
@@ -378,7 +380,7 @@ export default function CitiesPage() {
                           disabled={isDeleting}
                         >
                           <Trash2 className="size-4" />
-                        </Button>
+                        </Button> */}
                       </div>
                     </TableCell>
                   </TableRow>

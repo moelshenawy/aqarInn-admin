@@ -385,10 +385,7 @@ export default function UsersAddPage() {
     return opportunities
       .filter((opportunity) => opportunity?.status === 'published')
       .map((opportunity) => {
-        const localizedTitle =
-          i18n.resolvedLanguage === 'en'
-            ? (opportunity?.title_en ?? opportunity?.title_ar)
-            : (opportunity?.title_ar ?? opportunity?.title_en)
+        const localizedTitle = opportunity?.title
 
         return {
           value: String(opportunity?.id ?? ''),

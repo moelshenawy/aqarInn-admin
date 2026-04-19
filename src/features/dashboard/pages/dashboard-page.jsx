@@ -1,17 +1,16 @@
-﻿import { Banknote, CreditCard, User, UserCheck, Wallet } from 'lucide-react'
+import { Banknote, CreditCard, User, UserCheck, Wallet } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
 import { DashboardMetricCard } from '@/features/dashboard/components/dashboard-metric-card'
 import { DashboardOpportunityCard } from '@/features/dashboard/components/dashboard-opportunity-card'
 import { DashboardProgressTable } from '@/features/dashboard/components/dashboard-progress-table'
 import { DashboardSectionHeader } from '@/features/dashboard/components/dashboard-section-header'
-import { DashboardTransactionsOverviewSection } from '@/features/dashboard/components/dashboard-transactions-overview-section'
 import { DashboardTransactionsSummaryV2Section } from '@/features/dashboard/components/dashboard-transactions-summary-v2-section'
 import { useDashboardOverviewQuery } from '@/features/dashboard/hooks/use-dashboard-overview-query'
 import { useDirection } from '@/lib/i18n/direction-provider'
-import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
 
 const EMPTY_DASHBOARD_OVERVIEW = {
   summary_cards: [],
@@ -65,20 +64,7 @@ function DashboardMetricCardSkeleton({ index }) {
 export default function DashboardPage() {
   const { i18n } = useTranslation(['navigation'])
   const { dir } = useDirection()
-  const [selectedTransactionsFilter, setSelectedTransactionsFilter] =
-    useState(null)
-
-  const { data, isPending } = useDashboardOverviewQuery(
-    selectedTransactionsFilter,
-  )
-  useEffect(() => {
-    if (
-      !selectedTransactionsFilter &&
-      data?.transactions_overview?.selected_filter
-    ) {
-      setSelectedTransactionsFilter(data.transactions_overview.selected_filter)
-    }
-  }, [data?.transactions_overview?.selected_filter, selectedTransactionsFilter])
+  const { data, isPending } = useDashboardOverviewQuery()
 
   const overview = data ?? EMPTY_DASHBOARD_OVERVIEW
 
@@ -174,16 +160,9 @@ export default function DashboardPage() {
           ))}
         </div>
       </section>
-      {/* <DashboardTransactionsOverviewSection
-        transactionsOverview={transactionsOverview}
-        selectedFilter={selectedTransactionsFilter}
-        onSelectFilter={setSelectedTransactionsFilter}
-      /> */}
 
       <DashboardTransactionsSummaryV2Section
         transactionsOverview={transactionsOverview}
-        selectedFilter={selectedTransactionsFilter}
-        onSelectFilter={setSelectedTransactionsFilter}
       />
     </div>
   )

@@ -570,7 +570,7 @@ function UsersManagementTable() {
                   ),
                 )
               }
-              className="me-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
+              className="ms-auto gap-2.5 rounded-full bg-[#402f28] px-5 py-2 text-sm leading-5 font-medium text-[#f8f3e8] hover:bg-[#4c382f] focus-visible:ring-[#9d7e55]/25"
             >
               <span>{copy.addUser}</span>
               <span className="flex size-5 items-center justify-center rounded-full bg-[#f8f3e8] text-[#402f28]">

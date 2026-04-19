@@ -62,3 +62,16 @@ export async function getDashboardOverview(transactionsFilter = null) {
   })
   return response?.data ?? null
 }
+
+/**
+ * @typedef {NonNullable<DashboardOverview['transactions_overview']>} DashboardTransactionsOverview
+ */
+
+/**
+ * @param {string | null} [transactionsFilter]
+ * @returns {Promise<DashboardTransactionsOverview | null>}
+ */
+export async function getDashboardTransactionsOverview(transactionsFilter = null) {
+  const overview = await getDashboardOverview(transactionsFilter)
+  return overview?.transactions_overview ?? null
+}

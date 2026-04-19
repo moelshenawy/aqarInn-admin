@@ -16,7 +16,6 @@
 } from 'lucide-react'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
-import { createElement } from 'react'
 import {
   APP_ACTIONS,
   APP_RESOURCES,
@@ -32,13 +31,6 @@ const opportunityThree = '/assets/dashboard/opportunity-3.png'
 const opportunityFour = '/assets/dashboard/opportunity-4.png'
 const opportunityFive = '/assets/dashboard/opportunity-5.png'
 const sharesDot = '/assets/dashboard/shares-dot.svg'
-
-const SettingsIcon = (props) =>
-  createElement('img', {
-    src: '/assets/icons/settings.svg',
-    alt: 'الإعدادات',
-    ...props,
-  })
 
 export const dashboardBrand = {
   mark: logoMark,
@@ -112,13 +104,6 @@ export const dashboardNavItems = [
     icon: MapPin,
   },
 ]
-
-export const dashboardSettingsItem = {
-  label: 'الاعدادات',
-  labelEn: 'Settings',
-  icon: SettingsIcon,
-  disabled: true,
-}
 
 export const dashboardMetrics = [
   {

@@ -29,6 +29,7 @@ import {
   createPermission,
 } from '@/lib/permissions/constants'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 const deleteSuccessToast = {
   title: 'تم حذف الفرصة الاستثمارية بنجاح',
@@ -45,10 +46,11 @@ const deleteErrorToast = {
 export default function InvestmentOpportunityDetailsPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
-  const dir = i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
+  const { dir } = useDirection()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
   const { hasAllPermissions } = useAuthorization()
   const [deleteOpen, setDeleteOpen] = useState(false)
+
   const { data: opportunity, isLoading } =
     useOpportunityDetailsQuery(opportunityId)
   const deleteOpportunityMutation = useDeleteOpportunityMutation()
@@ -117,7 +119,7 @@ export default function InvestmentOpportunityDetailsPage() {
             className="flex w-full items-center justify-end gap-[58px] py-2.5"
           >
             <h1
-              dir="rtl"
+              dir={dir}
               className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
             >
               عرض تفاصيل الفرصة الاستثمارية

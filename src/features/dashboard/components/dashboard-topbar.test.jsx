@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   act,
   fireEvent,
@@ -7,6 +7,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   createMemoryRouter,
   Outlet,
@@ -29,9 +30,30 @@ import {
 } from '@/features/notifications/constants/dashboard-notifications'
 import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import * as authService from '@/features/auth/services/auth-service'
+import {
+  getCities,
+  getOpportunities,
+} from '@/features/investment-opportunities/services/investment-opportunity-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
+
+vi.mock(
+  '@/features/investment-opportunities/services/investment-opportunity-service',
+  () => ({
+    getCities: vi.fn(),
+    getOpportunities: vi.fn(),
+  }),
+)
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+}
 
 function TopbarTestLayout() {
   const location = useLocation()
@@ -75,40 +97,52 @@ async function renderDashboardTopbar({
     await i18n.changeLanguage(language)
   })
 
+  const topbarRoutes = {
+    element: <TopbarTestLayout />,
+    children: [
+      {
+        path: 'dashboard',
+        element: <DestinationPage title="Dashboard home" />,
+      },
+      {
+        path: 'notifications',
+        element: <DestinationPage title="Notifications page" />,
+      },
+      {
+        path: 'users',
+        element: <DestinationPage title="Users page" />,
+      },
+      {
+        path: 'activity-logs',
+        element: <DestinationPage title="Activity logs page" />,
+      },
+      {
+        path: 'investment-opportunities/:opportunityId',
+        element: <DestinationPage title="Opportunity details page" />,
+      },
+      {
+        path: 'investment-opportunities/:opportunityId/profit-distributions',
+        element: <DestinationPage title="Profit distributions page" />,
+      },
+    ],
+  }
+
   const router = createMemoryRouter(
     [
       {
         path: '/app',
-        element: <TopbarTestLayout />,
-        children: [
-          {
-            path: 'dashboard',
-            element: <DestinationPage title="Dashboard home" />,
-          },
-          {
-            path: 'notifications',
-            element: <DestinationPage title="Notifications page" />,
-          },
-          {
-            path: 'users',
-            element: <DestinationPage title="Users page" />,
-          },
-          {
-            path: 'activity-logs',
-            element: <DestinationPage title="Activity logs page" />,
-          },
-          {
-            path: 'investment-opportunities/:opportunityId',
-            element: <DestinationPage title="Opportunity details page" />,
-          },
-          {
-            path: 'investment-opportunities/:opportunityId/profit-distributions',
-            element: <DestinationPage title="Profit distributions page" />,
-          },
-        ],
+        ...topbarRoutes,
+      },
+      {
+        path: '/:locale/app',
+        ...topbarRoutes,
       },
       {
         path: ROUTE_PATHS.login,
+        element: <DestinationPage title="Login page" />,
+      },
+      {
+        path: '/:locale/login',
         element: <DestinationPage title="Login page" />,
       },
     ],
@@ -119,14 +153,16 @@ async function renderDashboardTopbar({
     router,
     ...render(
       <I18nextProvider i18n={i18n}>
-        <AppDirectionProvider>
-          <AuthProvider>
-            <NotificationsProvider>
-              <RouterProvider router={router} />
-              <Toaster richColors closeButton />
-            </NotificationsProvider>
-          </AuthProvider>
-        </AppDirectionProvider>
+        <QueryClientProvider client={createTestQueryClient()}>
+          <AppDirectionProvider>
+            <AuthProvider>
+              <NotificationsProvider>
+                <RouterProvider router={router} />
+                <Toaster richColors closeButton />
+              </NotificationsProvider>
+            </AuthProvider>
+          </AppDirectionProvider>
+        </QueryClientProvider>
       </I18nextProvider>,
     ),
   }
@@ -181,6 +217,45 @@ async function openUserMenu() {
 }
 
 describe('DashboardTopbar notifications bar', () => {
+  beforeEach(() => {
+    vi.mocked(getCities).mockResolvedValue([
+      {
+        id: 'city-riyadh',
+        name_ar: 'الرياض',
+        name_en: 'Riyadh',
+      },
+      {
+        id: 'city-jeddah',
+        name_ar: 'جدة',
+        name_en: 'Jeddah',
+      },
+    ])
+    vi.mocked(getOpportunities).mockResolvedValue({
+      current_page: 1,
+      last_page: 1,
+      total: 1,
+      per_page: 20,
+      data: [
+        {
+          id: 'opp-001',
+          reference_code: 'IO-RYD-001',
+          title: 'Riyadh Opportunity',
+          status: 'published',
+          city_id: 'city-riyadh',
+          neighborhood: 'Al Olaya',
+          property_price: '100000.00',
+          total_shares: 10,
+          funded_shares: 2,
+          city: {
+            id: 'city-riyadh',
+            name_ar: 'الرياض',
+            name_en: 'Riyadh',
+          },
+        },
+      ],
+    })
+  })
+
   afterEach(async () => {
     vi.useRealTimers()
     vi.restoreAllMocks()
@@ -237,7 +312,7 @@ describe('DashboardTopbar notifications bar', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent(
-        buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
+        buildInvestmentOpportunityDetailsPath('investment-riyadh-001', 'en'),
       )
     })
 
@@ -298,7 +373,7 @@ describe('DashboardTopbar notifications bar', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('current-path')).toHaveTextContent(
-        ROUTE_PATHS.notifications,
+        ROUTE_PATHS.withLocale(ROUTE_PATHS.notifications, 'en'),
       )
     })
     expect(
@@ -442,5 +517,98 @@ describe('DashboardTopbar notifications bar', () => {
 
     expect(window.localStorage.getItem('authToken')).toBeNull()
     expect(window.localStorage.getItem('authUser')).toBeNull()
+  })
+
+  it('opens filter modal and handles apply/reset/cancel actions', async () => {
+    await renderDashboardTopbar({ language: 'en' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'الإعدادات' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Filter opportunities' }),
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('City'), {
+      target: { value: 'city-riyadh' },
+    })
+    fireEvent.change(screen.getByLabelText('Status'), {
+      target: { value: 'published' },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'Filter opportunities' })).toBeNull()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'الإعدادات' }))
+    expect(screen.getByLabelText('City')).toHaveValue('city-riyadh')
+    expect(screen.getByLabelText('Status')).toHaveValue('published')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
+    expect(screen.getByLabelText('City')).toHaveValue('')
+    expect(screen.getByLabelText('Status')).toHaveValue('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: 'Filter opportunities' })).toBeNull()
+    })
+  })
+
+  it('uses API query with search and applied filters in search modal', async () => {
+    await renderDashboardTopbar({ language: 'en' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'البحث' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Search opportunities' }),
+    ).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(getOpportunities).toHaveBeenCalledWith({
+        page: 1,
+        search: '',
+        cityId: '',
+        status: '',
+      })
+    })
+
+    fireEvent.change(
+      screen.getByPlaceholderText('Search opportunities'),
+      { target: { value: 'riyadh' } },
+    )
+
+    await waitFor(() => {
+      expect(getOpportunities).toHaveBeenCalledWith({
+        page: 1,
+        search: 'riyadh',
+        cityId: '',
+        status: '',
+      })
+    })
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.click(screen.getByRole('button', { name: 'الإعدادات' }))
+    fireEvent.change(screen.getByLabelText('City'), {
+      target: { value: 'city-riyadh' },
+    })
+    fireEvent.change(screen.getByLabelText('Status'), {
+      target: { value: 'published' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'البحث' }))
+    fireEvent.change(
+      screen.getByPlaceholderText('Search opportunities'),
+      { target: { value: 'riyadh' } },
+    )
+
+    await waitFor(() => {
+      expect(getOpportunities).toHaveBeenCalledWith({
+        page: 1,
+        search: 'riyadh',
+        cityId: 'city-riyadh',
+        status: 'published',
+      })
+    })
   })
 })

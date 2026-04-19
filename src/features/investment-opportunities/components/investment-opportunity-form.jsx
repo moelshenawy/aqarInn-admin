@@ -79,14 +79,14 @@ export function InvestmentOpportunityForm({
       <div className="space-y-[30px]">
         <InvestmentOpportunityFormGrid>
           {showReferenceCode ? (
-          <InvestmentOpportunityTextField
-            id="referenceCode"
-            label="الكود المرجعي"
-            placeholder="قم بإدخال الكود المرجعي للفرصة"
-            required
-            error={errors.referenceCode?.message}
-            {...register('referenceCode')}
-          />
+            <InvestmentOpportunityTextField
+              id="referenceCode"
+              label="الكود المرجعي"
+              placeholder="قم بإدخال الكود المرجعي للفرصة"
+              required
+              error={errors.referenceCode?.message}
+              {...register('referenceCode')}
+            />
           ) : null}
           <InvestmentOpportunityTextField
             id="titleAr"
@@ -190,7 +190,8 @@ export function InvestmentOpportunityForm({
               selectedFiles={fileUploadState.propertyDocuments?.files}
               isLoading={fileUploadState.propertyDocuments?.isLoading}
               onRemoveFile={fileUploadState.propertyDocuments?.onRemoveFile}
-              {...(fileFields.propertyDocuments ?? register('propertyDocuments'))}
+              {...(fileFields.propertyDocuments ??
+                register('propertyDocuments'))}
             />
             <InvestmentOpportunityDropzoneField
               id="propertyImages"

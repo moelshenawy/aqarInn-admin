@@ -27,6 +27,7 @@ vi.mock('@/features/users/services/users-service', () => ({
 }))
 
 vi.mock('@/features/investment-opportunities/services/investment-opportunity-service', () => ({
+  getCities: vi.fn(),
   getOpportunities: vi.fn(),
 }))
 
@@ -170,8 +171,7 @@ describe('UsersPage route', () => {
         {
           id: 'io-1',
           reference_code: 'RES-RUH-001',
-          title_ar: 'فرصة الرياض',
-          title_en: 'Riyadh Opportunity',
+          title: 'Riyadh Opportunity',
           status: 'published',
           city_id: '1',
           total_shares: 1000,
@@ -180,6 +180,7 @@ describe('UsersPage route', () => {
         },
       ],
     })
+    opportunityService.getCities.mockResolvedValue([])
   })
 
   afterEach(() => {

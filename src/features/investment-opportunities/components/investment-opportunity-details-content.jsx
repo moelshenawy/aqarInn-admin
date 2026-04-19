@@ -137,6 +137,12 @@ export function InvestmentOpportunityDetailsActions({
 
 export function InvestmentOpportunityDetailsBody({ details }) {
   const { dir } = useDirection()
+  const opportunityTitle = details.title ?? details.titleAr ?? details.titleEn ?? ''
+  const operatorDescription =
+    details.operator.description ??
+    details.operator.descriptionAr ??
+    details.operator.descriptionEn ??
+    ''
   const gallery = Array.isArray(details.gallery)
     ? details.gallery.filter((image) => image?.src)
     : []
@@ -156,11 +162,8 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         >
           <div className="flex min-w-0 flex-1 flex-col items-end gap-4 text-right">
             <h2 className="w-full text-xl leading-[30px] font-semibold text-[#402f28]">
-              {details.titleAr}
+              {opportunityTitle}
             </h2>
-            <p className="w-full text-xl leading-[30px] font-semibold text-[#402f28]">
-              {details.titleEn}
-            </p>
             <div className="flex w-full items-center justify-start gap-2.5">
               <img
                 src={investmentOpportunityDetailsAssets.mapPin}
@@ -293,7 +296,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
                 {details.operator.nameEn}
               </p>
               <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
-                {details.operator.descriptionEn}
+                {operatorDescription}
               </p>
             </div>
             <div className="flex min-w-0 flex-col items-start gap-2.5">
@@ -301,7 +304,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
                 {details.operator.nameAr}
               </p>
               <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
-                {details.operator.descriptionAr}
+                {operatorDescription}
               </p>
             </div>
           </div>

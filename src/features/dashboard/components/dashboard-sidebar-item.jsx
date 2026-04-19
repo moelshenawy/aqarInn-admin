@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { useEffect } from 'react'
 
 import {
   Tooltip,
@@ -13,6 +12,7 @@ export function DashboardSidebarItem({
   icon: Icon,
   label,
   to,
+  onClick,
   active = false,
   disabled = false,
   collapsed = false,
@@ -22,21 +22,6 @@ export function DashboardSidebarItem({
   const currentLocale = i18n?.resolvedLanguage === 'en' ? 'en' : 'ar'
   const effectiveDir = currentLocale === 'en' ? 'ltr' : 'rtl'
   const tooltipSide = currentLocale === 'ar' ? 'left' : 'right'
-
-  useEffect(() => {
-    if (!collapsed) return
-
-    try {
-      console.log('Tooltip debug:', {
-        effectiveDir,
-        documentDir:
-          typeof document !== 'undefined'
-            ? document.documentElement?.dir
-            : undefined,
-        i18nResolvedLanguage: i18n?.resolvedLanguage,
-      })
-    } catch (e) {}
-  }, [collapsed, effectiveDir])
 
   const className = cn(
     'flex w-full items-center rounded-lg border py-3.5 text-start transition-[padding,gap,background-color,border-color] duration-300 ease-in-out',
@@ -73,7 +58,7 @@ export function DashboardSidebarItem({
   }
 
   const item =
-    disabled || !to ? (
+    disabled ? (
       <div
         {...sharedProps}
         aria-disabled="true"
@@ -81,10 +66,14 @@ export function DashboardSidebarItem({
       >
         {content}
       </div>
-    ) : (
+    ) : to ? (
       <Link to={to} {...sharedProps} onClick={onNavigate}>
         {content}
       </Link>
+    ) : (
+      <button type="button" {...sharedProps} onClick={onClick}>
+        {content}
+      </button>
     )
 
   if (!collapsed) {

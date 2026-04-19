@@ -9,13 +9,17 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { AuthProvider } from '@/features/auth/context/auth-provider'
 import DashboardPage from '@/features/dashboard/pages/dashboard-page'
 import { dashboardRouteMeta } from '@/features/dashboard/routes/dashboard.route'
-import { getDashboardOverview } from '@/features/dashboard/services/dashboard-service'
+import {
+  getDashboardOverview,
+  getDashboardTransactionsOverview,
+} from '@/features/dashboard/services/dashboard-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n/language'
 
 vi.mock('@/features/dashboard/services/dashboard-service', () => ({
   getDashboardOverview: vi.fn(),
+  getDashboardTransactionsOverview: vi.fn(),
 }))
 
 const dashboardOverviewFixture = {
@@ -202,47 +206,45 @@ async function renderDashboardRoute({
 
 describe('DashboardPage dynamic API rendering', () => {
   beforeEach(() => {
-    vi.mocked(getDashboardOverview).mockImplementation((filter) => {
+    vi.mocked(getDashboardOverview).mockResolvedValue(dashboardOverviewFixture)
+    vi.mocked(getDashboardTransactionsOverview).mockImplementation((filter) => {
       if (filter === 'last_7_days') {
         return Promise.resolve({
-          ...dashboardOverviewFixture,
-          transactions_overview: {
-            ...dashboardOverviewFixture.transactions_overview,
-            selected_filter: 'last_7_days',
-            filters: dashboardOverviewFixture.transactions_overview.filters.map(
-              (item) => ({
-                ...item,
-                is_selected: item.key === 'last_7_days',
-              }),
-            ),
-            cards: [
-              {
-                key: 'distributions',
-                label: 'Distributions',
-                count: 5,
-                amount: 44000,
-                currency: 'SAR',
-              },
-              {
-                key: 'withdrawal_requests',
-                label: 'Withdrawal requests',
-                count: 7,
-                amount: 120000,
-                currency: 'SAR',
-              },
-              {
-                key: 'investments',
-                label: 'Investments',
-                count: 2,
-                amount: 99000,
-                currency: 'SAR',
-              },
-            ],
-          },
+          ...dashboardOverviewFixture.transactions_overview,
+          selected_filter: 'last_7_days',
+          filters: dashboardOverviewFixture.transactions_overview.filters.map(
+            (item) => ({
+              ...item,
+              is_selected: item.key === 'last_7_days',
+            }),
+          ),
+          cards: [
+            {
+              key: 'distributions',
+              label: 'Distributions',
+              count: 5,
+              amount: 44000,
+              currency: 'SAR',
+            },
+            {
+              key: 'withdrawal_requests',
+              label: 'Withdrawal requests',
+              count: 7,
+              amount: 120000,
+              currency: 'SAR',
+            },
+            {
+              key: 'investments',
+              label: 'Investments',
+              count: 2,
+              amount: 99000,
+              currency: 'SAR',
+            },
+          ],
         })
       }
 
-      return Promise.resolve(dashboardOverviewFixture)
+      return Promise.resolve(dashboardOverviewFixture.transactions_overview)
     })
   })
 
@@ -296,21 +298,22 @@ describe('DashboardPage dynamic API rendering', () => {
     expect(screen.getByRole('region', { name: 'Investments' })).toBeInTheDocument()
   })
 
-  it('clicking transaction filter refetches dashboard with transactions_filter key', async () => {
+  it('clicking transaction filter refetches only transactions overview cards', async () => {
     await renderDashboardRoute()
 
-    const oldSection = document.querySelector(
-      '[data-slot="dashboard-transactions-old-section"]',
+    const newSection = document.querySelector(
+      '[data-slot="dashboard-transactions-summary-v2-section"]',
     )
-
-    const last7DaysButton = await within(oldSection).findByRole('button', {
+    const last7DaysButton = await within(newSection).findByRole('button', {
       name: 'Last 7 days',
     })
 
     fireEvent.click(last7DaysButton)
 
     await waitFor(() => {
-      expect(getDashboardOverview).toHaveBeenCalledWith('last_7_days')
+      expect(getDashboardTransactionsOverview).toHaveBeenCalledWith(
+        'last_7_days',
+      )
     })
 
     expect(await screen.findByRole('region', { name: 'Distributions' })).toBeInTheDocument()
@@ -366,7 +369,7 @@ describe('DashboardPage dynamic API rendering', () => {
     ).toBeNull()
   })
 
-  it('syncs filters between new section and old section using shared state', async () => {
+  it('updates active filter and card amounts in new section', async () => {
     await renderDashboardRoute()
 
     const newSection = document.querySelector(
@@ -380,18 +383,12 @@ describe('DashboardPage dynamic API rendering', () => {
     fireEvent.click(newFilterButton)
 
     await waitFor(() => {
-      expect(getDashboardOverview).toHaveBeenCalledWith('last_7_days')
+      expect(getDashboardTransactionsOverview).toHaveBeenCalledWith(
+        'last_7_days',
+      )
     })
-
-    const oldSection = document.querySelector(
-      '[data-slot="dashboard-transactions-old-section"]',
-    )
-
-    const oldFilterButton = await within(oldSection).findByRole('button', {
-      name: 'Last 7 days',
-    })
-
-    expect(oldFilterButton).toHaveAttribute('data-state', 'active')
+    expect(newFilterButton).toHaveAttribute('data-state', 'active')
+    expect(screen.getAllByText('44,000')).not.toHaveLength(0)
   })
 
   it('falls back safely when dashboard API fails', async () => {

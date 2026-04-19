@@ -77,8 +77,7 @@ export function buildOpportunityFormData(values, { mode }) {
   const formData = new FormData()
 
   appendIfValue(formData, 'reference_code', values.referenceCode)
-  appendIfValue(formData, 'title_ar', values.titleAr)
-  appendIfValue(formData, 'title_en', values.titleEn)
+  appendIfValue(formData, 'title', values.titleAr || values.titleEn)
   appendIfValue(formData, 'city_id', values.cityId)
   appendIfValue(formData, 'neighborhood', values.neighborhood)
   appendIfValue(formData, 'latitude', values.latitude)
@@ -115,18 +114,8 @@ export function buildOpportunityFormData(values, { mode }) {
   appendIfValue(formData, 'operator_name', values.developerNameEn)
   appendIfValue(
     formData,
-    'operator_description_ar',
-    values.developerDescriptionAr,
-  )
-  appendIfValue(
-    formData,
-    'operator_description_en',
-    values.developerDescriptionEn,
-  )
-  appendIfValue(
-    formData,
     'operator_description',
-    values.developerDescriptionEn,
+    values.developerDescriptionAr || values.developerDescriptionEn,
   )
   appendIfValue(formData, 'operator_email', values.developerEmail)
   const developerPhone = asTrimmedString(values.developerPhone)

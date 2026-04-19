@@ -24,6 +24,7 @@ export const investmentOpportunityDetailsAssets = {
 
 export const investmentOpportunityDefaultDetails = {
   id: 'investment-riyadh-001',
+  title: 'Modern Residential Complex in North Riyadh',
   titleAr: 'مجمع سكني حديث في شمال الرياض',
   titleEn: 'Modern Residential Complex in North Riyadh',
   propertyType: 'عقار سكني',
@@ -73,6 +74,8 @@ export const investmentOpportunityDefaultDetails = {
   operator: {
     nameAr: 'شركة الأفق العقارية',
     nameEn: 'Al Ofoq Real Estate',
+    description:
+      'A real estate developer focused on modern residential projects with high quality standards and a seamless living experience.',
     descriptionAr:
       'شركة تطوير عقاري متخصصة في المشاريع السكنية الحديثة مع التركيز على الجودة وتجربة الساكن.',
     descriptionEn:
@@ -185,8 +188,9 @@ export function mapOpportunityApiToDetails(
   return {
     ...investmentOpportunityDefaultDetails,
     id: opportunity.id || opportunityId || investmentOpportunityDefaultDetails.id,
-    titleAr: opportunity.title_ar || investmentOpportunityDefaultDetails.titleAr,
-    titleEn: opportunity.title_en || investmentOpportunityDefaultDetails.titleEn,
+    title: opportunity.title || investmentOpportunityDefaultDetails.title,
+    titleAr: opportunity.title || investmentOpportunityDefaultDetails.titleAr,
+    titleEn: opportunity.title || investmentOpportunityDefaultDetails.titleEn,
     propertyType: mapAssetType(opportunity.asset_type),
     floors: `${opportunity.floors ?? 0} ادوار`,
     totalArea: `${formatNumber(opportunity.area_m2, 2)} م² مساحة اجمالية`,
@@ -240,11 +244,17 @@ export function mapOpportunityApiToDetails(
         opportunity.operator_name_ar || investmentOpportunityDefaultDetails.operator.nameAr,
       nameEn:
         opportunity.operator_name_en || investmentOpportunityDefaultDetails.operator.nameEn,
+      description:
+        opportunity.operator_description ||
+        opportunity.description ||
+        investmentOpportunityDefaultDetails.operator.description,
       descriptionAr:
-        opportunity.operator_description_ar ||
+        opportunity.operator_description ||
+        opportunity.description ||
         investmentOpportunityDefaultDetails.operator.descriptionAr,
       descriptionEn:
-        opportunity.operator_description_en ||
+        opportunity.operator_description ||
+        opportunity.description ||
         investmentOpportunityDefaultDetails.operator.descriptionEn,
       email:
         opportunity.operator_email || investmentOpportunityDefaultDetails.operator.email,

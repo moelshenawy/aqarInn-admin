@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +24,7 @@ import {
   createPermission,
 } from '@/lib/permissions/constants'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 const STATUS_LABELS = {
   draft: 'مسودة',
@@ -55,10 +56,7 @@ function buildCardOpportunity(opportunity, index, language) {
   return {
     id: opportunity.id,
     code: opportunity.reference_code,
-    title:
-      language === 'en'
-        ? opportunity.title_en || opportunity.title_ar
-        : opportunity.title_ar || opportunity.title_en,
+    title: opportunity.title,
     soldShares: `${new Intl.NumberFormat('en-US').format(fundedShares)} حصة مباعة`,
     price: formatPrice(opportunity.property_price),
     status: STATUS_LABELS[opportunity.status] ?? opportunity.status,
@@ -77,10 +75,16 @@ function buildCardOpportunity(opportunity, index, language) {
 }
 
 export default function InvestmentOpportunitiesPage() {
+  const { dir } = useDirection()
   const navigate = useNavigate()
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
   const outletContext = useOutletContext()
   const opportunitySearchQuery = outletContext?.opportunitySearchQuery ?? ''
+  const opportunityAppliedFilters =
+    outletContext?.opportunityAppliedFilters ?? {
+      cityId: '',
+      status: '',
+    }
   const normalizedSearchQuery = opportunitySearchQuery.trim()
   const { hasAllPermissions } = useAuthorization()
   const [selectedFilter, setSelectedFilter] = useState('all')
@@ -93,7 +97,12 @@ export default function InvestmentOpportunitiesPage() {
     data: opportunitiesPayload,
     isLoading,
     isFetching,
-  } = useOpportunitiesQuery(currentPage, normalizedSearchQuery)
+  } = useOpportunitiesQuery(
+    currentPage,
+    normalizedSearchQuery,
+    {},
+    opportunityAppliedFilters,
+  )
 
   const opportunities = useMemo(
     () =>
@@ -147,10 +156,6 @@ export default function InvestmentOpportunitiesPage() {
   const hasData = (opportunitiesPayload?.data?.length ?? 0) > 0
   const shouldShowSkeleton = (isLoading || isFetching) && !hasData
 
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [normalizedSearchQuery])
-
   const handleFilterChange = (filterKey) => {
     setSelectedFilter(filterKey)
   }
@@ -165,8 +170,8 @@ export default function InvestmentOpportunitiesPage() {
 
   const action = canCreateInvestmentOpportunity
     ? {
-        label: investmentActions.addOpportunityLabel,
-        ariaLabel: investmentActions.addOpportunityLabel,
+        label: t('addInvestmentOpportunity', { ns: 'navigation' }),
+        ariaLabel: t('addInvestmentOpportunity', { ns: 'navigation' }),
         onClick: () =>
           navigate(
             ROUTE_PATHS.withLocale(
@@ -179,7 +184,7 @@ export default function InvestmentOpportunitiesPage() {
     : undefined
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="space-y-6" dir={dir}>
       {shouldShowSkeleton ? (
         <InvestmentOpportunitySkeletonGrid />
       ) : (

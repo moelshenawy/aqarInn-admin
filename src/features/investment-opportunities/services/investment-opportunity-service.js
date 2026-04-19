@@ -48,8 +48,8 @@ export async function getCities() {
  * @typedef {Object} OpportunityItem
  * @property {string} id
  * @property {string} reference_code
- * @property {string} title_ar
- * @property {string} title_en
+ * @property {string} title
+ * @property {string | null} [description]
  * @property {string} status
  * @property {string} city_id
  * @property {number} total_shares
@@ -111,15 +111,22 @@ function normalizeOpportunitiesResponse(response) {
 }
 
 /**
- * @param {{ page?: number, search?: string }} params
+ * @param {{ page?: number, search?: string, cityId?: string, status?: string }} params
  * @returns {Promise<OpportunitiesPagination>}
  */
-export async function getOpportunities({ page = 1, search = '' } = {}) {
+export async function getOpportunities({
+  page = 1,
+  search = '',
+  cityId = '',
+  status = '',
+} = {}) {
   /** @type {OpportunitiesResponse} */
   const response = await apiGet('opportunities', {
     params: {
       page,
       ...(search?.trim() ? { search: search.trim() } : {}),
+      ...(cityId?.trim() ? { city_id: cityId.trim() } : {}),
+      ...(status?.trim() ? { status: status.trim() } : {}),
     },
   })
 

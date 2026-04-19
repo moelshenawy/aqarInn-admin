@@ -47,7 +47,7 @@ export function InvestmentOpportunityReviewDialog({
               </button>
             </DialogClose>
             <DialogTitle
-              dir="rtl"
+              dir={dir}
               className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
             >
               عرض تفاصيل الفرصة الاستثمارية

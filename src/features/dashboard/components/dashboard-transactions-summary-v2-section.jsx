@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
+import { useDashboardTransactionsOverviewQuery } from '@/features/dashboard/hooks/use-dashboard-transactions-overview-query'
 import { useDirection } from '@/lib/i18n/direction-provider'
 
 const transactionCardIcons = {
@@ -30,11 +31,21 @@ function shouldShowBadge(cardKey) {
 
 export function DashboardTransactionsSummaryV2Section({
   transactionsOverview,
-  selectedFilter,
-  onSelectFilter,
 }) {
   const { i18n } = useTranslation('dashboard')
   const { dir } = useDirection()
+  const [selectedFilter, setSelectedFilter] = useState(
+    transactionsOverview?.selected_filter ?? null,
+  )
+
+  useEffect(() => {
+    if (!selectedFilter && transactionsOverview?.selected_filter) {
+      setSelectedFilter(transactionsOverview.selected_filter)
+    }
+  }, [transactionsOverview?.selected_filter, selectedFilter])
+
+  const { data: liveTransactionsOverview } =
+    useDashboardTransactionsOverviewQuery(selectedFilter)
 
   const numberFormatter = useMemo(
     () =>
@@ -44,8 +55,14 @@ export function DashboardTransactionsSummaryV2Section({
     [i18n.resolvedLanguage],
   )
 
-  const filters = transactionsOverview?.filters ?? []
-  const cards = transactionsOverview?.cards ?? []
+  const filters =
+    transactionsOverview?.filters ??
+    liveTransactionsOverview?.filters ??
+    []
+  const cards =
+    liveTransactionsOverview?.cards ??
+    transactionsOverview?.cards ??
+    []
   const sortedCards = sortTransactionsCards(cards)
   const activeFilter = selectedFilter ?? transactionsOverview?.selected_filter
 
@@ -77,7 +94,7 @@ export function DashboardTransactionsSummaryV2Section({
                     ? 'bg-[#5c4437] text-white'
                     : 'bg-transparent text-[#384250] hover:bg-[#efe8d8]',
                 ].join(' ')}
-                onClick={() => onSelectFilter(filter.key)}
+                onClick={() => setSelectedFilter(filter.key)}
               >
                 {filter.label}
               </button>
@@ -102,18 +119,11 @@ export function DashboardTransactionsSummaryV2Section({
               className="flex h-[164px] min-w-0 flex-1 flex-col gap-[7px] overflow-hidden rounded-[10px] bg-[#eae5d7] px-[17px] py-[19px]"
             >
               <div className="flex items-center justify-between">
-                <div className="flex size-[34px] items-center justify-center">
-                  {iconSrc ? (
-                    <img
-                      src={iconSrc}
-                      alt=""
-                      className="size-[26px]"
-                      aria-hidden="true"
-                    />
-                  ) : null}
-                </div>
-
                 <div className="flex items-center gap-1.5">
+                  <p className="flex-1 text-start text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
+                    {card.label}
+                  </p>
+
                   {showBadge ? (
                     <div
                       data-slot="dashboard-transactions-summary-v2-card-badge"
@@ -124,9 +134,16 @@ export function DashboardTransactionsSummaryV2Section({
                       </p>
                     </div>
                   ) : null}
-                  <p className="flex-1 text-start text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
-                    {card.label}
-                  </p>
+                </div>
+                <div className="flex size-[34px] items-center justify-center">
+                  {iconSrc ? (
+                    <img
+                      src={iconSrc}
+                      alt=""
+                      className="size-[26px]"
+                      aria-hidden="true"
+                    />
+                  ) : null}
                 </div>
               </div>
 

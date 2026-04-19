@@ -81,6 +81,10 @@ function buildReviewGallery(previewUrls = []) {
 function buildReviewDetails(values, cityName, previewUrls = []) {
   return {
     ...investmentOpportunityDefaultDetails,
+    title:
+      values.titleAr ||
+      values.titleEn ||
+      investmentOpportunityDefaultDetails.title,
     titleAr: values.titleAr || investmentOpportunityDefaultDetails.titleAr,
     titleEn: values.titleEn || investmentOpportunityDefaultDetails.titleEn,
     propertyType:
@@ -155,6 +159,10 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
         values.developerNameAr || investmentOpportunityDefaultDetails.operator.nameAr,
       nameEn:
         values.developerNameEn || investmentOpportunityDefaultDetails.operator.nameEn,
+      description:
+        values.developerDescriptionAr ||
+        values.developerDescriptionEn ||
+        investmentOpportunityDefaultDetails.operator.description,
       descriptionAr:
         values.developerDescriptionAr ||
         investmentOpportunityDefaultDetails.operator.descriptionAr,
