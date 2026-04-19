@@ -17,6 +17,10 @@ import {
   useCreateOpportunityDraftMutation,
   useCreateOpportunityMutation,
 } from '@/features/investment-opportunities/hooks/use-create-opportunity-mutations'
+import {
+  createInvestmentOpportunityDraftSchema,
+  createInvestmentOpportunityPublishSchema,
+} from '@/features/investment-opportunities/schemas/investment-opportunity-form-schema'
 import { buildOpportunityFormData } from '@/features/investment-opportunities/services/build-opportunity-form-data'
 import {
   investmentOpportunityDefaultDetails,
@@ -66,6 +70,19 @@ function normalizeFiles(value) {
   }
 
   return []
+}
+
+function parseNumber(value) {
+  const normalized = String(value ?? '')
+    .replace(/,/g, '')
+    .trim()
+
+  if (!normalized) {
+    return null
+  }
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 function buildReviewGallery(previewUrls = []) {
@@ -181,23 +198,23 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
   }
 }
 
-function stripReferenceCode(values) {
-  const { referenceCode: _referenceCode, ...rest } = values
-  return rest
-}
-
 export default function InvestmentOpportunityAddPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation(['validation'])
   const [reviewOpen, setReviewOpen] = useState(false)
   const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
-  const [selectedCityForMap, setSelectedCityForMap] = useState(null)
+  const [selectedCityIdForMap, setSelectedCityIdForMap] = useState('')
   const [reviewDetails, setReviewDetails] = useState(
     investmentOpportunityDefaultDetails,
   )
   const [uploadingFields, setUploadingFields] = useState({})
+  const [managedFiles, setManagedFiles] = useState(() => ({
+    propertyDocuments: [],
+    propertyImages: [],
+    virtualTour: [],
+    developerLogo: [],
+  }))
   const [propertyImagePreviewUrls, setPropertyImagePreviewUrls] = useState([])
-  const previousCityIdRef = useRef('')
   const uploadTimeoutsRef = useRef({})
   const fileInputRefs = useRef({})
   const { data: cities = [] } = useCitiesQuery()
@@ -208,17 +225,15 @@ export default function InvestmentOpportunityAddPage() {
     getValues,
     setValue,
     watch,
+    setError,
     clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
   })
 
-  const selectedCityId = watch('cityId')
-  const propertyDocumentsValue = watch('propertyDocuments')
-  const propertyImagesValue = watch('propertyImages')
-  const virtualTourValue = watch('virtualTour')
-  const developerLogoValue = watch('developerLogo')
+  const propertyPrice = watch('propertyPrice')
+  const shareCount = watch('shareCount')
 
   const cityOptions = useMemo(
     () =>
@@ -229,32 +244,33 @@ export default function InvestmentOpportunityAddPage() {
     [cities, i18n.resolvedLanguage],
   )
 
-  const cityLookup = useMemo(
-    () => new Map(cities.map((city) => [city.id, city])),
-    [cities],
-  )
-
   useEffect(() => {
-    if (!selectedCityId) {
-      previousCityIdRef.current = ''
+    const parsedPrice = parseNumber(propertyPrice)
+    const parsedShareCount = parseNumber(shareCount)
+
+    if (parsedPrice === null || parsedShareCount === null || parsedShareCount <= 0) {
+      if (String(getValues('sharePrice') ?? '').trim()) {
+        setValue('sharePrice', '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        })
+      }
       return
     }
 
-    if (previousCityIdRef.current === selectedCityId) {
+    const computedSharePrice = (parsedPrice / parsedShareCount).toFixed(2)
+    if (computedSharePrice === String(getValues('sharePrice') ?? '').trim()) {
       return
     }
 
-    previousCityIdRef.current = selectedCityId
-    const city = cityLookup.get(selectedCityId) ?? null
-    setSelectedCityForMap(city)
-    setValue('neighborhood', '', { shouldValidate: true, shouldDirty: true })
-    setValue('latitude', '', { shouldDirty: true })
-    setValue('longitude', '', { shouldDirty: true })
-    setIsNeighborhoodMapOpen(true)
-  }, [cityLookup, selectedCityId, setValue])
+    setValue('sharePrice', computedSharePrice, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+  }, [getValues, propertyPrice, setValue, shareCount])
 
   useEffect(() => {
-    const files = normalizeFiles(propertyImagesValue)
+    const files = normalizeFiles(managedFiles.propertyImages)
 
     if (!files.length) {
       setPropertyImagePreviewUrls([])
@@ -267,7 +283,7 @@ export default function InvestmentOpportunityAddPage() {
     return () => {
       nextPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
     }
-  }, [propertyImagesValue])
+  }, [managedFiles.propertyImages])
 
   useEffect(
     () => () => {
@@ -289,8 +305,14 @@ export default function InvestmentOpportunityAddPage() {
     }, 450)
   }
 
-  const setManagedFiles = (fieldName, files) => {
-    setValue(fieldName, files, {
+  const setManagedFilesForField = (fieldName, files) => {
+    const normalizedFiles = normalizeFiles(files)
+
+    setManagedFiles((current) => ({
+      ...current,
+      [fieldName]: normalizedFiles,
+    }))
+    setValue(fieldName, normalizedFiles, {
       shouldDirty: true,
       shouldValidate: true,
     })
@@ -309,18 +331,18 @@ export default function InvestmentOpportunityAddPage() {
       onChange: (event) => {
         const nextFiles = normalizeFiles(event.target.files)
         setFieldUploading(fieldName)
-        setManagedFiles(fieldName, nextFiles)
+        setManagedFilesForField(fieldName, nextFiles)
         event.target.value = ''
       },
     }
   }
 
   const removeSelectedFile = (fieldName, index) => {
-    const nextFiles = normalizeFiles(getValues(fieldName)).filter(
+    const nextFiles = normalizeFiles(managedFiles[fieldName]).filter(
       (_, fileIndex) => fileIndex !== index,
     )
 
-    setManagedFiles(fieldName, nextFiles)
+    setManagedFilesForField(fieldName, nextFiles)
 
     if (fileInputRefs.current[fieldName]) {
       fileInputRefs.current[fieldName].value = ''
@@ -329,22 +351,22 @@ export default function InvestmentOpportunityAddPage() {
 
   const fileUploadState = {
     propertyDocuments: {
-      files: normalizeFiles(propertyDocumentsValue),
+      files: managedFiles.propertyDocuments,
       isLoading: Boolean(uploadingFields.propertyDocuments),
       onRemoveFile: (index) => removeSelectedFile('propertyDocuments', index),
     },
     propertyImages: {
-      files: normalizeFiles(propertyImagesValue),
+      files: managedFiles.propertyImages,
       isLoading: Boolean(uploadingFields.propertyImages),
       onRemoveFile: (index) => removeSelectedFile('propertyImages', index),
     },
     virtualTour: {
-      files: normalizeFiles(virtualTourValue),
+      files: managedFiles.virtualTour,
       isLoading: Boolean(uploadingFields.virtualTour),
       onRemoveFile: (index) => removeSelectedFile('virtualTour', index),
     },
     developerLogo: {
-      files: normalizeFiles(developerLogoValue),
+      files: managedFiles.developerLogo,
       isLoading: Boolean(uploadingFields.developerLogo),
       onRemoveFile: (index) => removeSelectedFile('developerLogo', index),
     },
@@ -359,11 +381,47 @@ export default function InvestmentOpportunityAddPage() {
     )
   }
 
+  const applySchemaIssues = (issues = []) => {
+    const handledFields = new Set()
+
+    issues.forEach((issue) => {
+      const fieldName = issue.path?.[0]
+      if (typeof fieldName !== 'string' || handledFields.has(fieldName)) {
+        return
+      }
+
+      handledFields.add(fieldName)
+      setError(fieldName, {
+        type: 'manual',
+        message: issue.message || t('required', { ns: 'validation' }),
+      })
+    })
+  }
+
+  const validateFormValues = (mode, values) => {
+    const schema =
+      mode === 'draft'
+        ? createInvestmentOpportunityDraftSchema(t)
+        : createInvestmentOpportunityPublishSchema(t)
+    const result = schema.safeParse(values)
+
+    if (result.success) {
+      return true
+    }
+
+    applySchemaIssues(result.error.issues)
+    return false
+  }
+
   const handleContinue = (event) => {
     event.preventDefault()
     clearErrors()
 
     const formValues = getValues()
+    if (!validateFormValues('publish', formValues)) {
+      return
+    }
+
     const cityName =
       cityOptions.find((cityOption) => cityOption.value === formValues.cityId)
         ?.label ?? ''
@@ -376,9 +434,12 @@ export default function InvestmentOpportunityAddPage() {
   const handleSaveDraft = async () => {
     clearErrors()
     const formValues = getValues()
+    if (!validateFormValues('draft', formValues)) {
+      return
+    }
 
     try {
-      const formData = buildOpportunityFormData(stripReferenceCode(formValues), {
+      const formData = buildOpportunityFormData(formValues, {
         mode: 'draft',
       })
       await createDraftMutation.mutateAsync(formData)
@@ -394,10 +455,15 @@ export default function InvestmentOpportunityAddPage() {
   }
 
   const handlePublish = async () => {
+    clearErrors()
     const formValues = getValues()
+    if (!validateFormValues('publish', formValues)) {
+      setReviewOpen(false)
+      return
+    }
 
     try {
-      const formData = buildOpportunityFormData(stripReferenceCode(formValues), {
+      const formData = buildOpportunityFormData(formValues, {
         mode: 'publish',
       })
       await createOpportunityMutation.mutateAsync(formData)
@@ -413,11 +479,23 @@ export default function InvestmentOpportunityAddPage() {
     }
   }
 
+  const handleOpenLocationPicker = () => {
+    const currentCityId = String(getValues('cityId') ?? '').trim()
+    const nextCityId = currentCityId || cityOptions[0]?.value || ''
+
+    setSelectedCityIdForMap(nextCityId)
+    setIsNeighborhoodMapOpen(true)
+  }
+
   function handleConfirmNeighborhoodSelection(selection) {
     if (!selection) {
       return
     }
 
+    setValue('cityId', selection.cityId, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
     setValue('neighborhood', selection.neighborhood, {
       shouldValidate: true,
       shouldDirty: true,
@@ -430,15 +508,18 @@ export default function InvestmentOpportunityAddPage() {
       shouldValidate: true,
       shouldDirty: true,
     })
-
-    const currentLocationText = getValues('propertyLocation')
-    if (!String(currentLocationText ?? '').trim()) {
-      setValue('propertyLocation', selection.locationText, {
-        shouldDirty: true,
-      })
-    }
-
-    clearErrors(['neighborhood', 'latitude', 'longitude'])
+    setValue('propertyLocation', selection.locationText, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setSelectedCityIdForMap(selection.cityId)
+    clearErrors([
+      'cityId',
+      'neighborhood',
+      'propertyLocation',
+      'latitude',
+      'longitude',
+    ])
   }
 
   return (
@@ -463,13 +544,20 @@ export default function InvestmentOpportunityAddPage() {
         cancelLabel="الغاء"
         isSubmitting={isSubmitting}
         cityOptions={cityOptions}
+        showCityNeighborhoodFields={false}
+        showCurrencyField={false}
+        propertyLocationReadOnly
+        sharePriceReadOnly
+        onOpenLocationPicker={handleOpenLocationPicker}
         showReferenceCode={false}
         onCancel={navigateToList}
       />
       <InvestmentOpportunityNeighborhoodMapDialog
         open={isNeighborhoodMapOpen}
         onOpenChange={setIsNeighborhoodMapOpen}
-        city={selectedCityForMap}
+        cities={cities}
+        selectedCityId={selectedCityIdForMap}
+        onSelectedCityIdChange={setSelectedCityIdForMap}
         locale={i18n.resolvedLanguage}
         onConfirm={handleConfirmNeighborhoodSelection}
       />

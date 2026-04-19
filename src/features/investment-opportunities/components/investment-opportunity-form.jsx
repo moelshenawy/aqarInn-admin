@@ -53,6 +53,11 @@ export function InvestmentOpportunityForm({
   fileFields = {},
   fileUploadState = {},
   showReferenceCode = true,
+  showCityNeighborhoodFields = true,
+  showCurrencyField = true,
+  propertyLocationReadOnly = false,
+  sharePriceReadOnly = false,
+  onOpenLocationPicker,
 }) {
   return (
     <form className="px-0 sm:px-4 lg:px-[26px]" onSubmit={onSubmit} noValidate>
@@ -104,34 +109,28 @@ export function InvestmentOpportunityForm({
             error={errors.titleEn?.message}
             {...register('titleEn')}
           />
-          <InvestmentOpportunitySelectField
-            id="cityId"
-            label="المدينة"
-            placeholder="اختر المدينة"
-            options={cityOptions}
-            required
-            error={errors.cityId?.message}
-            {...register('cityId')}
-          />
-          <InvestmentOpportunityTextField
-            id="neighborhood"
-            label="الحي"
-            placeholder="يتم تحديد الحي من الخريطة"
-            required
-            readOnly
-            error={errors.neighborhood?.message}
-            {...register('neighborhood')}
-          />
-          <div className="-mt-2 flex items-center justify-end md:col-span-2">
-            {/* <button
-              type="button"
-              onClick={onOpenNeighborhoodMap}
-              disabled={isNeighborhoodMapDisabled}
-              className="rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 py-2 text-sm font-medium text-[#402f28] transition hover:border-[#9d7e55] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              اختر الحي من الخريطة
-            </button> */}
-          </div>
+          {showCityNeighborhoodFields ? (
+            <>
+              <InvestmentOpportunitySelectField
+                id="cityId"
+                label="المدينة"
+                placeholder="اختر المدينة"
+                options={cityOptions}
+                required
+                error={errors.cityId?.message}
+                {...register('cityId')}
+              />
+              <InvestmentOpportunityTextField
+                id="neighborhood"
+                label="الحي"
+                placeholder="يتم تحديد الحي من الخريطة"
+                required
+                readOnly
+                error={errors.neighborhood?.message}
+                {...register('neighborhood')}
+              />
+            </>
+          ) : null}
         </InvestmentOpportunityFormGrid>
 
         <InvestmentOpportunityFormSection title="تفاصيل العقار">
@@ -176,6 +175,25 @@ export function InvestmentOpportunityForm({
               placeholder="قم بتحديد موقع العقار"
               icon={MapPin}
               required
+              readOnly={propertyLocationReadOnly}
+              inputClassName={
+                propertyLocationReadOnly ? 'cursor-pointer' : undefined
+              }
+              onClick={
+                propertyLocationReadOnly
+                  ? () => onOpenLocationPicker?.()
+                  : undefined
+              }
+              onKeyDown={
+                propertyLocationReadOnly
+                  ? (event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        onOpenLocationPicker?.()
+                      }
+                    }
+                  : undefined
+              }
               error={errors.propertyLocation?.message}
               {...register('propertyLocation')}
             />
@@ -304,14 +322,16 @@ export function InvestmentOpportunityForm({
               error={errors.propertyPrice?.message}
               {...register('propertyPrice')}
             />
-            <InvestmentOpportunityTextField
-              id="currency"
-              label="العملة"
-              placeholder="رمز العملة"
-              required
-              error={errors.currency?.message}
-              {...register('currency')}
-            />
+            {showCurrencyField ? (
+              <InvestmentOpportunityTextField
+                id="currency"
+                label="العملة"
+                placeholder="رمز العملة"
+                required
+                error={errors.currency?.message}
+                {...register('currency')}
+              />
+            ) : null}
             <InvestmentOpportunityTextField
               id="shareCount"
               label="عدد الحصص"
@@ -328,6 +348,7 @@ export function InvestmentOpportunityForm({
               addon={<RiyalIcon className="text-xl" />}
               inputMode="decimal"
               required
+              readOnly={sharePriceReadOnly}
               error={errors.sharePrice?.message}
               {...register('sharePrice')}
             />
@@ -435,6 +456,15 @@ export function InvestmentOpportunityForm({
         disableDraft={isSubmitting}
         disableCancel={isSubmitting}
       />
+      {!showCityNeighborhoodFields ? (
+        <>
+          <input type="hidden" {...register('cityId')} />
+          <input type="hidden" {...register('neighborhood')} />
+        </>
+      ) : null}
+      {!showCurrencyField ? (
+        <input type="hidden" {...register('currency')} />
+      ) : null}
       <input type="hidden" {...register('latitude')} />
       <input type="hidden" {...register('longitude')} />
     </form>

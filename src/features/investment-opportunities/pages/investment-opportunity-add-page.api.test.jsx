@@ -104,24 +104,62 @@ function getFieldShell(inputId) {
   return document.getElementById(inputId).closest('.space-y-3')
 }
 
-function setNativeInputValue(element, value) {
-  const prototype = Object.getPrototypeOf(element)
-  const valueSetter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set
+function installGoogleMapsMock() {
+  const mapEvent = { removeListener: vi.fn() }
 
-  valueSetter?.call(element, value)
-  fireEvent.input(element, { target: { value } })
-  fireEvent.change(element, { target: { value } })
+  class MockMap {
+    addListener(eventName, callback) {
+      if (eventName === 'click') {
+        queueMicrotask(() => {
+          callback({
+            latLng: {
+              lat: () => 24.7136,
+              lng: () => 46.6753,
+            },
+          })
+        })
+      }
+      return { remove: vi.fn() }
+    }
+  }
+
+  class MockMarker {
+    constructor() {}
+    setPosition() {}
+  }
+
+  class MockGeocoder {
+    geocode(_request, callback) {
+      callback(
+        [
+          {
+            address_components: [
+              {
+                types: ['neighborhood'],
+                long_name: 'Al Malqa',
+              },
+            ],
+            formatted_address: 'Al Malqa, Riyadh',
+          },
+        ],
+        'OK',
+      )
+    }
+  }
+
+  window.google = {
+    maps: {
+      Map: MockMap,
+      Marker: MockMarker,
+      Geocoder: MockGeocoder,
+      event: mapEvent,
+    },
+  }
 }
 
 async function fillPublishRequiredFields() {
   await waitFor(() => {
-    const citySelect = document.getElementById('cityId')
-    expect(citySelect).not.toBeNull()
-    expect(
-      citySelect.querySelector(
-        'option[value="a18cc8cc-0ebb-4888-800e-9d7c375674c6"]',
-      ),
-    ).not.toBeNull()
+    expect(document.getElementById('propertyLocation')).not.toBeNull()
   })
 
   fireEvent.change(document.getElementById('titleAr'), {
@@ -130,37 +168,36 @@ async function fillPublishRequiredFields() {
   fireEvent.change(document.getElementById('titleEn'), {
     target: { value: 'Investment Opportunity - Riyadh' },
   })
-  fireEvent.change(document.getElementById('cityId'), {
+  fireEvent.click(document.getElementById('propertyLocation'))
+  const mapDialog = await screen.findByRole('dialog')
+  const citySelect = mapDialog.querySelector('#neighborhood-map-city')
+  fireEvent.change(citySelect, {
     target: { value: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6' },
   })
-  const mapDialog = await screen.findByRole('dialog')
-  fireEvent.click(mapDialog.querySelectorAll('button')[0])
+  const mapDialogButtons = mapDialog.querySelectorAll('button')
+  const confirmButton = mapDialogButtons[mapDialogButtons.length - 1]
+  await waitFor(() => {
+    expect(confirmButton).not.toBeDisabled()
+  })
+  fireEvent.click(confirmButton)
   await waitFor(() => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
-  setNativeInputValue(document.getElementById('neighborhood'), 'Al Malqa')
-  setNativeInputValue(document.querySelector('input[name="latitude"]'), '24.7136')
-  setNativeInputValue(document.querySelector('input[name="longitude"]'), '46.6753')
   fireEvent.change(document.getElementById('propertyType'), {
     target: { value: 'residential' },
   })
   fireEvent.change(document.getElementById('propertyArea'), {
     target: { value: '3250' },
   })
-  fireEvent.change(document.getElementById('propertyLocation'), {
-    target: { value: 'Al Malqa, Riyadh' },
-  })
   fireEvent.change(document.getElementById('propertyPrice'), {
     target: { value: '3500000' },
-  })
-  fireEvent.change(document.getElementById('currency'), {
-    target: { value: 'SAR' },
   })
   fireEvent.change(document.getElementById('shareCount'), {
     target: { value: '1000' },
   })
-  fireEvent.change(document.getElementById('sharePrice'), {
-    target: { value: '3500' },
+
+  await waitFor(() => {
+    expect(document.getElementById('sharePrice').value).toBe('3500.00')
   })
   fireEvent.change(document.getElementById('minInvestmentShares'), {
     target: { value: '1' },
@@ -233,6 +270,7 @@ describe('InvestmentOpportunityAddPage API integration', () => {
       await i18n.changeLanguage('ar')
     })
 
+    installGoogleMapsMock()
     vi.mocked(getCities).mockResolvedValue([
       {
         id: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
@@ -250,10 +288,11 @@ describe('InvestmentOpportunityAddPage API integration', () => {
   })
 
   afterEach(() => {
+    delete window.google
     vi.clearAllMocks()
   })
 
-  it('loads cities and uses city_id option values', async () => {
+  it('loads cities and exposes city options in the location modal', async () => {
     renderAddPage()
 
     expect(document.getElementById('referenceCode')).toBeNull()
@@ -262,7 +301,9 @@ describe('InvestmentOpportunityAddPage API integration', () => {
       expect(getCities).toHaveBeenCalledTimes(1)
     })
 
-    const citySelect = document.getElementById('cityId')
+    fireEvent.click(document.getElementById('propertyLocation'))
+    const mapDialog = await screen.findByRole('dialog')
+    const citySelect = mapDialog.querySelector('#neighborhood-map-city')
     await waitFor(() => {
       expect(
         citySelect.querySelector(
@@ -351,10 +392,9 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     fireEvent.click(getMainButtons().submitButton)
 
     const dialog = await screen.findByRole('dialog')
-    const gallerySection = within(dialog).getByLabelText(/ØµÙˆØ±|gallery/i)
 
     await waitFor(() => {
-      expect(gallerySection.querySelectorAll('img[src^="blob:"]')).toHaveLength(2)
+      expect(dialog.querySelectorAll('img[src^="blob:"]')).toHaveLength(2)
     })
   })
 

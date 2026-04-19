@@ -66,7 +66,6 @@ export function createInvestmentOpportunityDraftSchema(t) {
 export function createInvestmentOpportunityPublishSchema(t) {
   return z
     .object({
-      referenceCode: boundedString(t, 2, 250),
       titleAr: boundedString(t, 2, 250),
       titleEn: boundedString(t, 2, 250),
       cityId: requiredString(t),

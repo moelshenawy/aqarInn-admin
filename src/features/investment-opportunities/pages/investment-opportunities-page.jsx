@@ -55,7 +55,7 @@ function buildCardOpportunity(opportunity, index, language) {
 
   return {
     id: opportunity.id,
-    code: opportunity.reference_code,
+    code: opportunity.reference_code || opportunity.code || opportunity.id,
     title: opportunity.title,
     soldShares: `${new Intl.NumberFormat('en-US').format(fundedShares)} حصة مباعة`,
     price: formatPrice(opportunity.property_price),

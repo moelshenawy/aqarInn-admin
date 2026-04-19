@@ -29,7 +29,6 @@ function getFileList(value) {
 
 /**
  * @typedef {Object} CreateOpportunityPayloadForm
- * @property {string} referenceCode
  * @property {string} titleAr
  * @property {string} titleEn
  * @property {string} cityId
@@ -76,7 +75,6 @@ function getFileList(value) {
 export function buildOpportunityFormData(values, { mode }) {
   const formData = new FormData()
 
-  appendIfValue(formData, 'reference_code', values.referenceCode)
   appendIfValue(formData, 'title', values.titleAr || values.titleEn)
   appendIfValue(formData, 'city_id', values.cityId)
   appendIfValue(formData, 'neighborhood', values.neighborhood)

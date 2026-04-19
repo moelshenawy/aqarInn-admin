@@ -72,11 +72,15 @@ export function createInvestmentOpportunityFormValues(details) {
     ...INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
     titleAr: details.titleAr ?? resolvedTitle,
     titleEn: details.titleEn ?? resolvedTitle,
+    cityId: details.city?.id ?? details.city_id ?? '',
+    neighborhood: details.neighborhood ?? '',
+    latitude: details.latitude ? String(details.latitude) : '',
+    longitude: details.longitude ? String(details.longitude) : '',
     propertyType: getPropertyTypeValue(details.propertyType),
     propertyArea: details.totalArea?.match(/[\d.]+/)?.[0] ?? '',
     floorCount: details.floors?.match(/\d+/)?.[0] ?? details.floors ?? '',
     buildYear: details.buildYear ?? '',
-    propertyLocation: details.location ?? '',
+    propertyLocation: details.location_text ?? details.location ?? '',
     developerNameAr: details.operator.nameAr ?? '',
     developerNameEn: details.operator.nameEn ?? '',
     developerDescriptionAr: details.operator.descriptionAr ?? resolvedDescription,
@@ -84,6 +88,8 @@ export function createInvestmentOpportunityFormValues(details) {
     developerEmail: details.operator.email ?? '',
     developerPhone: details.operator.phone?.replace('+966', '').trim() ?? '',
     developerLocation: details.operator.location ?? '',
+    currency:
+      details.currency ?? INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES.currency,
     propertyPrice: getMetricValue(details, 'سعر العقار'),
     shareCount: getMetricValue(details, 'عدد الحصص'),
     sharePrice: getMetricValue(details, 'سعر الحصة'),
@@ -100,3 +106,4 @@ export function createInvestmentOpportunityFormValues(details) {
     ),
   }
 }
+

@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import {
   useBeforeUnload,
   useBlocker,
@@ -11,8 +12,10 @@ import {
 import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
 import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
 import { InvestmentOpportunityForm } from '@/features/investment-opportunities/components/investment-opportunity-form'
+import { InvestmentOpportunityNeighborhoodMapDialog } from '@/features/investment-opportunities/components/investment-opportunity-neighborhood-map-dialog'
 import { getInvestmentOpportunityDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { createInvestmentOpportunityFormValues } from '@/features/investment-opportunities/constants/investment-opportunity-form-values'
+import { useCitiesQuery } from '@/features/investment-opportunities/hooks/use-cities-query'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const editOpportunityDescription =
@@ -24,9 +27,26 @@ const editSuccessToast = {
   actionLabel: 'إغلاق',
 }
 
+function parseNumber(value) {
+  const normalized = String(value ?? '')
+    .replace(/,/g, '')
+    .trim()
+
+  if (!normalized) {
+    return null
+  }
+
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export default function InvestmentOpportunityEditPage() {
   const navigate = useNavigate()
+  const { i18n } = useTranslation()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
+  const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
+  const [selectedCityIdForMap, setSelectedCityIdForMap] = useState('')
+  const { data: cities = [] } = useCitiesQuery()
   const details = useMemo(
     () => getInvestmentOpportunityDetails(opportunityId),
     [opportunityId],
@@ -41,14 +61,61 @@ export default function InvestmentOpportunityEditPage() {
   const {
     register,
     handleSubmit,
+    getValues,
+    setValue,
+    watch,
+    clearErrors,
     reset,
-    formState: { isDirty },
+    formState: { errors, isDirty },
   } = useForm({ defaultValues })
+
+  const propertyPrice = watch('propertyPrice')
+  const shareCount = watch('shareCount')
+
+  const cityOptions = useMemo(
+    () =>
+      cities.map((city) => ({
+        value: city.id,
+        label: i18n.resolvedLanguage === 'en' ? city.name_en : city.name_ar,
+      })),
+    [cities, i18n.resolvedLanguage],
+  )
+
+  const cityLookup = useMemo(
+    () => new Map(cities.map((city) => [city.id, city])),
+    [cities],
+  )
 
   useEffect(() => {
     reset(defaultValues)
+    setSelectedCityIdForMap(defaultValues.cityId || '')
     allowNavigationRef.current = false
   }, [defaultValues, reset])
+
+  useEffect(() => {
+    const parsedPrice = parseNumber(propertyPrice)
+    const parsedShareCount = parseNumber(shareCount)
+
+    if (parsedPrice === null || parsedShareCount === null || parsedShareCount <= 0) {
+      if (String(getValues('sharePrice') ?? '').trim()) {
+        setValue('sharePrice', '', {
+          shouldValidate: true,
+          shouldDirty: true,
+        })
+      }
+      return
+    }
+
+    const computedSharePrice = (parsedPrice / parsedShareCount).toFixed(2)
+    if (computedSharePrice === String(getValues('sharePrice') ?? '').trim()) {
+      return
+    }
+
+    setValue('sharePrice', computedSharePrice, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+  }, [getValues, propertyPrice, setValue, shareCount])
 
   const detailsPath = buildInvestmentOpportunityDetailsPath(details.id)
 
@@ -111,6 +178,49 @@ export default function InvestmentOpportunityEditPage() {
     }
   }
 
+  const handleOpenLocationPicker = () => {
+    const currentCityId = String(getValues('cityId') ?? '').trim()
+    const nextCityId = currentCityId || cityOptions[0]?.value || ''
+
+    setSelectedCityIdForMap(nextCityId)
+    setIsNeighborhoodMapOpen(true)
+  }
+
+  const handleConfirmNeighborhoodSelection = (selection) => {
+    if (!selection) {
+      return
+    }
+
+    setValue('cityId', selection.cityId, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('neighborhood', selection.neighborhood, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('latitude', String(selection.latitude), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('longitude', String(selection.longitude), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue('propertyLocation', selection.locationText, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setSelectedCityIdForMap(selection.cityId)
+    clearErrors([
+      'cityId',
+      'neighborhood',
+      'propertyLocation',
+      'latitude',
+      'longitude',
+    ])
+  }
+
   return (
     <div className="pb-8 text-start" dir="rtl">
       <InvestmentOpportunityForm
@@ -118,10 +228,28 @@ export default function InvestmentOpportunityEditPage() {
         title="تعديل الفرصة الاستثمارية"
         description={editOpportunityDescription}
         register={register}
+        errors={errors}
+        cityOptions={cityOptions}
+        showReferenceCode={false}
+        showCityNeighborhoodFields={false}
+        showCurrencyField={false}
+        propertyLocationReadOnly
+        sharePriceReadOnly
+        onOpenLocationPicker={handleOpenLocationPicker}
         onSubmit={handleSave}
         submitLabel="حفظ التعديلات"
         cancelLabel="الغاء"
         onCancel={() => navigate(detailsPath)}
+      />
+      <InvestmentOpportunityNeighborhoodMapDialog
+        open={isNeighborhoodMapOpen}
+        onOpenChange={setIsNeighborhoodMapOpen}
+        cities={cities}
+        selectedCityId={selectedCityIdForMap}
+        onSelectedCityIdChange={setSelectedCityIdForMap}
+        city={cityLookup.get(selectedCityIdForMap) ?? null}
+        locale={i18n.resolvedLanguage}
+        onConfirm={handleConfirmNeighborhoodSelection}
       />
 
       <ConfirmationDialog

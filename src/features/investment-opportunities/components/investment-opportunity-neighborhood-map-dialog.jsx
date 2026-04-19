@@ -73,6 +73,9 @@ function extractNeighborhoodName(result) {
 export function InvestmentOpportunityNeighborhoodMapDialog({
   open,
   onOpenChange,
+  cities = [],
+  selectedCityId = '',
+  onSelectedCityIdChange,
   city,
   locale = 'ar',
   onConfirm,
@@ -84,18 +87,39 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
   const listenerRef = useRef(null)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('')
-  const [selectedLocationText, setSelectedLocationText] = useState('')
   const [isLoadingMap, setIsLoadingMap] = useState(false)
   const [mapError, setMapError] = useState('')
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+  const selectedCity = useMemo(() => {
+    if (selectedCityId) {
+      const matchedCity = cities.find((cityItem) => cityItem.id === selectedCityId)
+      if (matchedCity) {
+        return matchedCity
+      }
+    }
+
+    return city ?? null
+  }, [cities, city, selectedCityId])
+  const selectedCityName =
+    locale === 'en'
+      ? selectedCity?.name_en || selectedCity?.name_ar || ''
+      : selectedCity?.name_ar || selectedCity?.name_en || ''
   const cityCenter = useMemo(
     () => ({
-      lat: parseCoordinate(city?.latitude, FALLBACK_CENTER.lat),
-      lng: parseCoordinate(city?.longitude, FALLBACK_CENTER.lng),
+      lat: parseCoordinate(selectedCity?.latitude, FALLBACK_CENTER.lat),
+      lng: parseCoordinate(selectedCity?.longitude, FALLBACK_CENTER.lng),
     }),
-    [city?.latitude, city?.longitude],
+    [selectedCity?.latitude, selectedCity?.longitude],
   )
+
+  useEffect(() => {
+    if (!open || selectedCityId || !cities.length) {
+      return
+    }
+
+    onSelectedCityIdChange?.(cities[0].id)
+  }, [cities, onSelectedCityIdChange, open, selectedCityId])
 
   useEffect(() => {
     if (!open) {
@@ -109,7 +133,6 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
       setIsLoadingMap(true)
       setSelectedPoint(null)
       setSelectedNeighborhood('')
-      setSelectedLocationText('')
 
       try {
         const maps = await loadGoogleMaps(apiKey, locale === 'en' ? 'en' : 'ar')
@@ -157,10 +180,8 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
             (results, status) => {
               if (status === 'OK' && Array.isArray(results) && results[0]) {
                 setSelectedNeighborhood(extractNeighborhoodName(results[0]))
-                setSelectedLocationText(results[0].formatted_address ?? '')
               } else {
                 setSelectedNeighborhood('')
-                setSelectedLocationText('')
               }
             },
           )
@@ -179,18 +200,20 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
     return () => {
       cancelled = true
     }
-  }, [apiKey, cityCenter, locale, open])
+  }, [apiKey, cityCenter, locale, open, selectedCityId])
 
   function handleConfirm() {
-    if (!selectedPoint || !selectedNeighborhood) {
+    if (!selectedPoint || !selectedNeighborhood || !selectedCity) {
       return
     }
 
     onConfirm?.({
+      cityId: selectedCity.id,
+      cityName: selectedCityName,
       neighborhood: selectedNeighborhood,
       latitude: selectedPoint.lat,
       longitude: selectedPoint.lng,
-      locationText: selectedLocationText || selectedNeighborhood,
+      locationText: `${selectedCityName}, ${selectedNeighborhood}`,
     })
     onOpenChange(false)
   }
@@ -215,6 +238,29 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
         </DialogHeader>
 
         <div className="space-y-4 px-6 py-5">
+          <div className="space-y-2 text-start">
+            <label
+              htmlFor="neighborhood-map-city"
+              className="text-sm leading-5 font-medium text-[#402f28]"
+            >
+              {locale === 'ar' ? 'المدينة' : 'City'}
+            </label>
+            <select
+              id="neighborhood-map-city"
+              value={selectedCityId}
+              onChange={(event) => onSelectedCityIdChange?.(event.target.value)}
+              className="h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 text-sm leading-5 font-medium text-[#402f28] shadow-[var(--dashboard-shadow)] outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20"
+            >
+              {cities.map((cityOption) => (
+                <option key={cityOption.id} value={cityOption.id}>
+                  {locale === 'en'
+                    ? cityOption.name_en || cityOption.name_ar
+                    : cityOption.name_ar || cityOption.name_en}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="rounded-xl border border-[#d6cbb2] bg-[#f8f3e8] p-2">
             <div
               ref={mapContainerRef}
@@ -268,7 +314,7 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
             <Button
               type="button"
               onClick={handleConfirm}
-              disabled={!selectedPoint || !selectedNeighborhood}
+              disabled={!selectedPoint || !selectedNeighborhood || !selectedCity}
             >
               {locale === 'ar' ? 'تأكيد الاختيار' : 'Confirm selection'}
             </Button>
