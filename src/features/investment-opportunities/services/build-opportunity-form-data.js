@@ -1,55 +1,21 @@
-function asTrimmedString(value) {
-  return String(value ?? '').trim()
-}
-
-function normalizeArabicIndicDigits(value) {
-  const normalized = String(value ?? '')
-  const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
-  const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-
-  return normalized.replace(/[٠-٩۰-۹]/g, (digit) => {
-    const arabicIndex = arabicIndic.indexOf(digit)
-    if (arabicIndex >= 0) {
-      return String(arabicIndex)
-    }
-
-    const easternArabicIndex = easternArabicIndic.indexOf(digit)
-    if (easternArabicIndex >= 0) {
-      return String(easternArabicIndex)
-    }
-
-    return digit
-  })
-}
-
-function normalizeSaudiMobileInput(value) {
-  let digitsOnly = normalizeArabicIndicDigits(value).replace(/\D/g, '')
-
-  if (digitsOnly.startsWith('00966')) {
-    digitsOnly = digitsOnly.slice(5)
-  } else if (digitsOnly.startsWith('966')) {
-    digitsOnly = digitsOnly.slice(3)
-  }
-
-  if (digitsOnly.startsWith('0')) {
-    digitsOnly = digitsOnly.slice(1)
-  }
-
-  return digitsOnly
-}
+import {
+  getFileList,
+  normalizeSaudiMobileInput,
+  toStringValue,
+} from '@/features/investment-opportunities/utils/form-utils'
 
 function appendIfValue(formData, key, value) {
-  const nextValue = asTrimmedString(value)
-  if (!nextValue) {
-    return
-  }
+  const nextValue = toStringValue(value)
 
-  formData.append(key, nextValue)
+  if (nextValue) {
+    formData.append(key, nextValue)
+  }
 }
 
-function isValidCityId(value, allowedCityIds) {
-  const normalizedValue = asTrimmedString(value)
-  if (!normalizedValue) {
+function hasAllowedCityId(cityId, allowedCityIds) {
+  const normalizedCityId = toStringValue(cityId)
+
+  if (!normalizedCityId) {
     return false
   }
 
@@ -57,29 +23,23 @@ function isValidCityId(value, allowedCityIds) {
     return true
   }
 
-  if (allowedCityIds instanceof Set) {
-    return allowedCityIds.has(normalizedValue)
-  }
-
   return Array.from(allowedCityIds).some(
-    (cityId) => asTrimmedString(cityId) === normalizedValue,
+    (allowedCityId) => toStringValue(allowedCityId) === normalizedCityId,
   )
 }
 
-function getFileList(value) {
-  if (!value) {
-    return []
-  }
+function appendFirstFile(formData, key, files) {
+  const [file] = getFileList(files)
 
-  if (Array.isArray(value)) {
-    return value.filter(Boolean)
+  if (file) {
+    formData.append(key, file)
   }
+}
 
-  if (typeof FileList !== 'undefined' && value instanceof FileList) {
-    return Array.from(value)
-  }
-
-  return []
+function appendFiles(formData, key, files) {
+  getFileList(files).forEach((file) => {
+    formData.append(key, file)
+  })
 }
 
 /**
@@ -120,26 +80,24 @@ function getFileList(value) {
  */
 
 /**
- * @typedef {'publish' | 'draft'} OpportunitySubmissionMode
- */
-
-/**
  * @param {CreateOpportunityPayloadForm} values
- * @param {{ mode: OpportunitySubmissionMode, allowedCityIds?: Iterable<string> | Set<string> }} options
+ * @param {{ allowedCityIds?: Iterable<string> | Set<string> }} options
  */
-export function buildOpportunityFormData(
-  values,
-  { mode, allowedCityIds } = { mode: 'publish' },
-) {
+export function buildOpportunityFormData(values, { allowedCityIds } = {}) {
   const formData = new FormData()
-  void mode
+  const developerPhone = normalizeSaudiMobileInput(values.developerPhone)
+  const propertyImages = getFileList(values.propertyImages)
+  const [coverImage, ...galleryImages] = propertyImages
+  const [virtualTourFile] = getFileList(values.virtualTour)
 
   appendIfValue(formData, 'title_ar', values.titleAr)
   appendIfValue(formData, 'title_en', values.titleEn)
   appendIfValue(formData, 'title', values.titleAr || values.titleEn)
-  if (isValidCityId(values.cityId, allowedCityIds)) {
+
+  if (hasAllowedCityId(values.cityId, allowedCityIds)) {
     appendIfValue(formData, 'city_id', values.cityId)
   }
+
   appendIfValue(formData, 'neighborhood', values.neighborhood)
   appendIfValue(formData, 'latitude', values.latitude)
   appendIfValue(formData, 'longitude', values.longitude)
@@ -181,40 +139,25 @@ export function buildOpportunityFormData(
   appendIfValue(formData, 'operator_description_ar', values.developerDescriptionAr)
   appendIfValue(formData, 'operator_description_en', values.developerDescriptionEn)
   appendIfValue(formData, 'operator_email', values.developerEmail)
-  const developerPhone = normalizeSaudiMobileInput(values.developerPhone)
-  appendIfValue(
-    formData,
-    'operator_phone',
-    developerPhone ? `+966${developerPhone}` : '',
-  )
+  appendIfValue(formData, 'operator_phone', developerPhone && `+966${developerPhone}`)
   appendIfValue(formData, 'operator_location_text', values.developerLocation)
 
-  const developerLogoFiles = getFileList(values.developerLogo)
-  if (developerLogoFiles[0]) {
-    formData.append('operator_logo', developerLogoFiles[0])
+  appendFirstFile(formData, 'operator_logo', values.developerLogo)
+
+  if (virtualTourFile) {
+    formData.append('virtual_tour', virtualTourFile)
+    formData.append('virtual_tour_image', virtualTourFile)
   }
 
-  const virtualTourFiles = getFileList(values.virtualTour)
-  if (virtualTourFiles[0]) {
-    formData.append('virtual_tour', virtualTourFiles[0])
-    formData.append('virtual_tour_image', virtualTourFiles[0])
+  if (coverImage) {
+    formData.append('cover_image', coverImage)
   }
 
-  const propertyImages = getFileList(values.propertyImages)
-  if (propertyImages[0]) {
-    formData.append('cover_image', propertyImages[0])
-  }
-
-  if (propertyImages.length > 1) {
-    propertyImages.slice(1).forEach((imageFile) => {
-      formData.append('images[]', imageFile)
-    })
-  }
-
-  const propertyDocuments = getFileList(values.propertyDocuments)
-  propertyDocuments.forEach((documentFile) => {
-    formData.append('documents[]', documentFile)
+  galleryImages.forEach((imageFile) => {
+    formData.append('images[]', imageFile)
   })
+
+  appendFiles(formData, 'documents[]', values.propertyDocuments)
 
   return formData
 }
