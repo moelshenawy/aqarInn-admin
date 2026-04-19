@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { XIcon } from 'lucide-react'
@@ -35,6 +35,10 @@ import { cn } from '@/lib/utils'
 
 const logoMark = '/assets/dashboard/logo-mark.svg'
 
+function getLocaleFromPath(pathname = '') {
+  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'ar'
+}
+
 function DashboardBrand({
   collapsed = false,
   canCollapse = false,
@@ -52,7 +56,7 @@ function DashboardBrand({
     >
       <LocalizedLink
         to={ROUTE_PATHS.dashboard}
-        aria-label="عقار إن"
+        aria-label="\u0639\u0642\u0627\u0631 \u0625\u0646"
         className={cn(
           'flex h-[41px] shrink-0 items-center overflow-hidden transition-[width] duration-300 ease-in-out',
           isExpanded ? 'w-[109px] justify-start' : 'w-[33px] justify-center',
@@ -60,7 +64,7 @@ function DashboardBrand({
       >
         <img
           src={isExpanded ? '/assets/Logo.svg' : logoMark}
-          alt="عقار إن"
+          alt="\u0639\u0642\u0627\u0631 \u0625\u0646"
           className={cn(
             'h-[41px] max-w-none transition-[width] duration-300 ease-in-out',
             isExpanded ? 'w-auto' : 'w-[33px]',
@@ -72,7 +76,9 @@ function DashboardBrand({
         <button
           type="button"
           aria-label={
-            collapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية'
+            collapsed
+              ? '\u062A\u0648\u0633\u064A\u0639 \u0627\u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u062C\u0627\u0646\u0628\u064A\u0629'
+              : '\u0637\u064A \u0627\u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u062C\u0627\u0646\u0628\u064A\u0629'
           }
           className="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[color:var(--dashboard-bg)] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/20 focus-visible:outline-none"
           onClick={onToggleCollapse}
@@ -90,7 +96,7 @@ function DashboardBrand({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="إغلاق القائمة"
+            aria-label="\u0625\u063A\u0644\u0627\u0642 \u0627\u0644\u0642\u0627\u0626\u0645\u0629"
             className="size-7 rounded-[min(var(--radius-md),12px)]"
           >
             <XIcon />
@@ -232,6 +238,13 @@ export function DashboardLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
   )
+  const localeFromPath = getLocaleFromPath(location.pathname)
+
+  useEffect(() => {
+    if (i18n.resolvedLanguage !== localeFromPath) {
+      void i18n.changeLanguage(localeFromPath)
+    }
+  }, [i18n, localeFromPath])
 
   const activeRoute = useMemo(
     () => [...matches].reverse().find((match) => match.handle?.key),
@@ -241,7 +254,7 @@ export function DashboardLayout() {
   if (!isAuthenticated) {
     return (
       <Navigate
-        to={ROUTE_PATHS.withLocale(ROUTE_PATHS.login, i18n.resolvedLanguage)}
+        to={ROUTE_PATHS.withLocale(ROUTE_PATHS.login, localeFromPath)}
         replace
       />
     )
@@ -255,7 +268,7 @@ export function DashboardLayout() {
       <Navigate
         to={ROUTE_PATHS.withLocale(
           ROUTE_PATHS.unauthorized,
-          i18n.resolvedLanguage,
+          localeFromPath,
         )}
         replace
       />
@@ -281,7 +294,7 @@ export function DashboardLayout() {
       canCollapse
       onToggleCollapse={handleToggleDesktopSidebar}
       onNavigate={() => setSidebarOpen(false)}
-      locale={i18n.resolvedLanguage}
+      locale={localeFromPath}
       canAccessRoute={canAccessRoute}
     />
   )
@@ -290,7 +303,7 @@ export function DashboardLayout() {
     <DashboardSidebar
       pathname={location.pathname}
       onNavigate={() => setSidebarOpen(false)}
-      locale={i18n.resolvedLanguage}
+      locale={localeFromPath}
       mobileClose
       user={dashboardTopbarUser}
       canAccessRoute={canAccessRoute}

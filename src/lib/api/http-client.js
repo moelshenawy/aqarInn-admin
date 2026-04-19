@@ -6,6 +6,18 @@ import { normalizeApiError } from '@/lib/api/app-error'
 let unauthorizedHandler = null
 let accessTokenResolver = null
 
+function getLocaleFromPath(pathname = '') {
+  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'ar'
+}
+
+function resolveRequestLocale() {
+  if (typeof window !== 'undefined') {
+    return getLocaleFromPath(window.location.pathname)
+  }
+
+  return i18n?.resolvedLanguage || i18n?.language || 'en'
+}
+
 export function registerUnauthorizedHandler(handler) {
   unauthorizedHandler = handler
 }
@@ -22,14 +34,14 @@ export const httpClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Accept-Language': i18n?.language || 'en',
-    locale: i18n?.language || 'en',
+    'Accept-Language': resolveRequestLocale(),
+    locale: resolveRequestLocale(),
   },
 })
 
 httpClient.interceptors.request.use((config) => {
   const accessToken = accessTokenResolver?.()
-  const currentLocale = i18n?.resolvedLanguage || i18n?.language || 'en'
+  const currentLocale = resolveRequestLocale()
 
   config.headers = config.headers ?? {}
 

@@ -6,18 +6,27 @@ import { AppButton } from '@/shared/components/app-button'
 
 const LANGUAGES = ['en', 'ar']
 
+function stripLocalePrefix(pathname = '') {
+  if (pathname === '/en' || pathname === '/ar') {
+    return '/'
+  }
+
+  return pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/'
+}
+
 export function LanguageSwitcher({ compact = false }) {
   const { i18n, t } = useTranslation('common')
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLanguageChange = (language) => {
+  const handleLanguageChange = async (language) => {
     if (i18n.resolvedLanguage === language) {
       return
     }
 
-    void i18n.changeLanguage(language)
-    const localizedPath = ROUTE_PATHS.withLocale(location.pathname, language)
+    await i18n.changeLanguage(language)
+    const normalizedPath = stripLocalePrefix(location.pathname)
+    const localizedPath = ROUTE_PATHS.withLocale(normalizedPath, language)
     navigate(`${localizedPath}${location.search}${location.hash}`, {
       replace: true,
     })
