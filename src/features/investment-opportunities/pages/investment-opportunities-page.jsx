@@ -197,6 +197,7 @@ export default function InvestmentOpportunitiesPage() {
           >
             {filteredOpportunities.map((opportunity) => (
               <DashboardOpportunityCard
+                referenceCode={opportunity.code}
                 key={opportunity.id}
                 {...opportunity}
                 to={buildInvestmentOpportunityDetailsPath(
