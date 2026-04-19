@@ -389,7 +389,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
                   {details.operator.nameEn}
                 </p>
                 <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
-                  {operatorDescription}
+                  {details.operator.descriptionEn}
                 </p>
               </div>
             </div>
