@@ -256,11 +256,19 @@ function UserRowCheckbox({ label }) {
   )
 }
 
-function UserStatusBadge({ children }) {
+function UserStatusBadge({ status, children }) {
+  const isInactive = status === 'inactive'
+
   return (
-    <span className="inline-flex items-center justify-end gap-1 rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 ps-[11px] pe-[9px] text-xs leading-[18px] font-medium text-[#402f28]">
-      <span className="size-1.5 rounded-full bg-[#12b76a]" aria-hidden="true" />
-      {children}
+    <span className="inline-flex flex-nowrap items-center justify-end gap-1 whitespace-nowrap rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 ps-[11px] pe-[9px] text-xs leading-[18px] font-medium text-[#402f28]">
+      <span
+        className={cn(
+          'size-1.5 rounded-full',
+          isInactive ? 'bg-[#f04438]' : 'bg-[#12b76a]',
+        )}
+        aria-hidden="true"
+      />
+      <span className="whitespace-nowrap">{children}</span>
     </span>
   )
 }
@@ -651,7 +659,9 @@ function UsersManagementTable() {
                   <td className="px-6 font-normal">{row.email}</td>
                   <td className="px-6 font-normal">{row.phone}</td>
                   <td className="px-6">
-                    <UserStatusBadge>{row.status}</UserStatusBadge>
+                    <UserStatusBadge status={row.originalUser?.status}>
+                      {row.status}
+                    </UserStatusBadge>
                   </td>
                   <td className="px-4">
                     <Can
