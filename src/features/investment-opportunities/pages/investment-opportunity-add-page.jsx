@@ -17,10 +17,6 @@ import {
   useCreateOpportunityDraftMutation,
   useCreateOpportunityMutation,
 } from '@/features/investment-opportunities/hooks/use-create-opportunity-mutations'
-import {
-  createInvestmentOpportunityDraftSchema,
-  createInvestmentOpportunityPublishSchema,
-} from '@/features/investment-opportunities/schemas/investment-opportunity-form-schema'
 import { buildOpportunityFormData } from '@/features/investment-opportunities/services/build-opportunity-form-data'
 import {
   investmentOpportunityDefaultDetails,
@@ -54,29 +50,6 @@ function resolveApiErrorMessage(error, t) {
   }
 
   return t('unexpectedError', { ns: 'validation' })
-}
-
-function mapSchemaErrorsToForm(parsedResult, setError, clearErrors) {
-  clearErrors()
-
-  if (parsedResult.success) {
-    return true
-  }
-
-  parsedResult.error.issues.forEach((issue) => {
-    const fieldName = issue.path[0]
-
-    if (!fieldName || typeof fieldName !== 'string') {
-      return
-    }
-
-    setError(fieldName, {
-      type: 'manual',
-      message: issue.message,
-    })
-  })
-
-  return false
 }
 
 function normalizeFiles(value) {
@@ -222,7 +195,6 @@ export default function InvestmentOpportunityAddPage() {
     getValues,
     setValue,
     watch,
-    setError,
     clearErrors,
     formState: { errors },
   } = useForm({
@@ -234,12 +206,6 @@ export default function InvestmentOpportunityAddPage() {
   const propertyImagesValue = watch('propertyImages')
   const virtualTourValue = watch('virtualTour')
   const developerLogoValue = watch('developerLogo')
-
-  const publishSchema = useMemo(
-    () => createInvestmentOpportunityPublishSchema(t),
-    [t],
-  )
-  const draftSchema = useMemo(() => createInvestmentOpportunityDraftSchema(t), [t])
 
   const cityOptions = useMemo(
     () =>
@@ -382,20 +348,9 @@ export default function InvestmentOpportunityAddPage() {
 
   const handleContinue = (event) => {
     event.preventDefault()
+    clearErrors()
 
     const formValues = getValues()
-    const parsed = publishSchema.safeParse(formValues)
-    const isValid = mapSchemaErrorsToForm(parsed, setError, clearErrors)
-
-    if (!isValid) {
-      showDashboardErrorToast({
-        title: t('invalidSubmission', { ns: 'validation' }),
-        description: t('required', { ns: 'validation' }),
-        actionLabel: 'إغلاق',
-      })
-      return
-    }
-
     const cityName =
       cityOptions.find((cityOption) => cityOption.value === formValues.cityId)
         ?.label ?? ''
@@ -406,18 +361,8 @@ export default function InvestmentOpportunityAddPage() {
   }
 
   const handleSaveDraft = async () => {
+    clearErrors()
     const formValues = getValues()
-    const parsed = draftSchema.safeParse(formValues)
-    const isValid = mapSchemaErrorsToForm(parsed, setError, clearErrors)
-
-    if (!isValid) {
-      showDashboardErrorToast({
-        title: t('invalidSubmission', { ns: 'validation' }),
-        description: t('required', { ns: 'validation' }),
-        actionLabel: 'إغلاق',
-      })
-      return
-    }
 
     try {
       const formData = buildOpportunityFormData(formValues, { mode: 'draft' })

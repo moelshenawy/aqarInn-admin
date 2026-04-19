@@ -418,7 +418,6 @@ export default function UsersAddPage() {
 
     const selectedRoles = asStringArray(formValues.roles)
     const payload = {
-      code: formValues.code.trim(),
       full_name_ar: formValues.fullNameAr.trim(),
       full_name_en: formValues.fullNameEn.trim(),
       email: formValues.email.trim(),
@@ -429,7 +428,6 @@ export default function UsersAddPage() {
     }
 
     if (
-      !payload.code ||
       !payload.full_name_ar ||
       !payload.full_name_en ||
       !payload.email ||
@@ -439,7 +437,7 @@ export default function UsersAddPage() {
       showDashboardErrorToast({
         title: 'بيانات غير مكتملة',
         description:
-          'يرجى إدخال الكود والاسمين العربي والإنجليزي والبريد الإلكتروني ورقم الجوال والدور الوظيفي.',
+          'يرجى إدخال الاسمين العربي والإنجليزي والبريد الإلكتروني ورقم الجوال والدور الوظيفي.',
       })
       return
     }
@@ -552,13 +550,13 @@ export default function UsersAddPage() {
           </header>
 
           <div className="grid w-full grid-cols-1 gap-[30px] md:grid-cols-2 md:gap-x-4">
-            <UsersAddTextField
+            {/* <UsersAddTextField
               id="user-code"
               label="الكود"
               value={formValues.code}
               onChange={(value) => updateField('code', value)}
               placeholder="أدخل كود المستخدم مثل ADM-001"
-            />
+            /> */}
             <UsersAddMultiSelectField
               id="user-role"
               label="الدور الوظيفي"
@@ -651,3 +649,4 @@ export default function UsersAddPage() {
     </div>
   )
 }
+

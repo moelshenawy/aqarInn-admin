@@ -138,9 +138,6 @@ function renderUsersRoute({ initialEntries = [ROUTE_PATHS.users] } = {}) {
 }
 
 function fillCreateUserBaseFields() {
-  fireEvent.change(document.getElementById('user-code'), {
-    target: { value: 'ADM-003' },
-  })
   fireEvent.change(document.getElementById('user-full-name-en'), {
     target: { value: 'Sara Ahmed Alhashmi' },
   })
@@ -207,7 +204,6 @@ describe('UsersPage route', () => {
     fireEvent.click(screen.getByRole('button', { name: 'تعديل' }))
 
     expect(router.state.location.pathname).toBe(ROUTE_PATHS.usersAdd)
-    expect(await screen.findByDisplayValue('ADM-001')).toBeInTheDocument()
     expect(document.getElementById('user-role')).toHaveTextContent('Investment Manager')
   })
 
@@ -229,7 +225,6 @@ describe('UsersPage route', () => {
     })
 
     expect(usersService.createUser.mock.calls[0][0]).toEqual({
-      code: 'ADM-003',
       full_name_ar: 'سارة أحمد الهاشمي',
       full_name_en: 'Sara Ahmed Alhashmi',
       email: 'sara@aqarinn.test',
