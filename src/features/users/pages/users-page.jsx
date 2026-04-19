@@ -260,7 +260,7 @@ function UserStatusBadge({ status, children }) {
   const isInactive = status === 'inactive'
 
   return (
-    <span className="inline-flex flex-nowrap items-center justify-end gap-1 whitespace-nowrap rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 ps-[11px] pe-[9px] text-xs leading-[18px] font-medium text-[#402f28]">
+    <span className="inline-flex flex-nowrap items-center justify-end gap-1 rounded-full border border-[#eae5d7] bg-[#f8f5ee] py-0.5 ps-[11px] pe-[9px] text-xs leading-[18px] font-medium whitespace-nowrap text-[#402f28]">
       <span
         className={cn(
           'size-1.5 rounded-full',
@@ -654,10 +654,16 @@ function UsersManagementTable() {
                       <span className="whitespace-nowrap">{row.fullName}</span>
                     </div>
                   </td>
-                  <td className="px-6 font-normal">{row.identifier}</td>
+                  <td className="px-6 font-normal whitespace-nowrap">
+                    {row.identifier}
+                  </td>
                   <td className="px-6 text-center font-medium">{row.role}</td>
-                  <td className="px-6 font-normal">{row.email}</td>
-                  <td className="px-6 font-normal">{row.phone}</td>
+                  <td className="px-6 font-normal whitespace-nowrap">
+                    {row.email}
+                  </td>
+                  <td className="px-6 font-normal whitespace-nowrap">
+                    {row.phone}
+                  </td>
                   <td className="px-6">
                     <UserStatusBadge status={row.originalUser?.status}>
                       {row.status}

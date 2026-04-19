@@ -181,7 +181,9 @@ function InvestorsTable({ details }) {
                     <span>{investor.fullName}</span>
                   </div>
                 </td>
-                <td className="px-6 font-normal">{investor.nationalId}</td>
+                <td className="px-6 font-normal whitespace-nowrap">
+                  {investor.nationalId}
+                </td>
                 <td className="px-6 font-medium">{investor.mobile}</td>
                 <td className="px-6 font-medium">{investor.shares}</td>
                 <td className="px-6 font-medium">{investor.profitAmount}</td>

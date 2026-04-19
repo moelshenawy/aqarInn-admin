@@ -1,4 +1,4 @@
-﻿import { Fragment } from 'react'
+import { Fragment, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
@@ -6,22 +6,46 @@ import { investmentOpportunityDetailsAssets } from '@/features/investment-opport
 import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
 
-function SectionHeading({ children, dir }) {
+function SectionHeading({ children, dir, expanded, onToggle, contentId }) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      aria-controls={contentId}
       dir={dir}
-      className="flex items-center justify-start gap-2.5 py-2 text-start"
+      className="flex cursor-pointer items-center justify-start gap-2.5 py-2 text-start transition focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
     >
       <img
         src={investmentOpportunityDetailsAssets.chevron}
         alt=""
-        className="h-2 w-4 object-cover"
+        className={cn(
+          'h-2 w-4 object-cover transition-transform',
+          !expanded && 'rotate-180',
+        )}
         aria-hidden="true"
       />
 
       <h3 className="text-lg leading-7 font-semibold text-[#181927]">
         {children}
       </h3>
+    </button>
+  )
+}
+
+function CollapsiblePanel({ id, expanded, children, expandedMarginClass }) {
+  return (
+    <div
+      id={id}
+      aria-hidden={!expanded}
+      className={cn(
+        'grid overflow-hidden transition-[grid-template-rows,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none',
+        expanded
+          ? `grid-rows-[1fr] opacity-100 ${expandedMarginClass}`
+          : 'mt-0 grid-rows-[0fr] opacity-0 pointer-events-none',
+      )}
+    >
+      <div className="min-h-0">{children}</div>
     </div>
   )
 }
@@ -153,6 +177,22 @@ export function InvestmentOpportunityDetailsBody({ details }) {
   }
 
   const { dir } = useDirection()
+  const [expandedSections, setExpandedSections] = useState({
+    investmentSettings: true,
+    operatorDetails: true,
+  })
+  const investmentSettingsSectionId = useId()
+  const operatorDetailsSectionId = useId()
+  const investmentSettingsContentId = `${investmentSettingsSectionId}-content`
+  const operatorDetailsContentId = `${operatorDetailsSectionId}-content`
+
+  function toggleSection(sectionKey) {
+    setExpandedSections((current) => ({
+      ...current,
+      [sectionKey]: !current[sectionKey],
+    }))
+  }
+
   const opportunityTitle =
     details.title ?? details.titleAr ?? details.titleEn ?? ''
   const operatorDescription =
@@ -261,71 +301,97 @@ export function InvestmentOpportunityDetailsBody({ details }) {
       </section>
 
       <section
-        className="flex w-full flex-col gap-[30px]"
+        className="flex w-full flex-col"
         aria-label={labels.investmentSettings}
       >
-        <SectionHeading dir={dir}>{labels.investmentSettings}</SectionHeading>
-        <div
+        <SectionHeading
           dir={dir}
-          className="grid w-full grid-cols-1 gap-[60px] sm:grid-cols-2"
+          expanded={expandedSections.investmentSettings}
+          onToggle={() => toggleSection('investmentSettings')}
+          contentId={investmentSettingsContentId}
         >
-          {[...details.investmentSettings].reverse().map((setting) => (
-            <DetailValue
-              key={setting.label}
-              label={setting.label}
-              value={setting.value}
-              className="min-w-0 flex-1"
-            />
-          ))}
-        </div>
+          {labels.investmentSettings}
+        </SectionHeading>
+        <CollapsiblePanel
+          id={investmentSettingsContentId}
+          expanded={expandedSections.investmentSettings}
+          expandedMarginClass="mt-[30px]"
+        >
+          <div
+            dir={dir}
+            className="grid w-full grid-cols-1 gap-[60px] sm:grid-cols-2"
+          >
+            {[...details.investmentSettings].reverse().map((setting) => (
+              <DetailValue
+                key={setting.label}
+                label={setting.label}
+                value={setting.value}
+                className="min-w-0 flex-1"
+              />
+            ))}
+          </div>
+        </CollapsiblePanel>
       </section>
 
       <section
-        className="flex w-full flex-col gap-2.5"
+        className="flex w-full flex-col"
         aria-label={labels.operatorDetails}
       >
-        <SectionHeading dir={dir}>{labels.operatorDetails}</SectionHeading>
-        <div className="flex w-full flex-col items-end gap-5">
-          <div
-            dir={dir}
-            className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-[60px]"
-          >
-            <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
-              <p className="w-full truncate">{details.operator.email}</p>
-              <p className="w-full truncate">{details.operator.phone}</p>
-              <p className="w-full truncate">{details.operator.location}</p>
+        <SectionHeading
+          dir={dir}
+          expanded={expandedSections.operatorDetails}
+          onToggle={() => toggleSection('operatorDetails')}
+          contentId={operatorDetailsContentId}
+        >
+          {labels.operatorDetails}
+        </SectionHeading>
+        <CollapsiblePanel
+          id={operatorDetailsContentId}
+          expanded={expandedSections.operatorDetails}
+          expandedMarginClass="mt-2.5"
+        >
+          <div className="flex w-full flex-col items-end gap-5">
+            <div
+              dir={dir}
+              className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-[60px]"
+            >
+              <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
+                <p className="w-full truncate">{details.operator.email}</p>
+                <p className="w-full truncate">{details.operator.phone}</p>
+                <p className="w-full truncate">{details.operator.location}</p>
+              </div>
+              <div className="flex w-full shrink-0 items-center justify-end p-2.5 md:w-[511px]">
+                <img
+                  src={investmentOpportunityDetailsAssets.operatorLogo}
+                  alt={details.operator.logoAlt}
+                  className="h-[72px] w-[60px] object-contain"
+                />
+              </div>
             </div>
-            <div className="flex w-full shrink-0 items-center justify-end p-2.5 md:w-[511px]">
-              <img
-                src={investmentOpportunityDetailsAssets.operatorLogo}
-                alt={details.operator.logoAlt}
-                className="h-[72px] w-[60px] object-contain"
-              />
-            </div>
-          </div>
 
-          <div
-            dir={dir}
-            className="grid w-full grid-cols-1 gap-5 text-start md:grid-cols-2 md:gap-[60px]"
-          >
-            <div className="flex min-w-0 flex-col items-start gap-2.5">
-              <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
-                {details.operator.nameEn}
-              </p>
-              <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
-                {operatorDescription}
-              </p>
-            </div>
-            <div className="flex min-w-0 flex-col items-start gap-2.5">
-              <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
-                {details.operator.nameAr}
-              </p>
-              <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
-                {operatorDescription}
-              </p>
+            <div
+              dir={dir}
+              className="grid w-full grid-cols-1 gap-5 text-start md:grid-cols-2 md:gap-[60px]"
+            >
+              <div className="flex min-w-0 flex-col items-start gap-2.5">
+                <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
+                  {details.operator.nameEn}
+                </p>
+                <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
+                  {operatorDescription}
+                </p>
+              </div>
+              <div className="flex min-w-0 flex-col items-start gap-2.5">
+                <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
+                  {details.operator.nameAr}
+                </p>
+                <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
+                  {operatorDescription}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </CollapsiblePanel>
       </section>
     </>
   )

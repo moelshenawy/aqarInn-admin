@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useId, useState } from 'react'
 import { ChevronUp, LoaderCircle, UploadCloud, X } from 'lucide-react'
 
 import { useDirection } from '@/lib/i18n/direction-provider'
@@ -143,11 +143,21 @@ export function InvestmentOpportunityFormGrid({ children, className }) {
   )
 }
 
-export function InvestmentOpportunitySectionHeading({ title, className }) {
+export function InvestmentOpportunitySectionHeading({
+  title,
+  className,
+  expanded = true,
+  onToggle,
+  contentId,
+}) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={expanded}
+      aria-controls={contentId}
       className={cn(
-        'flex items-center justify-start gap-2.5 py-2 text-start',
+        'flex cursor-pointer items-center justify-start gap-2.5 py-2 text-start transition focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none',
         className,
       )}
     >
@@ -156,9 +166,29 @@ export function InvestmentOpportunitySectionHeading({ title, className }) {
       </h2>
 
       <ChevronUp
-        className="size-5 stroke-[2] text-[#181927]"
+        className={cn(
+          'size-5 stroke-[2] text-[#181927] transition-transform',
+          !expanded && 'rotate-180',
+        )}
         aria-hidden="true"
       />
+    </button>
+  )
+}
+
+function CollapsiblePanel({ id, expanded, children, expandedMarginClass }) {
+  return (
+    <div
+      id={id}
+      aria-hidden={!expanded}
+      className={cn(
+        'grid overflow-hidden transition-[grid-template-rows,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none',
+        expanded
+          ? `grid-rows-[1fr] opacity-100 ${expandedMarginClass}`
+          : 'mt-0 grid-rows-[0fr] opacity-0 pointer-events-none',
+      )}
+    >
+      <div className="min-h-0">{children}</div>
     </div>
   )
 }
@@ -167,11 +197,27 @@ export function InvestmentOpportunityFormSection({
   title,
   children,
   className,
+  defaultExpanded = true,
 }) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded)
+  const sectionId = useId()
+  const contentId = `${sectionId}-content`
+
   return (
-    <section className={cn('space-y-[30px]', className)} aria-label={title}>
-      <InvestmentOpportunitySectionHeading title={title} />
-      {children}
+    <section className={cn('flex flex-col', className)} aria-label={title}>
+      <InvestmentOpportunitySectionHeading
+        title={title}
+        expanded={isExpanded}
+        onToggle={() => setIsExpanded((current) => !current)}
+        contentId={contentId}
+      />
+      <CollapsiblePanel
+        id={contentId}
+        expanded={isExpanded}
+        expandedMarginClass="mt-[30px]"
+      >
+        {children}
+      </CollapsiblePanel>
     </section>
   )
 }
