@@ -201,7 +201,7 @@ export function InvestmentOpportunityForm({
               id="propertyDocuments"
               label="المستندات المتاحة"
               placeholder="أضف المستندات المتاحة للعقار"
-              accept=".pdf,.png,.jpg,.jpeg"
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif"
               multiple
               required
               error={errors.propertyDocuments?.message}
@@ -239,7 +239,7 @@ export function InvestmentOpportunityForm({
             <InvestmentOpportunityDropzoneField
               id="propertyImages"
               label="صور العقار"
-              accept="image/png,image/jpeg"
+              accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/heif"
               multiple
               required
               error={errors.propertyImages?.message}
@@ -253,7 +253,7 @@ export function InvestmentOpportunityForm({
               id="virtualTour"
               label="صورة 360"
               placeholder="ارفع صورة 360 (اختياري)"
-              accept="image/png,image/jpeg"
+              accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/heif"
               error={errors.virtualTour?.message}
               selectedFiles={fileUploadState.virtualTour?.files}
               isLoading={fileUploadState.virtualTour?.isLoading}

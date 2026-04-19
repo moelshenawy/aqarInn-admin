@@ -70,6 +70,53 @@ function parseNumber(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function normalizeArabicIndicDigits(value) {
+  const normalized = String(value ?? '')
+  const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+
+  return normalized.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const arabicIndex = arabicIndic.indexOf(digit)
+    if (arabicIndex >= 0) {
+      return String(arabicIndex)
+    }
+
+    const easternArabicIndex = easternArabicIndic.indexOf(digit)
+    if (easternArabicIndex >= 0) {
+      return String(easternArabicIndex)
+    }
+
+    return digit
+  })
+}
+
+function normalizeSaudiMobileInput(value) {
+  let digitsOnly = normalizeArabicIndicDigits(value).replace(/\D/g, '')
+
+  if (digitsOnly.startsWith('00966')) {
+    digitsOnly = digitsOnly.slice(5)
+  } else if (digitsOnly.startsWith('966')) {
+    digitsOnly = digitsOnly.slice(3)
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    digitsOnly = digitsOnly.slice(1)
+  }
+
+  return digitsOnly
+}
+
+function buildSubmissionValues(values, managedFiles) {
+  return {
+    ...values,
+    developerPhone: normalizeSaudiMobileInput(values.developerPhone),
+    propertyDocuments: managedFiles.propertyDocuments,
+    propertyImages: managedFiles.propertyImages,
+    virtualTour: managedFiles.virtualTour,
+    developerLogo: managedFiles.developerLogo,
+  }
+}
+
 function buildReviewGallery(previewUrls = []) {
   return previewUrls
     .slice(0, investmentOpportunityGalleryTileClassNames.length)
@@ -206,13 +253,12 @@ export default function InvestmentOpportunityAddPage() {
   } = useForm({
     defaultValues: INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
   })
-  const { fileFields, fileUploadState } = useInvestmentOpportunityFileUploadState(
-    {
+  const { fileFields, fileUploadState, getManagedFilesSnapshot } =
+    useInvestmentOpportunityFileUploadState({
       register,
       setValue,
       clearErrors,
-    },
-  )
+    })
 
   const propertyPrice = watch('propertyPrice')
   const shareCount = watch('shareCount')
@@ -301,7 +347,10 @@ export default function InvestmentOpportunityAddPage() {
     event.preventDefault()
     clearErrors()
 
-    const formValues = getValues()
+    const formValues = buildSubmissionValues(
+      getValues(),
+      getManagedFilesSnapshot(),
+    )
     if (!validateFormValues('publish', formValues)) {
       return
     }
@@ -317,7 +366,10 @@ export default function InvestmentOpportunityAddPage() {
 
   const handleSaveDraft = async () => {
     clearErrors()
-    const formValues = getValues()
+    const formValues = buildSubmissionValues(
+      getValues(),
+      getManagedFilesSnapshot(),
+    )
     if (!validateFormValues('draft', formValues)) {
       return
     }
@@ -340,7 +392,10 @@ export default function InvestmentOpportunityAddPage() {
 
   const handlePublish = async () => {
     clearErrors()
-    const formValues = getValues()
+    const formValues = buildSubmissionValues(
+      getValues(),
+      getManagedFilesSnapshot(),
+    )
     if (!validateFormValues('publish', formValues)) {
       setReviewOpen(false)
       return
@@ -376,10 +431,14 @@ export default function InvestmentOpportunityAddPage() {
       return
     }
 
-    setValue('cityId', selection.cityId, {
-      shouldValidate: true,
-      shouldDirty: true,
-    })
+    const resolvedCityId =
+      String(selection.cityId ?? '').trim() || String(getValues('cityId') ?? '').trim()
+    if (resolvedCityId) {
+      setValue('cityId', resolvedCityId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
     setValue('neighborhood', selection.neighborhood, {
       shouldValidate: true,
       shouldDirty: true,
@@ -396,7 +455,7 @@ export default function InvestmentOpportunityAddPage() {
       shouldValidate: true,
       shouldDirty: true,
     })
-    setSelectedCityIdForMap(selection.cityId)
+    setSelectedCityIdForMap(resolvedCityId)
     clearErrors([
       'cityId',
       'neighborhood',

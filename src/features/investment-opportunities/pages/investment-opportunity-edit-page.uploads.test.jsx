@@ -12,7 +12,10 @@ import {
 } from '@/app/router/route-paths'
 import { AuthProvider } from '@/features/auth/context/auth-provider'
 import InvestmentOpportunityEditPage from '@/features/investment-opportunities/pages/investment-opportunity-edit-page'
-import { getCities } from '@/features/investment-opportunities/services/investment-opportunity-service'
+import {
+  getCities,
+  getOpportunityById,
+} from '@/features/investment-opportunities/services/investment-opportunity-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
 
@@ -20,6 +23,7 @@ vi.mock(
   '@/features/investment-opportunities/services/investment-opportunity-service',
   () => ({
     getCities: vi.fn(),
+    getOpportunityById: vi.fn(),
   }),
 )
 
@@ -112,6 +116,45 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
         name_en: 'Jeddah',
       },
     ])
+    vi.mocked(getOpportunityById).mockResolvedValue({
+      id: 'investment-riyadh-001',
+      title_ar: 'فرصة الرياض',
+      title_en: 'Riyadh Opportunity',
+      city_id: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
+      neighborhood: 'Al Olaya',
+      location_text: 'Al Olaya, Riyadh',
+      latitude: '24.7109590',
+      longitude: '46.6752910',
+      asset_type: 'commercial',
+      area_m2: '3250.00',
+      floors: 8,
+      build_year: 2021,
+      property_price: '4800000.00',
+      currency: 'SAR',
+      total_shares: 1200,
+      share_price: '4000.00',
+      min_investment_shares: 1,
+      max_shares_per_user: 120,
+      max_user_ownership_pct: '10.00',
+      expected_annual_return_pct: '9.40',
+      return_frequency: 'quarterly',
+      investment_duration_months: 36,
+      schedule_investment_start: true,
+      investment_start_at: '2026-05-03T13:25:07.000000Z',
+      operator_name_ar: 'نجد كابيتال',
+      operator_name_en: 'Najd Capital',
+      operator_description_ar: 'وصف المشغل',
+      operator_description_en: 'Operator description',
+      operator_email: 'assets@najdcapital.test',
+      operator_phone: '+966550000101',
+      operator_location_text: 'Riyadh, Saudi Arabia',
+      files: [],
+      city: {
+        id: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
+        name_ar: 'الرياض',
+        name_en: 'Riyadh',
+      },
+    })
   })
 
   it('supports files modal, preview, append, and remove flows on edit page', async () => {
@@ -228,6 +271,10 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
     const { router, opportunityId } = renderEditPage()
     const detailsPath = buildInvestmentOpportunityDetailsPath(opportunityId)
 
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
+    })
+
     const documentFile = new File(['doc'], 'unsaved.pdf', {
       type: 'application/pdf',
     })
@@ -266,4 +313,3 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
     })
   })
 })
-

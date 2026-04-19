@@ -29,11 +29,7 @@ export function DashboardOpportunityCard({
       )}
     >
       <div className="relative aspect-[358/131] overflow-hidden">
-        <img
-          src={image || 'https://placehold.co/358x131'}
-          alt={title}
-          className="size-full object-cover"
-        />
+        <img src={image} alt={title} className="size-full object-cover" />
         <div
           className="absolute inset-0 opacity-10 mix-blend-soft-light"
           style={{

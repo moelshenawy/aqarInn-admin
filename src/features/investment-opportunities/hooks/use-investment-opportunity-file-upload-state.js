@@ -25,6 +25,39 @@ function normalizeFiles(value) {
   return []
 }
 
+function createObjectUrlSafe(file) {
+  if (
+    typeof Blob === 'undefined' ||
+    typeof URL === 'undefined' ||
+    typeof URL.createObjectURL !== 'function' ||
+    !(file instanceof Blob)
+  ) {
+    return ''
+  }
+
+  try {
+    return URL.createObjectURL(file)
+  } catch {
+    return ''
+  }
+}
+
+function revokeObjectUrlSafe(url) {
+  if (
+    !url ||
+    typeof URL === 'undefined' ||
+    typeof URL.revokeObjectURL !== 'function'
+  ) {
+    return
+  }
+
+  try {
+    URL.revokeObjectURL(url)
+  } catch {
+    // No-op
+  }
+}
+
 function getFileExtension(fileName) {
   const normalizedName = String(fileName ?? '').trim()
   const extension = normalizedName.split('.').pop()?.trim().toLowerCase()
@@ -111,11 +144,11 @@ export function useInvestmentOpportunityFileUploadState({
       return
     }
 
-    const nextPreviewUrls = imageFiles.map((file) => URL.createObjectURL(file))
+    const nextPreviewUrls = imageFiles.map((file) => createObjectUrlSafe(file))
     setPropertyImagePreviewUrls(nextPreviewUrls)
 
     return () => {
-      nextPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
+      nextPreviewUrls.forEach((url) => revokeObjectUrlSafe(url))
     }
   }, [managedFiles.propertyImages])
 
@@ -189,6 +222,11 @@ export function useInvestmentOpportunityFileUploadState({
   const triggerUploadForField = useCallback((fieldName) => {
     fileInputRefs.current[fieldName]?.click()
   }, [])
+
+  const getManagedFilesSnapshot = useCallback(
+    () => managedFilesRef.current,
+    [],
+  )
 
   const registerFileField = useCallback(
     (fieldName) => {
@@ -393,8 +431,8 @@ export function useInvestmentOpportunityFileUploadState({
     fileFields,
     fileUploadState,
     managedFiles,
+    getManagedFilesSnapshot,
     setManagedFilesForField: updateManagedFilesForField,
     triggerUploadForField,
   }
 }
-

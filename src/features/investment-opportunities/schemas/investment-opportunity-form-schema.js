@@ -3,7 +3,17 @@ import { z } from 'zod'
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const DECIMAL_REGEX = /^\d+(\.\d+)?$/
 const INTEGER_REGEX = /^\d+$/
-const SAUDI_MOBILE_REGEX = /^5\d{8}$/
+const SAUDI_MOBILE_REGEX = /^5\d{7,8}$/
+const IMAGE_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+]
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']
+const DOCUMENT_MIME_TYPES = ['application/pdf', ...IMAGE_MIME_TYPES]
+const DOCUMENT_EXTENSIONS = ['pdf', ...IMAGE_EXTENSIONS]
 
 function hasAtLeastOneFile(value) {
   if (!value) {
@@ -19,6 +29,35 @@ function hasAtLeastOneFile(value) {
   }
 
   return false
+}
+
+function getFileExtension(fileName) {
+  const normalizedName = String(fileName ?? '').trim()
+  const extension = normalizedName.split('.').pop()?.trim().toLowerCase()
+
+  if (!extension || extension === normalizedName.toLowerCase()) {
+    return ''
+  }
+
+  return extension
+}
+
+function normalizeMimeType(value) {
+  const normalized = String(value ?? '').trim().toLowerCase()
+
+  if (!normalized) {
+    return ''
+  }
+
+  if (normalized === 'image/jpg' || normalized === 'image/pjpeg') {
+    return 'image/jpeg'
+  }
+
+  if (normalized === 'application/x-pdf') {
+    return 'application/pdf'
+  }
+
+  return normalized
 }
 
 function requiredString(t) {
@@ -37,7 +76,47 @@ function requiredDecimalString(t) {
   })
 }
 
-function hasAllowedFileTypes(value, allowedMimeTypes) {
+function normalizeArabicIndicDigits(value) {
+  const normalized = String(value ?? '')
+  const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+
+  return normalized.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const arabicIndex = arabicIndic.indexOf(digit)
+    if (arabicIndex >= 0) {
+      return String(arabicIndex)
+    }
+
+    const easternArabicIndex = easternArabicIndic.indexOf(digit)
+    if (easternArabicIndex >= 0) {
+      return String(easternArabicIndex)
+    }
+
+    return digit
+  })
+}
+
+function normalizeSaudiMobileInput(value) {
+  let digitsOnly = normalizeArabicIndicDigits(value).replace(/\D/g, '')
+
+  if (digitsOnly.startsWith('00966')) {
+    digitsOnly = digitsOnly.slice(5)
+  } else if (digitsOnly.startsWith('966')) {
+    digitsOnly = digitsOnly.slice(3)
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    digitsOnly = digitsOnly.slice(1)
+  }
+
+  return digitsOnly
+}
+
+function hasValidSaudiMobile(value) {
+  return SAUDI_MOBILE_REGEX.test(normalizeSaudiMobileInput(value))
+}
+
+function hasAllowedFileTypes(value, allowedMimeTypes = [], allowedExtensions = []) {
   if (!value) {
     return true
   }
@@ -53,7 +132,19 @@ function hasAllowedFileTypes(value, allowedMimeTypes) {
     return true
   }
 
-  return files.every((file) => allowedMimeTypes.includes(file?.type))
+  return files.every((file) => {
+    const mimeType = normalizeMimeType(file?.type)
+    if (mimeType && allowedMimeTypes.includes(mimeType)) {
+      return true
+    }
+
+    const extension = getFileExtension(file?.name)
+    if (extension && allowedExtensions.includes(extension)) {
+      return true
+    }
+
+    return false
+  })
 }
 
 export function createInvestmentOpportunityDraftSchema(t) {
@@ -128,7 +219,7 @@ export function createInvestmentOpportunityPublishSchema(t) {
       developerDescriptionAr: z.string().trim().max(500, t('required', { ns: 'validation' })).optional(),
       developerDescriptionEn: z.string().trim().max(500, t('required', { ns: 'validation' })).optional(),
       developerPhone: requiredString(t).refine(
-        (value) => SAUDI_MOBILE_REGEX.test(value),
+        (value) => hasValidSaudiMobile(value),
         {
           message: t('required', { ns: 'validation' }),
         },
@@ -168,7 +259,11 @@ export function createInvestmentOpportunityPublishSchema(t) {
       }
 
       if (
-        !hasAllowedFileTypes(values.propertyImages, ['image/jpeg', 'image/png'])
+        !hasAllowedFileTypes(
+          values.propertyImages,
+          IMAGE_MIME_TYPES,
+          IMAGE_EXTENSIONS,
+        )
       ) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -178,11 +273,11 @@ export function createInvestmentOpportunityPublishSchema(t) {
       }
 
       if (
-        !hasAllowedFileTypes(values.propertyDocuments, [
-          'application/pdf',
-          'image/jpeg',
-          'image/png',
-        ])
+        !hasAllowedFileTypes(
+          values.propertyDocuments,
+          DOCUMENT_MIME_TYPES,
+          DOCUMENT_EXTENSIONS,
+        )
       ) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -192,7 +287,11 @@ export function createInvestmentOpportunityPublishSchema(t) {
       }
 
       if (
-        !hasAllowedFileTypes(values.virtualTour, ['image/jpeg', 'image/png'])
+        !hasAllowedFileTypes(
+          values.virtualTour,
+          IMAGE_MIME_TYPES,
+          IMAGE_EXTENSIONS,
+        )
       ) {
         context.addIssue({
           code: z.ZodIssueCode.custom,

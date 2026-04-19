@@ -84,6 +84,7 @@ export const investmentOpportunityDefaultDetails = {
     phone: '+966 55 555 5555',
     location: 'الرياض، المملكة العربية السعودية',
     logoAlt: 'شعار شركة الأفق العقارية',
+    logoUrl: reviewOperatorLogo,
   },
 }
 
@@ -115,6 +116,93 @@ export function getInvestmentOpportunityDetails(opportunityId) {
   )
 }
 
+function hasValue(value) {
+  if (value === null || value === undefined) {
+    return false
+  }
+
+  return String(value).trim().length > 0
+}
+
+function createEmptyOpportunityDetails(opportunityId) {
+  return {
+    ...investmentOpportunityDefaultDetails,
+    id: opportunityId ?? '',
+    title: '',
+    titleAr: '',
+    titleEn: '',
+    propertyType: '',
+    floors: '',
+    totalArea: '',
+    buildYear: '',
+    location: '',
+    locationDisplay: '',
+    metrics: investmentOpportunityDefaultDetails.metrics.map((metric) => ({
+      ...metric,
+      value: '',
+    })),
+    gallery: [],
+    investmentSettings:
+      investmentOpportunityDefaultDetails.investmentSettings.map((setting) => ({
+        ...setting,
+        value: '',
+      })),
+    operator: {
+      ...investmentOpportunityDefaultDetails.operator,
+      nameAr: '',
+      nameEn: '',
+      description: '',
+      descriptionAr: '',
+      descriptionEn: '',
+      email: '',
+      phone: '',
+      location: '',
+      logoUrl: '',
+    },
+  }
+}
+
+function extractOpportunityGallerySources(opportunity) {
+  const galleryFromList = Array.isArray(opportunity?.gallery)
+    ? opportunity.gallery
+        .map((item) => {
+          if (typeof item === 'string') {
+            return item
+          }
+
+          if (!item || typeof item !== 'object') {
+            return ''
+          }
+
+          return item.url || item.file_url || item.path || ''
+        })
+        .filter(Boolean)
+    : []
+
+  const galleryFromFiles = Array.isArray(opportunity?.files)
+    ? opportunity.files
+        .filter((file) => {
+          if (!file?.url) {
+            return false
+          }
+
+          if (file.file_category === 'image') {
+            return true
+          }
+
+          return (
+            typeof file.mime_type === 'string' &&
+            file.mime_type.startsWith('image/')
+          )
+        })
+        .map((file) => file.url)
+    : []
+
+  return [opportunity?.cover_image_url, ...galleryFromList, ...galleryFromFiles]
+    .filter(Boolean)
+    .map((src) => String(src))
+}
+
 function asNumber(value) {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : 0
@@ -140,7 +228,10 @@ function formatIsoDate(value, fallbackValue) {
   return date.toISOString().slice(0, 10)
 }
 
-function mapAssetType(assetType) {
+function mapAssetType(
+  assetType,
+  fallbackAssetType = investmentOpportunityDefaultDetails.propertyType,
+) {
   const mapping = {
     residential: 'عقار سكني',
     commercial: 'عقار تجاري',
@@ -148,35 +239,50 @@ function mapAssetType(assetType) {
     land: 'أرض',
   }
 
-  return mapping[assetType] ?? assetType ?? investmentOpportunityDefaultDetails.propertyType
+  return mapping[assetType] ?? assetType ?? fallbackAssetType
 }
 
 /**
  * @param {import('@/features/investment-opportunities/services/investment-opportunity-service').OpportunityItem | null} opportunity
- * @param {{ opportunityId?: string | null, language?: string }} options
+ * @param {{ opportunityId?: string | null, language?: string, useStaticFallback?: boolean }} options
  */
 export function mapOpportunityApiToDetails(
   opportunity,
-  { opportunityId, language = 'ar' } = {},
+  { opportunityId, language = 'ar', useStaticFallback = true } = {},
 ) {
+  const fallbackDetails = useStaticFallback
+    ? {
+        ...investmentOpportunityDefaultDetails,
+        id: opportunityId ?? investmentOpportunityDefaultDetails.id,
+      }
+    : createEmptyOpportunityDetails(opportunityId)
+
   if (!opportunity) {
-    return {
-      ...investmentOpportunityDefaultDetails,
-      id: opportunityId ?? investmentOpportunityDefaultDetails.id,
-    }
+    return fallbackDetails
   }
 
+  const hasPropertyPrice = hasValue(opportunity.property_price)
+  const hasExpectedAnnualReturnPct = hasValue(
+    opportunity.expected_annual_return_pct,
+  )
   const propertyPrice = asNumber(opportunity.property_price)
   const expectedAnnualReturnPct = asNumber(opportunity.expected_annual_return_pct)
-  const expectedNetReturn = (propertyPrice * expectedAnnualReturnPct) / 100
+  const expectedNetReturn =
+    hasPropertyPrice && hasExpectedAnnualReturnPct
+      ? (propertyPrice * expectedAnnualReturnPct) / 100
+      : null
 
-  const apiGallery = Array.isArray(opportunity.gallery) ? opportunity.gallery : []
-  const gallerySources = [opportunity.cover_image_url, ...apiGallery].filter(Boolean)
+  const gallerySources = Array.from(
+    new Set(extractOpportunityGallerySources(opportunity)),
+  )
   const gallery = gallerySources
     .slice(0, investmentOpportunityGalleryTileClassNames.length)
     .map((src, index) => ({
       src,
-      alt: investmentOpportunityDefaultDetails.gallery[index]?.alt ?? '',
+      alt:
+        fallbackDetails.gallery[index]?.alt ||
+        investmentOpportunityDefaultDetails.gallery[index]?.alt ||
+        '',
       tileClassName: investmentOpportunityGalleryTileClassNames[index],
     }))
 
@@ -185,42 +291,77 @@ export function mapOpportunityApiToDetails(
       ? opportunity.city?.name_en || opportunity.city?.name_ar
       : opportunity.city?.name_ar || opportunity.city?.name_en
 
+  const titleAr =
+    opportunity.title_ar || opportunity.title || fallbackDetails.titleAr
+  const titleEn =
+    opportunity.title_en || opportunity.title || fallbackDetails.titleEn
+  const title =
+    language === 'en'
+      ? titleEn || titleAr || fallbackDetails.title
+      : titleAr || titleEn || fallbackDetails.title
+  const location =
+    opportunity.location_text ||
+    [opportunity.neighborhood, cityName].filter(Boolean).join('، ') ||
+    fallbackDetails.location
+
+  const floorsUnitLabel = investmentOpportunityDefaultDetails.floors
+    .replace(/[\d.,]+/g, '')
+    .trim()
+  const totalAreaUnitLabel = investmentOpportunityDefaultDetails.totalArea
+    .replace(/^[\d.,]+\s*/, '')
+    .trim()
+  const hasFloors = hasValue(opportunity.floors)
+  const hasArea = hasValue(opportunity.area_m2)
+
   return {
-    ...investmentOpportunityDefaultDetails,
-    id: opportunity.id || opportunityId || investmentOpportunityDefaultDetails.id,
-    title: opportunity.title || investmentOpportunityDefaultDetails.title,
-    titleAr: opportunity.title || investmentOpportunityDefaultDetails.titleAr,
-    titleEn: opportunity.title || investmentOpportunityDefaultDetails.titleEn,
-    propertyType: mapAssetType(opportunity.asset_type),
-    floors: `${opportunity.floors ?? 0} ادوار`,
-    totalArea: `${formatNumber(opportunity.area_m2, 2)} م² مساحة اجمالية`,
-    buildYear:
-      String(opportunity.build_year ?? '') ||
-      investmentOpportunityDefaultDetails.buildYear,
-    location:
-      opportunity.location_text ||
-      [opportunity.neighborhood, cityName].filter(Boolean).join('، ') ||
-      investmentOpportunityDefaultDetails.location,
+    ...fallbackDetails,
+    id: opportunity.id || opportunityId || fallbackDetails.id,
+    title,
+    titleAr,
+    titleEn,
+    propertyType: mapAssetType(opportunity.asset_type, fallbackDetails.propertyType),
+    floors: hasFloors
+      ? `${formatNumber(opportunity.floors, 0)} ${floorsUnitLabel}`.trim()
+      : fallbackDetails.floors,
+    totalArea: hasArea
+      ? `${formatNumber(opportunity.area_m2, 2)} ${totalAreaUnitLabel}`.trim()
+      : fallbackDetails.totalArea,
+    buildYear: hasValue(opportunity.build_year)
+      ? String(opportunity.build_year)
+      : fallbackDetails.buildYear,
+    location,
+    locationDisplay: location,
     metrics: [
       {
         label: 'العائد الصافي المتوقع',
-        value: formatNumber(expectedNetReturn, 0),
+        value:
+          expectedNetReturn === null
+            ? fallbackDetails.metrics[0].value
+            : formatNumber(expectedNetReturn, 0),
       },
       {
         label: 'العائد المتوقع',
-        value: formatNumber(expectedAnnualReturnPct, 2),
+        value: hasExpectedAnnualReturnPct
+          ? formatNumber(expectedAnnualReturnPct, 2)
+          : fallbackDetails.metrics[1].value,
       },
       {
         label: 'عدد الحصص',
-        value: formatNumber(opportunity.total_shares, 0),
+        value: hasValue(opportunity.total_shares)
+          ? formatNumber(opportunity.total_shares, 0)
+          : fallbackDetails.metrics[2].value,
       },
       {
         label: 'سعر الحصة',
-        value: formatNumber(opportunity.share_price, 0),
+        value: hasValue(opportunity.share_price)
+          ? formatNumber(opportunity.share_price, 0)
+          : fallbackDetails.metrics[3].value,
       },
       {
         label: 'سعر العقار',
-        value: formatNumber(opportunity.property_price, 0),
+        value: hasPropertyPrice
+          ? formatNumber(opportunity.property_price, 0)
+          : fallbackDetails.metrics[4].value,
         currency: true,
       },
     ],
@@ -230,39 +371,51 @@ export function mapOpportunityApiToDetails(
         label: 'تاريخ بداية الاستثمار',
         value: formatIsoDate(
           opportunity.investment_start_at,
-          investmentOpportunityDefaultDetails.investmentSettings[0].value,
+          fallbackDetails.investmentSettings[0].value,
         ),
       },
       {
         label: 'جدولة بداية الاستثمار',
-        value: opportunity.schedule_investment_start ? 'نعم' : 'لا',
+        value:
+          typeof opportunity.schedule_investment_start === 'boolean'
+            ? opportunity.schedule_investment_start
+              ? 'نعم'
+              : 'لا'
+            : fallbackDetails.investmentSettings[1].value,
       },
     ],
     operator: {
-      ...investmentOpportunityDefaultDetails.operator,
+      ...fallbackDetails.operator,
       nameAr:
-        opportunity.operator_name_ar || investmentOpportunityDefaultDetails.operator.nameAr,
+        opportunity.operator_name_ar ||
+        opportunity.operator_name ||
+        fallbackDetails.operator.nameAr,
       nameEn:
-        opportunity.operator_name_en || investmentOpportunityDefaultDetails.operator.nameEn,
+        opportunity.operator_name_en ||
+        opportunity.operator_name ||
+        fallbackDetails.operator.nameEn,
       description:
         opportunity.operator_description ||
         opportunity.description ||
-        investmentOpportunityDefaultDetails.operator.description,
+        fallbackDetails.operator.description,
       descriptionAr:
+        opportunity.operator_description_ar ||
         opportunity.operator_description ||
+        opportunity.description_ar ||
         opportunity.description ||
-        investmentOpportunityDefaultDetails.operator.descriptionAr,
+        fallbackDetails.operator.descriptionAr,
       descriptionEn:
+        opportunity.operator_description_en ||
         opportunity.operator_description ||
+        opportunity.description_en ||
         opportunity.description ||
-        investmentOpportunityDefaultDetails.operator.descriptionEn,
-      email:
-        opportunity.operator_email || investmentOpportunityDefaultDetails.operator.email,
-      phone:
-        opportunity.operator_phone || investmentOpportunityDefaultDetails.operator.phone,
+        fallbackDetails.operator.descriptionEn,
+      email: opportunity.operator_email || fallbackDetails.operator.email,
+      phone: opportunity.operator_phone || fallbackDetails.operator.phone,
       location:
         opportunity.operator_location_text ||
-        investmentOpportunityDefaultDetails.operator.location,
+        fallbackDetails.operator.location,
+      logoUrl: opportunity.operator_logo_url || fallbackDetails.operator.logoUrl,
     },
   }
 }

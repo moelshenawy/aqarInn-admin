@@ -144,6 +144,39 @@ function FileSelectionSummary({
   )
 }
 
+function createObjectUrlSafe(file) {
+  if (
+    typeof Blob === 'undefined' ||
+    typeof URL === 'undefined' ||
+    typeof URL.createObjectURL !== 'function' ||
+    !(file instanceof Blob)
+  ) {
+    return ''
+  }
+
+  try {
+    return URL.createObjectURL(file)
+  } catch {
+    return ''
+  }
+}
+
+function revokeObjectUrlSafe(url) {
+  if (
+    !url ||
+    typeof URL === 'undefined' ||
+    typeof URL.revokeObjectURL !== 'function'
+  ) {
+    return
+  }
+
+  try {
+    URL.revokeObjectURL(url)
+  } catch {
+    // No-op
+  }
+}
+
 function buildCompactFileNames(files) {
   if (!files.length) {
     return ''
@@ -337,11 +370,11 @@ function InvestmentOpportunitySingleFilePreviewModal({
       return
     }
 
-    const nextPreviewUrl = URL.createObjectURL(selectedPreviewItem.file)
+    const nextPreviewUrl = createObjectUrlSafe(selectedPreviewItem.file)
     setPreviewUrl(nextPreviewUrl)
 
     return () => {
-      URL.revokeObjectURL(nextPreviewUrl)
+      revokeObjectUrlSafe(nextPreviewUrl)
     }
   }, [previewKind, selectedPreviewItem])
 

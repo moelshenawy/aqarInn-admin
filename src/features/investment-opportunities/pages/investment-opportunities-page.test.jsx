@@ -34,6 +34,7 @@ import {
   getOpportunityById,
   getOpportunityProfitDistributions,
   getOpportunities,
+  updateOpportunity,
 } from '@/features/investment-opportunities/services/investment-opportunity-service'
 import {
   investmentOpportunitiesRouteMeta,
@@ -56,6 +57,7 @@ vi.mock(
     createOpportunity: vi.fn(),
     createOpportunityDraft: vi.fn(),
     createOpportunityProfitDistribution: vi.fn(),
+    updateOpportunity: vi.fn(),
     deleteOpportunity: vi.fn(),
   }),
 )
@@ -85,6 +87,7 @@ function renderInvestmentOpportunitiesRoute({
       email: 'admin@aqarinn.test',
       full_name_ar: 'مدير النظام',
       full_name_en: 'System Admin',
+      is_super_admin: true,
     }),
   )
 
@@ -408,6 +411,9 @@ describe('InvestmentOpportunitiesPage route', () => {
     vi.mocked(createOpportunityProfitDistribution).mockResolvedValue(
       createdProfitDistributionResponse,
     )
+    vi.mocked(updateOpportunity).mockResolvedValue({
+      message: 'Opportunity updated.',
+    })
     vi.mocked(deleteOpportunity).mockResolvedValue({ message: 'Deleted' })
   })
 
@@ -653,7 +659,7 @@ describe('InvestmentOpportunitiesPage route', () => {
     )
   })
 
-  it('navigates from the details edit button to the populated edit page', () => {
+  it('navigates from the details edit button to the populated edit page', async () => {
     const { router } = renderInvestmentOpportunitiesRoute({
       initialEntries: [
         buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
@@ -668,11 +674,11 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(
       screen.getByRole('heading', { name: 'تعديل الفرصة الاستثمارية' }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByDisplayValue('مجمع سكني حديث في شمال الرياض'),
-    ).toBeInTheDocument()
-    expect(screen.getByDisplayValue('2500000')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('شركة الأفق العقارية')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('4800000.00')).toBeInTheDocument()
+    })
+    expect(screen.getAllByDisplayValue('Riyadh Opportunity')).toHaveLength(2)
+    expect(screen.getByDisplayValue('نجد كابيتال')).toBeInTheDocument()
   })
 
   it('opens, cancels, and confirms the delete modal without calling an API', async () => {
@@ -749,29 +755,90 @@ describe('InvestmentOpportunitiesPage route', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('saves the edit page locally without calling an API and returns to details', async () => {
-    const fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
+  it('saves the edit page through update API and returns to details', async () => {
     const { router } = renderInvestmentOpportunitiesRoute({
       initialEntries: [
         buildInvestmentOpportunityEditPath('investment-riyadh-001'),
       ],
     })
 
-    fireEvent.change(screen.getByLabelText(/العنوان بالعربية/), {
-      target: { value: 'مجمع سكني معدل في شمال الرياض' },
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
     })
-    fireEvent.click(screen.getByRole('button', { name: 'حفظ التعديلات' }))
 
-    expect(fetchMock).not.toHaveBeenCalled()
+    fireEvent.change(
+      screen.getByLabelText(
+        /\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0628\u0627\u0644\u0639\u0631\u0628\u064a\u0629/,
+      ),
+      {
+        target: {
+          value:
+            '\u0645\u062c\u0645\u0639 \u0633\u0643\u0646\u064a \u0645\u0639\u062f\u0644 \u0641\u064a \u0634\u0645\u0627\u0644 \u0627\u0644\u0631\u064a\u0627\u0636',
+        },
+      },
+    )
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(updateOpportunity).toHaveBeenCalledTimes(1)
+    })
+    const [savedOpportunityId, savedFormData] =
+      vi.mocked(updateOpportunity).mock.calls[0]
+    expect(savedOpportunityId).toBe('investment-riyadh-001')
+    expect(savedFormData instanceof FormData).toBe(true)
+    expect(savedFormData.get('title')).toBe(
+      '\u0645\u062c\u0645\u0639 \u0633\u0643\u0646\u064a \u0645\u0639\u062f\u0644 \u0641\u064a \u0634\u0645\u0627\u0644 \u0627\u0644\u0631\u064a\u0627\u0636',
+    )
+    expect(savedFormData.get('city_id')).toBe(
+      'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
+    )
+
     await waitFor(() => {
       expect(router.state.location.pathname).toBe(
         buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
       )
     })
     expect(
-      await screen.findByText('تم تعديل الفرصة الاستثمارية بنجاح'),
+      await screen.findByText(
+        '\u062a\u0645 \u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0641\u0631\u0635\u0629 \u0627\u0644\u0627\u0633\u062a\u062b\u0645\u0627\u0631\u064a\u0629 \u0628\u0646\u062c\u0627\u062d',
+      ),
     ).toBeInTheDocument()
+  })
+
+  it('omits city_id from edit payload when current city does not exist in cities API', async () => {
+    vi.mocked(getCities).mockResolvedValueOnce([
+      {
+        id: 'known-city-id',
+        name_ar: '\u0627\u0644\u0631\u064a\u0627\u0636',
+        name_en: 'Riyadh',
+      },
+    ])
+
+    renderInvestmentOpportunitiesRoute({
+      initialEntries: [
+        buildInvestmentOpportunityEditPath('investment-riyadh-001'),
+      ],
+    })
+
+    fireEvent.change(document.querySelector('input[name="cityId"]'), {
+      target: { value: 'missing-city-id' },
+    })
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '\u062d\u0641\u0638 \u0627\u0644\u062a\u0639\u062f\u064a\u0644\u0627\u062a',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(updateOpportunity).toHaveBeenCalledTimes(1)
+    })
+    const savedFormData = vi.mocked(updateOpportunity).mock.calls[0]?.[1]
+    expect(savedFormData instanceof FormData).toBe(true)
+    expect(savedFormData.get('city_id')).toBeNull()
   })
 
   it('shows the unsaved edit modal only after dirty back navigation', async () => {
@@ -781,6 +848,10 @@ describe('InvestmentOpportunitiesPage route', () => {
     )
     const { router } = renderInvestmentOpportunitiesRoute({
       initialEntries: [editPath],
+    })
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
     })
 
     fireEvent.change(screen.getByLabelText(/العنوان بالعربية/), {

@@ -10,13 +10,18 @@ import {
 } from 'react-router-dom'
 
 import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
-import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import {
+  showDashboardErrorToast,
+  showDashboardSuccessToast,
+} from '@/components/ui/dashboard-toast'
 import { InvestmentOpportunityForm } from '@/features/investment-opportunities/components/investment-opportunity-form'
 import { InvestmentOpportunityNeighborhoodMapDialog } from '@/features/investment-opportunities/components/investment-opportunity-neighborhood-map-dialog'
-import { getInvestmentOpportunityDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { createInvestmentOpportunityFormValues } from '@/features/investment-opportunities/constants/investment-opportunity-form-values'
 import { useCitiesQuery } from '@/features/investment-opportunities/hooks/use-cities-query'
 import { useInvestmentOpportunityFileUploadState } from '@/features/investment-opportunities/hooks/use-investment-opportunity-file-upload-state'
+import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/hooks/use-opportunity-details-query'
+import { useUpdateOpportunityMutation } from '@/features/investment-opportunities/hooks/use-update-opportunity-mutation'
+import { buildOpportunityFormData } from '@/features/investment-opportunities/services/build-opportunity-form-data'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const editOpportunityDescription =
@@ -41,22 +46,81 @@ function parseNumber(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function normalizeArabicIndicDigits(value) {
+  const normalized = String(value ?? '')
+  const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+
+  return normalized.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const arabicIndex = arabicIndic.indexOf(digit)
+    if (arabicIndex >= 0) {
+      return String(arabicIndex)
+    }
+
+    const easternArabicIndex = easternArabicIndic.indexOf(digit)
+    if (easternArabicIndex >= 0) {
+      return String(easternArabicIndex)
+    }
+
+    return digit
+  })
+}
+
+function normalizeSaudiMobileInput(value) {
+  let digitsOnly = normalizeArabicIndicDigits(value).replace(/\D/g, '')
+
+  if (digitsOnly.startsWith('00966')) {
+    digitsOnly = digitsOnly.slice(5)
+  } else if (digitsOnly.startsWith('966')) {
+    digitsOnly = digitsOnly.slice(3)
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    digitsOnly = digitsOnly.slice(1)
+  }
+
+  return digitsOnly
+}
+
+function buildSubmissionValues(values, managedFiles) {
+  return {
+    ...values,
+    developerPhone: normalizeSaudiMobileInput(values.developerPhone),
+    propertyDocuments: managedFiles.propertyDocuments,
+    propertyImages: managedFiles.propertyImages,
+    virtualTour: managedFiles.virtualTour,
+    developerLogo: managedFiles.developerLogo,
+  }
+}
+
+function resolveApiErrorMessage(error, t) {
+  const message = error?.message
+
+  if (typeof message === 'string' && message.startsWith('validation.')) {
+    return t(message, { ns: 'validation' })
+  }
+
+  if (typeof message === 'string' && message.trim()) {
+    return message
+  }
+
+  return t('unexpectedError', { ns: 'validation' })
+}
+
 export default function InvestmentOpportunityEditPage() {
   const navigate = useNavigate()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation(['validation'])
   const { opportunityId = 'investment-riyadh-001' } = useParams()
   const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
   const [selectedCityIdForMap, setSelectedCityIdForMap] = useState('')
   const { data: cities = [] } = useCitiesQuery()
-  const details = useMemo(
-    () => getInvestmentOpportunityDetails(opportunityId),
-    [opportunityId],
-  )
+  const { data: opportunity = null } = useOpportunityDetailsQuery(opportunityId)
+  const updateOpportunityMutation = useUpdateOpportunityMutation()
   const allowNavigationRef = useRef(false)
 
   const defaultValues = useMemo(
-    () => createInvestmentOpportunityFormValues(details),
-    [details],
+    () => createInvestmentOpportunityFormValues(opportunity),
+    [opportunity],
   )
 
   const {
@@ -69,13 +133,12 @@ export default function InvestmentOpportunityEditPage() {
     reset,
     formState: { errors, isDirty },
   } = useForm({ defaultValues })
-  const { fileFields, fileUploadState } = useInvestmentOpportunityFileUploadState(
-    {
+  const { fileFields, fileUploadState, getManagedFilesSnapshot } =
+    useInvestmentOpportunityFileUploadState({
       register,
       setValue,
       clearErrors,
-    },
-  )
+    })
 
   const propertyPrice = watch('propertyPrice')
   const shareCount = watch('shareCount')
@@ -92,6 +155,20 @@ export default function InvestmentOpportunityEditPage() {
   const cityLookup = useMemo(
     () => new Map(cities.map((city) => [city.id, city])),
     [cities],
+  )
+  const allowedCityIds = useMemo(
+    () =>
+      new Set(
+        cities
+          .map((city) => String(city.id ?? '').trim())
+          .filter(Boolean),
+      ),
+    [cities],
+  )
+  const resolvedOpportunityId = opportunity?.id ?? opportunityId
+  const detailsPath = buildInvestmentOpportunityDetailsPath(
+    resolvedOpportunityId,
+    i18n.resolvedLanguage,
   )
 
   useEffect(() => {
@@ -125,8 +202,6 @@ export default function InvestmentOpportunityEditPage() {
     })
   }, [getValues, propertyPrice, setValue, shareCount])
 
-  const detailsPath = buildInvestmentOpportunityDetailsPath(details.id)
-
   const blocker = useBlocker(
     useCallback(
       ({ currentLocation, nextLocation }) =>
@@ -154,12 +229,45 @@ export default function InvestmentOpportunityEditPage() {
     { capture: true },
   )
 
-  const handleValidSave = useCallback((values) => {
-    allowNavigationRef.current = true
-    reset(values)
-    showDashboardSuccessToast(editSuccessToast)
-    navigate(detailsPath)
-  }, [detailsPath, navigate, reset])
+  const handleValidSave = useCallback(
+    async (values) => {
+      try {
+        const submissionValues = buildSubmissionValues(
+          values,
+          getManagedFilesSnapshot(),
+        )
+        const formData = buildOpportunityFormData(submissionValues, {
+          mode: 'publish',
+          allowedCityIds,
+        })
+        await updateOpportunityMutation.mutateAsync({
+          opportunityId: resolvedOpportunityId,
+          formData,
+        })
+
+        allowNavigationRef.current = true
+        reset(submissionValues)
+        showDashboardSuccessToast(editSuccessToast)
+        navigate(detailsPath)
+      } catch (error) {
+        showDashboardErrorToast({
+          title: 'Failed to update investment opportunity',
+          description: resolveApiErrorMessage(error, t),
+          actionLabel: 'Close',
+        })
+      }
+    },
+    [
+      allowedCityIds,
+      detailsPath,
+      getManagedFilesSnapshot,
+      navigate,
+      reset,
+      resolvedOpportunityId,
+      t,
+      updateOpportunityMutation,
+    ],
+  )
 
   const handleSave = useCallback(
     (event) => {
@@ -199,10 +307,14 @@ export default function InvestmentOpportunityEditPage() {
       return
     }
 
-    setValue('cityId', selection.cityId, {
-      shouldValidate: true,
-      shouldDirty: true,
-    })
+    const resolvedCityId =
+      String(selection.cityId ?? '').trim() || String(getValues('cityId') ?? '').trim()
+    if (resolvedCityId) {
+      setValue('cityId', resolvedCityId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
     setValue('neighborhood', selection.neighborhood, {
       shouldValidate: true,
       shouldDirty: true,
@@ -219,7 +331,7 @@ export default function InvestmentOpportunityEditPage() {
       shouldValidate: true,
       shouldDirty: true,
     })
-    setSelectedCityIdForMap(selection.cityId)
+    setSelectedCityIdForMap(resolvedCityId)
     clearErrors([
       'cityId',
       'neighborhood',
@@ -240,6 +352,7 @@ export default function InvestmentOpportunityEditPage() {
         fileUploadState={fileUploadState}
         errors={errors}
         cityOptions={cityOptions}
+        isSubmitting={updateOpportunityMutation.isPending}
         showReferenceCode={false}
         showCityNeighborhoodFields={false}
         showCurrencyField={false}

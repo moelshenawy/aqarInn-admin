@@ -16,10 +16,7 @@ import {
   InvestmentOpportunityDetailsBody,
 } from '@/features/investment-opportunities/components/investment-opportunity-details-content'
 import { InvestmentOpportunityDetailsTabs } from '@/features/investment-opportunities/components/investment-opportunity-details-tabs'
-import {
-  investmentOpportunityDefaultDetails,
-  mapOpportunityApiToDetails,
-} from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
+import { mapOpportunityApiToDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { useDeleteOpportunityMutation } from '@/features/investment-opportunities/hooks/use-delete-opportunity-mutation'
 import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/hooks/use-opportunity-details-query'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
@@ -47,7 +44,7 @@ export default function InvestmentOpportunityDetailsPage() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
   const { dir } = useDirection()
-  const { opportunityId = 'investment-riyadh-001' } = useParams()
+  const { opportunityId = '' } = useParams()
   const { hasAllPermissions } = useAuthorization()
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -70,6 +67,7 @@ export default function InvestmentOpportunityDetailsPage() {
       mapOpportunityApiToDetails(opportunity, {
         opportunityId,
         language: i18n.resolvedLanguage,
+        useStaticFallback: false,
       }),
     [i18n.resolvedLanguage, opportunity, opportunityId],
   )
@@ -108,7 +106,7 @@ export default function InvestmentOpportunityDetailsPage() {
   return (
     <div className="-mt-[17px] space-y-4 text-start" dir="rtl">
       <InvestmentOpportunityDetailsTabs
-        opportunityId={details.id || investmentOpportunityDefaultDetails.id}
+        opportunityId={details.id || opportunityId}
         activeTab="details"
       />
 

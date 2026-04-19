@@ -70,6 +70,25 @@ function extractNeighborhoodName(result) {
   return result?.formatted_address ?? ''
 }
 
+function extractCityName(result) {
+  const components = result?.address_components ?? []
+  const preferredTypes = [
+    'locality',
+    'administrative_area_level_2',
+    'administrative_area_level_1',
+    'postal_town',
+  ]
+
+  for (const type of preferredTypes) {
+    const component = components.find((item) => item.types?.includes(type))
+    if (component?.long_name) {
+      return component.long_name
+    }
+  }
+
+  return ''
+}
+
 export function InvestmentOpportunityNeighborhoodMapDialog({
   open,
   onOpenChange,
@@ -87,6 +106,7 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
   const listenerRef = useRef(null)
   const [selectedPoint, setSelectedPoint] = useState(null)
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('')
+  const [selectedGeoCityName, setSelectedGeoCityName] = useState('')
   const [isLoadingMap, setIsLoadingMap] = useState(false)
   const [mapError, setMapError] = useState('')
 
@@ -133,6 +153,7 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
       setIsLoadingMap(true)
       setSelectedPoint(null)
       setSelectedNeighborhood('')
+      setSelectedGeoCityName('')
 
       try {
         const maps = await loadGoogleMaps(apiKey, locale === 'en' ? 'en' : 'ar')
@@ -180,8 +201,10 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
             (results, status) => {
               if (status === 'OK' && Array.isArray(results) && results[0]) {
                 setSelectedNeighborhood(extractNeighborhoodName(results[0]))
+                setSelectedGeoCityName(extractCityName(results[0]))
               } else {
                 setSelectedNeighborhood('')
+                setSelectedGeoCityName('')
               }
             },
           )
@@ -202,18 +225,23 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
     }
   }, [apiKey, cityCenter, locale, open, selectedCityId])
 
+  const resolvedCityName = selectedGeoCityName || selectedCityName
+
   function handleConfirm() {
-    if (!selectedPoint || !selectedNeighborhood || !selectedCity) {
+    if (!selectedPoint || !selectedNeighborhood || !resolvedCityName) {
       return
     }
 
     onConfirm?.({
-      cityId: selectedCity.id,
-      cityName: selectedCityName,
+      cityId: selectedCity?.id || String(selectedCityId ?? ''),
+      cityName: resolvedCityName,
       neighborhood: selectedNeighborhood,
       latitude: selectedPoint.lat,
       longitude: selectedPoint.lng,
-      locationText: `${selectedCityName}, ${selectedNeighborhood}`,
+      locationText:
+        locale === 'ar'
+          ? `${resolvedCityName}، ${selectedNeighborhood}`
+          : `${resolvedCityName}, ${selectedNeighborhood}`,
     })
     onOpenChange(false)
   }
@@ -314,7 +342,7 @@ export function InvestmentOpportunityNeighborhoodMapDialog({
             <Button
               type="button"
               onClick={handleConfirm}
-              disabled={!selectedPoint || !selectedNeighborhood || !selectedCity}
+              disabled={!selectedPoint || !selectedNeighborhood || !resolvedCityName}
             >
               {locale === 'ar' ? 'تأكيد الاختيار' : 'Confirm selection'}
             </Button>

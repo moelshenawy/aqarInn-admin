@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost } from '@/lib/api/http-methods'
+import { apiDelete, apiGet, apiPost, apiPut } from '@/lib/api/http-methods'
 
 /**
  * @typedef {Object} CityItem
@@ -260,6 +260,14 @@ export async function createOpportunity(formData) {
 
 export async function createOpportunityDraft(formData) {
   return apiPost('opportunities/drafts', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
+export async function updateOpportunity(opportunityId, formData) {
+  return apiPut(`opportunities/${opportunityId}`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

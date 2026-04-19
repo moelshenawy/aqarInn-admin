@@ -138,8 +138,12 @@ function installGoogleMapsMock() {
                 types: ['neighborhood'],
                 long_name: 'Al Malqa',
               },
+              {
+                types: ['locality'],
+                long_name: 'Santiago del Estero',
+              },
             ],
-            formatted_address: 'Al Malqa, Riyadh',
+            formatted_address: 'Al Malqa, Santiago del Estero',
           },
         ],
         'OK',
@@ -318,6 +322,34 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     expect(citySelect.value).toBe('a18cc8cc-0ebb-4888-800e-9d7c375674c6')
   })
 
+  it('fills property location with geocoded city and neighborhood even if city is not in API list', async () => {
+    renderAddPage()
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyLocation')).not.toBeNull()
+    })
+
+    fireEvent.click(document.getElementById('propertyLocation'))
+    const mapDialog = await screen.findByRole('dialog')
+    const citySelect = mapDialog.querySelector('#neighborhood-map-city')
+    fireEvent.change(citySelect, {
+      target: { value: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6' },
+    })
+
+    const mapDialogButtons = mapDialog.querySelectorAll('button')
+    const confirmButton = mapDialogButtons[mapDialogButtons.length - 1]
+    await waitFor(() => {
+      expect(confirmButton).not.toBeDisabled()
+    })
+    fireEvent.click(confirmButton)
+
+    const propertyLocationInput = document.getElementById('propertyLocation')
+    await waitFor(() => {
+      expect(propertyLocationInput.value).toContain('Santiago del Estero')
+      expect(propertyLocationInput.value).toContain('Al Malqa')
+    })
+  })
+
   it('does not save draft when basic information is missing', async () => {
     const { router } = renderAddPage()
     const { draftButton } = getMainButtons()
@@ -346,9 +378,28 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     await waitFor(() => {
       expect(createOpportunityDraft).toHaveBeenCalledTimes(1)
     })
+    const draftPayload = vi.mocked(createOpportunityDraft).mock.calls[0]?.[0]
+    expect(draftPayload.get('title_ar')).toBe('Draft AR')
+    expect(draftPayload.get('title_en')).toBe('Riyadh Draft Opportunity')
     expect(router.state.location.pathname).toBe(
       ROUTE_PATHS.investmentOpportunities,
     )
+  })
+
+  it('sends uploaded documents and gallery images in draft payload', async () => {
+    renderAddPage()
+
+    await fillPublishRequiredFields()
+    fireEvent.click(getMainButtons().draftButton)
+
+    await waitFor(() => {
+      expect(createOpportunityDraft).toHaveBeenCalledTimes(1)
+    })
+
+    const draftPayload = vi.mocked(createOpportunityDraft).mock.calls[0]?.[0]
+    expect(draftPayload.get('cover_image')).toBeInstanceOf(File)
+    expect(draftPayload.getAll('images[]')).toHaveLength(1)
+    expect(draftPayload.getAll('documents[]')).toHaveLength(1)
   })
 
   it('continues to review then publishes on publish button only', async () => {

@@ -2,6 +2,42 @@ function asTrimmedString(value) {
   return String(value ?? '').trim()
 }
 
+function normalizeArabicIndicDigits(value) {
+  const normalized = String(value ?? '')
+  const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+  const easternArabicIndic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+
+  return normalized.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const arabicIndex = arabicIndic.indexOf(digit)
+    if (arabicIndex >= 0) {
+      return String(arabicIndex)
+    }
+
+    const easternArabicIndex = easternArabicIndic.indexOf(digit)
+    if (easternArabicIndex >= 0) {
+      return String(easternArabicIndex)
+    }
+
+    return digit
+  })
+}
+
+function normalizeSaudiMobileInput(value) {
+  let digitsOnly = normalizeArabicIndicDigits(value).replace(/\D/g, '')
+
+  if (digitsOnly.startsWith('00966')) {
+    digitsOnly = digitsOnly.slice(5)
+  } else if (digitsOnly.startsWith('966')) {
+    digitsOnly = digitsOnly.slice(3)
+  }
+
+  if (digitsOnly.startsWith('0')) {
+    digitsOnly = digitsOnly.slice(1)
+  }
+
+  return digitsOnly
+}
+
 function appendIfValue(formData, key, value) {
   const nextValue = asTrimmedString(value)
   if (!nextValue) {
@@ -9,6 +45,25 @@ function appendIfValue(formData, key, value) {
   }
 
   formData.append(key, nextValue)
+}
+
+function isValidCityId(value, allowedCityIds) {
+  const normalizedValue = asTrimmedString(value)
+  if (!normalizedValue) {
+    return false
+  }
+
+  if (!allowedCityIds) {
+    return true
+  }
+
+  if (allowedCityIds instanceof Set) {
+    return allowedCityIds.has(normalizedValue)
+  }
+
+  return Array.from(allowedCityIds).some(
+    (cityId) => asTrimmedString(cityId) === normalizedValue,
+  )
 }
 
 function getFileList(value) {
@@ -70,13 +125,21 @@ function getFileList(value) {
 
 /**
  * @param {CreateOpportunityPayloadForm} values
- * @param {{ mode: OpportunitySubmissionMode }} options
+ * @param {{ mode: OpportunitySubmissionMode, allowedCityIds?: Iterable<string> | Set<string> }} options
  */
-export function buildOpportunityFormData(values, { mode }) {
+export function buildOpportunityFormData(
+  values,
+  { mode, allowedCityIds } = { mode: 'publish' },
+) {
   const formData = new FormData()
+  void mode
 
+  appendIfValue(formData, 'title_ar', values.titleAr)
+  appendIfValue(formData, 'title_en', values.titleEn)
   appendIfValue(formData, 'title', values.titleAr || values.titleEn)
-  appendIfValue(formData, 'city_id', values.cityId)
+  if (isValidCityId(values.cityId, allowedCityIds)) {
+    appendIfValue(formData, 'city_id', values.cityId)
+  }
   appendIfValue(formData, 'neighborhood', values.neighborhood)
   appendIfValue(formData, 'latitude', values.latitude)
   appendIfValue(formData, 'longitude', values.longitude)
@@ -115,8 +178,10 @@ export function buildOpportunityFormData(values, { mode }) {
     'operator_description',
     values.developerDescriptionAr || values.developerDescriptionEn,
   )
+  appendIfValue(formData, 'operator_description_ar', values.developerDescriptionAr)
+  appendIfValue(formData, 'operator_description_en', values.developerDescriptionEn)
   appendIfValue(formData, 'operator_email', values.developerEmail)
-  const developerPhone = asTrimmedString(values.developerPhone)
+  const developerPhone = normalizeSaudiMobileInput(values.developerPhone)
   appendIfValue(
     formData,
     'operator_phone',
@@ -140,7 +205,7 @@ export function buildOpportunityFormData(values, { mode }) {
     formData.append('cover_image', propertyImages[0])
   }
 
-  if (mode === 'publish' && propertyImages.length > 1) {
+  if (propertyImages.length > 1) {
     propertyImages.slice(1).forEach((imageFile) => {
       formData.append('images[]', imageFile)
     })

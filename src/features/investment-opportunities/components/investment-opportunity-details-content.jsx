@@ -42,7 +42,7 @@ function CollapsiblePanel({ id, expanded, children, expandedMarginClass }) {
         'grid overflow-hidden transition-[grid-template-rows,opacity,margin-top] duration-300 ease-out motion-reduce:transition-none',
         expanded
           ? `grid-rows-[1fr] opacity-100 ${expandedMarginClass}`
-          : 'mt-0 grid-rows-[0fr] opacity-0 pointer-events-none',
+          : 'pointer-events-none mt-0 grid-rows-[0fr] opacity-0',
       )}
     >
       <div className="min-h-0">{children}</div>
@@ -52,7 +52,7 @@ function CollapsiblePanel({ id, expanded, children, expandedMarginClass }) {
 
 function Metric({ label, value, currency = false, dir }) {
   return (
-    <div className="flex w-36 shrink-0 flex-col items-end gap-[13px] text-start">
+    <div className="flex w-36 shrink-0 flex-col items-start gap-[13px] text-start">
       <p className="w-full text-sm leading-5 font-semibold text-[#ac9063]">
         {label}
       </p>
@@ -362,7 +362,10 @@ export function InvestmentOpportunityDetailsBody({ details }) {
               </div>
               <div className="flex w-full shrink-0 items-center justify-end p-2.5 md:w-[511px]">
                 <img
-                  src={investmentOpportunityDetailsAssets.operatorLogo}
+                  src={
+                    details.operator.logoUrl ||
+                    investmentOpportunityDetailsAssets.operatorLogo
+                  }
                   alt={details.operator.logoAlt}
                   className="h-[72px] w-[60px] object-contain"
                 />
