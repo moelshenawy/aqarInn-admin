@@ -6,7 +6,10 @@ import {
   buildInvestmentOpportunityEditPath,
   ROUTE_PATHS,
 } from '@/app/router/route-paths'
-import { showDashboardSuccessToast } from '@/components/ui/dashboard-toast'
+import {
+  showDashboardErrorToast,
+  showDashboardSuccessToast,
+} from '@/components/ui/dashboard-toast'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   InvestmentOpportunityDetailsActions,
@@ -17,12 +20,19 @@ import {
   investmentOpportunityDefaultDetails,
   mapOpportunityApiToDetails,
 } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
+import { useDeleteOpportunityMutation } from '@/features/investment-opportunities/hooks/use-delete-opportunity-mutation'
 import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/hooks/use-opportunity-details-query'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const deleteSuccessToast = {
   title: 'تم حذف الفرصة الاستثمارية بنجاح',
   description: 'تم حذف الفرصة من قائمة الفرص الاستثمارية.',
+  actionLabel: 'إغلاق',
+}
+
+const deleteErrorToast = {
+  title: 'فشل حذف الفرصة الاستثمارية',
+  description: 'تعذر حذف الفرصة الاستثمارية. يرجى المحاولة مرة أخرى.',
   actionLabel: 'إغلاق',
 }
 
@@ -34,6 +44,8 @@ export default function InvestmentOpportunityDetailsPage() {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const { data: opportunity, isLoading } =
     useOpportunityDetailsQuery(opportunityId)
+  const deleteOpportunityMutation = useDeleteOpportunityMutation()
+  const canDeleteOpportunity = opportunity?.status === 'draft'
 
   const details = useMemo(
     () =>
@@ -45,14 +57,34 @@ export default function InvestmentOpportunityDetailsPage() {
   )
 
   const handleConfirmDelete = () => {
-    setDeleteOpen(false)
-    showDashboardSuccessToast(deleteSuccessToast)
-    navigate(
-      ROUTE_PATHS.withLocale(
-        ROUTE_PATHS.investmentOpportunities,
-        i18n.resolvedLanguage,
-      ),
-    )
+    if (!canDeleteOpportunity || deleteOpportunityMutation.isPending) {
+      return
+    }
+
+    deleteOpportunityMutation.mutate(opportunityId, {
+      onSuccess: () => {
+        setDeleteOpen(false)
+        showDashboardSuccessToast(deleteSuccessToast)
+        navigate(
+          ROUTE_PATHS.withLocale(
+            ROUTE_PATHS.investmentOpportunities,
+            i18n.resolvedLanguage,
+          ),
+        )
+      },
+      onError: () => {
+        setDeleteOpen(false)
+        showDashboardErrorToast(deleteErrorToast)
+      },
+    })
+  }
+
+  const handleDeleteClick = () => {
+    if (!canDeleteOpportunity || deleteOpportunityMutation.isPending) {
+      return
+    }
+
+    setDeleteOpen(true)
   }
 
   return (
@@ -75,7 +107,8 @@ export default function InvestmentOpportunityDetailsPage() {
               عرض تفاصيل الفرصة الاستثمارية
             </h1>
             <InvestmentOpportunityDetailsActions
-              onDelete={() => setDeleteOpen(true)}
+              showDelete={canDeleteOpportunity}
+              onDelete={handleDeleteClick}
               onEdit={() =>
                 navigate(
                   buildInvestmentOpportunityEditPath(
@@ -116,8 +149,10 @@ export default function InvestmentOpportunityDetailsPage() {
         title="حذف الفرصة الاستثمارية"
         description="هل أنت متأكد من حذف الفرصة الاستثمارية؟ لا يمكن التراجع عن هذا الإجراء."
         confirmLabel="حذف"
-        cancelLabel="الغاء"
+        cancelLabel="إلغاء"
         confirmVariant="destructive"
+        confirmDisabled={deleteOpportunityMutation.isPending}
+        cancelDisabled={deleteOpportunityMutation.isPending}
         onConfirm={handleConfirmDelete}
       />
     </div>

@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from '@/lib/api/http-methods'
+import { apiDelete, apiGet, apiPost } from '@/lib/api/http-methods'
 
 /**
  * @typedef {Object} CityItem
@@ -257,4 +257,8 @@ export async function createOpportunityDraft(formData) {
       'Content-Type': 'multipart/form-data',
     },
   })
+}
+
+export async function deleteOpportunity(opportunityId) {
+  return apiDelete(`opportunities/${opportunityId}`)
 }

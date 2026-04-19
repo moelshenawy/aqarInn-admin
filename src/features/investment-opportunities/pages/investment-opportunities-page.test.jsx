@@ -28,6 +28,7 @@ import {
   createOpportunity,
   createOpportunityDraft,
   createOpportunityProfitDistribution,
+  deleteOpportunity,
   getCities,
   getProfitDistributionById,
   getOpportunityById,
@@ -55,6 +56,7 @@ vi.mock(
     createOpportunity: vi.fn(),
     createOpportunityDraft: vi.fn(),
     createOpportunityProfitDistribution: vi.fn(),
+    deleteOpportunity: vi.fn(),
   }),
 )
 
@@ -415,6 +417,7 @@ describe('InvestmentOpportunitiesPage route', () => {
     vi.mocked(createOpportunityProfitDistribution).mockResolvedValue(
       createdProfitDistributionResponse,
     )
+    vi.mocked(deleteOpportunity).mockResolvedValue({ message: 'Deleted' })
   })
 
   it('renders the investment opportunities screen with loading, filtering, and pagination', async () => {
@@ -563,6 +566,12 @@ describe('InvestmentOpportunitiesPage route', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'التالي' }))
 
+    await waitFor(() => {
+      expect(deleteOpportunity).toHaveBeenCalledWith('investment-riyadh-001')
+    })
+    await waitFor(() => {
+      expect(deleteOpportunity).toHaveBeenCalledWith('investment-riyadh-001')
+    })
     expect(fetchMock).not.toHaveBeenCalled()
     expect(router.state.location.pathname).toBe(
       ROUTE_PATHS.investmentOpportunityAdd,
@@ -639,7 +648,7 @@ describe('InvestmentOpportunitiesPage route', () => {
       screen.getByRole('link', { name: 'توزيعات الأرباح' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'تعديل' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'حذف' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'حذف' })).not.toBeInTheDocument()
     expect(await screen.findByText('4,800,000')).toBeInTheDocument()
     expect(screen.getByText('اعدادات الاستثمار')).toBeInTheDocument()
     expect(screen.getByText('تفاصيل المشغل')).toBeInTheDocument()
@@ -678,6 +687,10 @@ describe('InvestmentOpportunitiesPage route', () => {
   it('opens, cancels, and confirms the delete modal without calling an API', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
+    vi.mocked(getOpportunityById).mockResolvedValueOnce({
+      ...opportunityDetailsFixture,
+      status: 'draft',
+    })
     const detailsPath = buildInvestmentOpportunityDetailsPath(
       'investment-riyadh-001',
     )
@@ -685,7 +698,8 @@ describe('InvestmentOpportunitiesPage route', () => {
       initialEntries: [detailsPath],
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'حذف' }))
+    expect(await screen.findByText('4,800,000')).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: 'حذف' }))
 
     const cancelDialog = await screen.findByRole('dialog', {
       name: 'حذف الفرصة الاستثمارية',
@@ -699,12 +713,14 @@ describe('InvestmentOpportunitiesPage route', () => {
       within(cancelDialog).getByRole('button', { name: 'إغلاق النافذة' }),
     ).toBeInTheDocument()
 
-    fireEvent.click(within(cancelDialog).getByRole('button', { name: 'الغاء' }))
+    fireEvent.click(
+      within(cancelDialog).getByRole('button', { name: /إلغاء|الغاء/i }),
+    )
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(router.state.location.pathname).toBe(detailsPath)
 
-    fireEvent.click(screen.getByRole('button', { name: 'حذف' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'حذف' }))
 
     const confirmDialog = await screen.findByRole('dialog', {
       name: 'حذف الفرصة الاستثمارية',
@@ -712,13 +728,34 @@ describe('InvestmentOpportunitiesPage route', () => {
 
     fireEvent.click(within(confirmDialog).getByRole('button', { name: 'حذف' }))
 
+    await waitFor(() => {
+      expect(deleteOpportunity).toHaveBeenCalled()
+      expect(vi.mocked(deleteOpportunity).mock.calls[0]?.[0]).toBe(
+        'investment-riyadh-001',
+      )
+    })
     expect(fetchMock).not.toHaveBeenCalled()
-    expect(router.state.location.pathname).toBe(
-      ROUTE_PATHS.investmentOpportunities,
-    )
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe(
+        ROUTE_PATHS.investmentOpportunities,
+      )
+    })
     expect(
       await screen.findByText('تم حذف الفرصة الاستثمارية بنجاح'),
     ).toBeInTheDocument()
+  })
+
+  it('hides delete action on details page when opportunity status is not draft', async () => {
+    renderInvestmentOpportunitiesRoute({
+      initialEntries: [
+        buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
+      ],
+    })
+
+    expect(await screen.findByText('4,800,000')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'حذف' }),
+    ).not.toBeInTheDocument()
   })
 
   it('saves the edit page locally without calling an API and returns to details', async () => {
