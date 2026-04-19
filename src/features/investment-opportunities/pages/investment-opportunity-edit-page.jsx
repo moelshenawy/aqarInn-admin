@@ -16,6 +16,7 @@ import { InvestmentOpportunityNeighborhoodMapDialog } from '@/features/investmen
 import { getInvestmentOpportunityDetails } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { createInvestmentOpportunityFormValues } from '@/features/investment-opportunities/constants/investment-opportunity-form-values'
 import { useCitiesQuery } from '@/features/investment-opportunities/hooks/use-cities-query'
+import { useInvestmentOpportunityFileUploadState } from '@/features/investment-opportunities/hooks/use-investment-opportunity-file-upload-state'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 
 const editOpportunityDescription =
@@ -68,6 +69,13 @@ export default function InvestmentOpportunityEditPage() {
     reset,
     formState: { errors, isDirty },
   } = useForm({ defaultValues })
+  const { fileFields, fileUploadState } = useInvestmentOpportunityFileUploadState(
+    {
+      register,
+      setValue,
+      clearErrors,
+    },
+  )
 
   const propertyPrice = watch('propertyPrice')
   const shareCount = watch('shareCount')
@@ -228,6 +236,8 @@ export default function InvestmentOpportunityEditPage() {
         title="تعديل الفرصة الاستثمارية"
         description={editOpportunityDescription}
         register={register}
+        fileFields={fileFields}
+        fileUploadState={fileUploadState}
         errors={errors}
         cityOptions={cityOptions}
         showReferenceCode={false}

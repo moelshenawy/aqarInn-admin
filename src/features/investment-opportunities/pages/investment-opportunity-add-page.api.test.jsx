@@ -256,11 +256,11 @@ async function fillPublishRequiredFields() {
       within(propertyDocumentsField).getAllByText(/brochure\.pdf/i).length,
     ).toBeGreaterThan(0)
     expect(
-      within(propertyImagesField).getAllByText(/cover\.png/i).length,
-    ).toBeGreaterThan(0)
+      within(propertyImagesField).getByRole('img', { name: /cover\.png/i }),
+    ).toBeInTheDocument()
     expect(
-      within(propertyImagesField).getAllByText(/gallery\.png/i).length,
-    ).toBeGreaterThan(0)
+      within(propertyImagesField).getByRole('img', { name: /gallery\.png/i }),
+    ).toBeInTheDocument()
   })
 }
 
@@ -382,12 +382,12 @@ describe('InvestmentOpportunityAddPage API integration', () => {
 
     await waitFor(() => {
       expect(
-        within(propertyImagesField).getAllByText(/cover\.png/i).length,
-      ).toBeGreaterThan(0)
+        within(propertyImagesField).getByRole('img', { name: /cover\.png/i }),
+      ).toBeInTheDocument()
     })
     expect(
-      within(propertyImagesField).getAllByText(/gallery\.png/i).length,
-    ).toBeGreaterThan(0)
+      within(propertyImagesField).getByRole('img', { name: /gallery\.png/i }),
+    ).toBeInTheDocument()
 
     fireEvent.click(getMainButtons().submitButton)
 
@@ -395,6 +395,83 @@ describe('InvestmentOpportunityAddPage API integration', () => {
 
     await waitFor(() => {
       expect(dialog.querySelectorAll('img[src^="blob:"]')).toHaveLength(2)
+    })
+  })
+
+  it('opens files modal from the documents eye action and supports preview back flow', async () => {
+    renderAddPage()
+
+    await fillPublishRequiredFields()
+    const propertyDocumentsField = getFieldShell('propertyDocuments')
+
+    expect(
+      within(propertyDocumentsField).getByRole('button', {
+        name: /عرض الملفات المرفوعة/i,
+      }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      within(propertyDocumentsField).getByRole('button', {
+        name: /عرض الملفات المرفوعة/i,
+      }),
+    )
+
+    const filesDialog = await screen.findByRole('dialog', {
+      name: 'المستندات المتاحة',
+    })
+    expect(within(filesDialog).getByText(/brochure\.pdf/i)).toBeInTheDocument()
+
+    fireEvent.click(
+      within(filesDialog).getByRole('button', { name: /معاينة brochure\.pdf/i }),
+    )
+
+    const previewDialog = await screen.findByRole('dialog', {
+      name: /brochure\.pdf/i,
+    })
+    expect(
+      within(previewDialog).getByRole('button', {
+        name: /الرجوع إلى قائمة الملفات/i,
+      }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      within(previewDialog).getByRole('button', {
+        name: /الرجوع إلى قائمة الملفات/i,
+      }),
+    )
+
+    expect(
+      await screen.findByRole('dialog', { name: 'المستندات المتاحة' }),
+    ).toBeInTheDocument()
+  })
+
+  it('appends new documents when uploading from files modal', async () => {
+    renderAddPage()
+
+    await fillPublishRequiredFields()
+    const propertyDocumentsField = getFieldShell('propertyDocuments')
+    const additionalDocument = new File(['doc-2'], 'license.pdf', {
+      type: 'application/pdf',
+    })
+
+    fireEvent.click(
+      within(propertyDocumentsField).getByRole('button', {
+        name: /عرض الملفات المرفوعة/i,
+      }),
+    )
+
+    const filesDialog = await screen.findByRole('dialog', {
+      name: 'المستندات المتاحة',
+    })
+    fireEvent.click(within(filesDialog).getByRole('button', { name: /رفع ملف/i }))
+
+    fireEvent.change(document.getElementById('propertyDocuments'), {
+      target: { files: [additionalDocument] },
+    })
+
+    await waitFor(() => {
+      expect(within(filesDialog).getByText(/brochure\.pdf/i)).toBeInTheDocument()
+      expect(within(filesDialog).getByText(/license\.pdf/i)).toBeInTheDocument()
     })
   })
 
@@ -406,12 +483,32 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     const propertyDocumentsField = getFieldShell('propertyDocuments')
     const propertyImagesField = getFieldShell('propertyImages')
 
+    fireEvent.click(
+      within(propertyDocumentsField).getByRole('button', {
+        name: /عرض الملفات المرفوعة/i,
+      }),
+    )
+
+    const filesDialog = await screen.findByRole('dialog', {
+      name: 'المستندات المتاحة',
+    })
+
     await waitFor(() => {
       expect(
-        within(propertyDocumentsField).getByRole('button', {
+        within(filesDialog).getByRole('button', {
           name: /إزالة brochure\.pdf/i,
         }),
       ).toBeInTheDocument()
+    })
+
+    fireEvent.click(
+      within(filesDialog).getByRole('button', { name: /إزالة brochure\.pdf/i }),
+    )
+    fireEvent.click(
+      within(filesDialog).getByRole('button', { name: /إغلاق نافذة الملفات/i }),
+    )
+
+    await waitFor(() => {
       expect(
         within(propertyImagesField).getByRole('button', {
           name: /إزالة cover\.png/i,
@@ -425,9 +522,6 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     })
 
     fireEvent.click(
-      within(propertyDocumentsField).getByRole('button', { name: /إزالة brochure\.pdf/i }),
-    )
-    fireEvent.click(
       within(propertyImagesField).getByRole('button', { name: /إزالة cover\.png/i }),
     )
     fireEvent.click(
@@ -438,8 +532,12 @@ describe('InvestmentOpportunityAddPage API integration', () => {
       expect(within(propertyDocumentsField).queryByText(/brochure\.pdf/i)).not.toBeInTheDocument()
     })
     await waitFor(() => {
-      expect(within(propertyImagesField).queryByText(/cover\.png/i)).not.toBeInTheDocument()
-      expect(within(propertyImagesField).queryByText(/gallery\.png/i)).not.toBeInTheDocument()
+      expect(
+        within(propertyImagesField).queryByRole('img', { name: /cover\.png/i }),
+      ).not.toBeInTheDocument()
+      expect(
+        within(propertyImagesField).queryByRole('img', { name: /gallery\.png/i }),
+      ).not.toBeInTheDocument()
     })
 
     fireEvent.click(getMainButtons().submitButton)
@@ -468,8 +566,8 @@ describe('InvestmentOpportunityAddPage API integration', () => {
         within(propertyDocumentsField).getAllByText(/replacement\.pdf/i).length,
       ).toBeGreaterThan(0)
       expect(
-        within(propertyImagesField).getAllByText(/replacement\.png/i).length,
-      ).toBeGreaterThan(0)
+        within(propertyImagesField).getByRole('img', { name: /replacement\.png/i }),
+      ).toBeInTheDocument()
       expect(within(propertyDocumentsField).queryByText('هذا الحقل مطلوب.')).not.toBeInTheDocument()
       expect(within(propertyImagesField).queryByText('هذا الحقل مطلوب.')).not.toBeInTheDocument()
     })

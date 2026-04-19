@@ -208,6 +208,31 @@ export function InvestmentOpportunityForm({
               selectedFiles={fileUploadState.propertyDocuments?.files}
               isLoading={fileUploadState.propertyDocuments?.isLoading}
               onRemoveFile={fileUploadState.propertyDocuments?.onRemoveFile}
+              enableFilesModal
+              previewItems={fileUploadState.propertyDocuments?.previewItems}
+              selectedPreviewItem={
+                fileUploadState.propertyDocuments?.selectedPreviewItem
+              }
+              isFilesModalOpen={
+                fileUploadState.propertyDocuments?.isFilesModalOpen
+              }
+              isPreviewModalOpen={
+                fileUploadState.propertyDocuments?.isPreviewModalOpen
+              }
+              onOpenFilesModal={fileUploadState.propertyDocuments?.onOpenFilesModal}
+              onCloseFilesModal={
+                fileUploadState.propertyDocuments?.onCloseFilesModal
+              }
+              onOpenFilePreview={
+                fileUploadState.propertyDocuments?.onOpenFilePreview
+              }
+              onClosePreviewModal={
+                fileUploadState.propertyDocuments?.onClosePreviewModal
+              }
+              onBackToFilesModal={
+                fileUploadState.propertyDocuments?.onBackToFilesModal
+              }
+              onUploadMore={fileUploadState.propertyDocuments?.onUploadMore}
               {...(fileFields.propertyDocuments ??
                 register('propertyDocuments'))}
             />
@@ -219,6 +244,7 @@ export function InvestmentOpportunityForm({
               required
               error={errors.propertyImages?.message}
               selectedFiles={fileUploadState.propertyImages?.files}
+              imagePreviewUrls={fileUploadState.propertyImages?.imagePreviewUrls}
               isLoading={fileUploadState.propertyImages?.isLoading}
               onRemoveFile={fileUploadState.propertyImages?.onRemoveFile}
               {...(fileFields.propertyImages ?? register('propertyImages'))}

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +17,7 @@ import {
   useCreateOpportunityDraftMutation,
   useCreateOpportunityMutation,
 } from '@/features/investment-opportunities/hooks/use-create-opportunity-mutations'
+import { useInvestmentOpportunityFileUploadState } from '@/features/investment-opportunities/hooks/use-investment-opportunity-file-upload-state'
 import {
   createInvestmentOpportunityDraftSchema,
   createInvestmentOpportunityPublishSchema,
@@ -54,22 +55,6 @@ function resolveApiErrorMessage(error, t) {
   }
 
   return t('unexpectedError', { ns: 'validation' })
-}
-
-function normalizeFiles(value) {
-  if (!value) {
-    return []
-  }
-
-  if (Array.isArray(value)) {
-    return value.filter(Boolean)
-  }
-
-  if (typeof FileList !== 'undefined' && value instanceof FileList) {
-    return Array.from(value)
-  }
-
-  return []
 }
 
 function parseNumber(value) {
@@ -207,16 +192,6 @@ export default function InvestmentOpportunityAddPage() {
   const [reviewDetails, setReviewDetails] = useState(
     investmentOpportunityDefaultDetails,
   )
-  const [uploadingFields, setUploadingFields] = useState({})
-  const [managedFiles, setManagedFiles] = useState(() => ({
-    propertyDocuments: [],
-    propertyImages: [],
-    virtualTour: [],
-    developerLogo: [],
-  }))
-  const [propertyImagePreviewUrls, setPropertyImagePreviewUrls] = useState([])
-  const uploadTimeoutsRef = useRef({})
-  const fileInputRefs = useRef({})
   const { data: cities = [] } = useCitiesQuery()
   const createOpportunityMutation = useCreateOpportunityMutation()
   const createDraftMutation = useCreateOpportunityDraftMutation()
@@ -231,9 +206,18 @@ export default function InvestmentOpportunityAddPage() {
   } = useForm({
     defaultValues: INVESTMENT_OPPORTUNITY_FORM_DEFAULT_VALUES,
   })
+  const { fileFields, fileUploadState } = useInvestmentOpportunityFileUploadState(
+    {
+      register,
+      setValue,
+      clearErrors,
+    },
+  )
 
   const propertyPrice = watch('propertyPrice')
   const shareCount = watch('shareCount')
+  const propertyImagePreviewUrls =
+    fileUploadState.propertyImages?.imagePreviewUrls ?? []
 
   const cityOptions = useMemo(
     () =>
@@ -269,108 +253,8 @@ export default function InvestmentOpportunityAddPage() {
     })
   }, [getValues, propertyPrice, setValue, shareCount])
 
-  useEffect(() => {
-    const files = normalizeFiles(managedFiles.propertyImages)
-
-    if (!files.length) {
-      setPropertyImagePreviewUrls([])
-      return
-    }
-
-    const nextPreviewUrls = files.map((file) => URL.createObjectURL(file))
-    setPropertyImagePreviewUrls(nextPreviewUrls)
-
-    return () => {
-      nextPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
-    }
-  }, [managedFiles.propertyImages])
-
-  useEffect(
-    () => () => {
-      Object.values(uploadTimeoutsRef.current).forEach((timeoutId) => {
-        window.clearTimeout(timeoutId)
-      })
-    },
-    [],
-  )
-
   const isSubmitting =
     createOpportunityMutation.isPending || createDraftMutation.isPending
-
-  const setFieldUploading = (fieldName) => {
-    window.clearTimeout(uploadTimeoutsRef.current[fieldName])
-    setUploadingFields((current) => ({ ...current, [fieldName]: true }))
-    uploadTimeoutsRef.current[fieldName] = window.setTimeout(() => {
-      setUploadingFields((current) => ({ ...current, [fieldName]: false }))
-    }, 450)
-  }
-
-  const setManagedFilesForField = (fieldName, files) => {
-    const normalizedFiles = normalizeFiles(files)
-
-    setManagedFiles((current) => ({
-      ...current,
-      [fieldName]: normalizedFiles,
-    }))
-    setValue(fieldName, normalizedFiles, {
-      shouldDirty: true,
-      shouldValidate: true,
-    })
-    clearErrors(fieldName)
-  }
-
-  const registerFileField = (fieldName) => {
-    const field = register(fieldName)
-
-    return {
-      ...field,
-      ref: (element) => {
-        field.ref(element)
-        fileInputRefs.current[fieldName] = element
-      },
-      onChange: (event) => {
-        const nextFiles = normalizeFiles(event.target.files)
-        setFieldUploading(fieldName)
-        setManagedFilesForField(fieldName, nextFiles)
-        event.target.value = ''
-      },
-    }
-  }
-
-  const removeSelectedFile = (fieldName, index) => {
-    const nextFiles = normalizeFiles(managedFiles[fieldName]).filter(
-      (_, fileIndex) => fileIndex !== index,
-    )
-
-    setManagedFilesForField(fieldName, nextFiles)
-
-    if (fileInputRefs.current[fieldName]) {
-      fileInputRefs.current[fieldName].value = ''
-    }
-  }
-
-  const fileUploadState = {
-    propertyDocuments: {
-      files: managedFiles.propertyDocuments,
-      isLoading: Boolean(uploadingFields.propertyDocuments),
-      onRemoveFile: (index) => removeSelectedFile('propertyDocuments', index),
-    },
-    propertyImages: {
-      files: managedFiles.propertyImages,
-      isLoading: Boolean(uploadingFields.propertyImages),
-      onRemoveFile: (index) => removeSelectedFile('propertyImages', index),
-    },
-    virtualTour: {
-      files: managedFiles.virtualTour,
-      isLoading: Boolean(uploadingFields.virtualTour),
-      onRemoveFile: (index) => removeSelectedFile('virtualTour', index),
-    },
-    developerLogo: {
-      files: managedFiles.developerLogo,
-      isLoading: Boolean(uploadingFields.developerLogo),
-      onRemoveFile: (index) => removeSelectedFile('developerLogo', index),
-    },
-  }
 
   const navigateToList = () => {
     navigate(
@@ -529,12 +413,7 @@ export default function InvestmentOpportunityAddPage() {
         title="إضافة فرصة استثمارية جديدة"
         description={addOpportunityDescription}
         register={register}
-        fileFields={{
-          propertyDocuments: registerFileField('propertyDocuments'),
-          propertyImages: registerFileField('propertyImages'),
-          virtualTour: registerFileField('virtualTour'),
-          developerLogo: registerFileField('developerLogo'),
-        }}
+        fileFields={fileFields}
         fileUploadState={fileUploadState}
         errors={errors}
         onSubmit={handleContinue}
