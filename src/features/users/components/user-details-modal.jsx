@@ -155,7 +155,7 @@ export function UserDetailsModal({
 
               <span className="inline-flex items-center gap-1 rounded-full bg-[#eae5d7] py-1 ps-2.5 pe-3 text-[16px] leading-6 font-semibold text-[#402f28]">
                 <span className="size-2 rounded-full bg-[#12b76a]" />
-                {copy.status}
+                {user.status ?? copy.status}
               </span>
             </div>
 

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -13,7 +13,7 @@ import i18n from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { useCreateUserMutation } from '@/features/users/hooks/use-create-user-mutation'
 import { useUpdateUserMutation } from '@/features/users/hooks/use-update-user-mutation'
-import { useUserQuery } from '@/features/users/hooks/use-user-query'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 function getToastDirection() {
   return i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
@@ -21,51 +21,22 @@ function getToastDirection() {
 
 const dir = getToastDirection()
 
-const addUserSuccessToast = {
-  title: 'تم إضافة المستخدم بنجاح',
-  description:
-    'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه.',
-  actionLabel: 'إغلاق',
-}
-
 const roleOptions = [
-  { value: 'super-admin', label: 'Super Admin المشرف العام' },
-  { value: 'operation-admin', label: 'Operation Admin مدير العمليات' },
-  { value: 'investment-manager', label: 'Investment Manager مدير استثمار' },
-  { value: 'read-only-viewer', label: 'Read-Only Viewer مشاهد فقط' },
-]
-
-const investmentOpportunityOptions = [
-  {
-    value: 'investment-riyadh-001',
-    label: 'مجمع سكني حديث في شمال الرياض',
-  },
-  {
-    value: 'investment-jeddah-023',
-    label: 'وحدات فندقية في جدة',
-  },
+  { value: 'superAdmin', label: 'Super Admin المشرف العام' },
+  { value: 'operationsAdmin', label: 'Operations Admin مدير العمليات' },
+  { value: 'investmentManager', label: 'Investment Manager مدير الاستثمار' },
+  { value: 'readOnlyViewer', label: 'Read-Only Viewer مشاهد فقط' },
 ]
 
 const initialFormValues = {
+  code: '',
   fullNameAr: '',
   fullNameEn: '',
   email: '',
   mobile: '',
-  roles: [],
+  role: '',
+  password: '',
   active: true,
-  investmentOpportunities: [],
-}
-
-function normalizeMultiSelectInput(value) {
-  if (Array.isArray(value)) {
-    return value
-  }
-
-  if (typeof value === 'string' && value.length > 0) {
-    return [value]
-  }
-
-  return []
 }
 
 function getInitialFormValues(prefillValues) {
@@ -76,12 +47,17 @@ function getInitialFormValues(prefillValues) {
   return {
     ...initialFormValues,
     ...prefillValues,
-    roles: normalizeMultiSelectInput(prefillValues.roles ?? prefillValues.role),
-    investmentOpportunities: normalizeMultiSelectInput(
-      prefillValues.investmentOpportunities ??
-        prefillValues.investmentOpportunity,
-    ),
-    active: Boolean(prefillValues.active),
+    code: prefillValues.code ?? '',
+    fullNameAr: prefillValues.fullNameAr ?? '',
+    fullNameEn: prefillValues.fullNameEn ?? '',
+    email: prefillValues.email ?? '',
+    mobile: prefillValues.mobile ?? '',
+    role: prefillValues.role ?? '',
+    password: '',
+    active:
+      typeof prefillValues.active === 'boolean'
+        ? prefillValues.active
+        : initialFormValues.active,
   }
 }
 
@@ -131,28 +107,6 @@ function UsersAddTextField({
   )
 }
 
-function generateSystemPassword(length = 10) {
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
-  const lower = 'abcdefghijkmnopqrstuvwxyz'
-  const digits = '23456789'
-  const symbols = '@#$%&*!?'
-  const all = upper + lower + digits + symbols
-  const pick = (chars) => chars[Math.floor(Math.random() * chars.length)]
-
-  const passwordChars = [pick(upper), pick(digits), pick(symbols)]
-
-  while (passwordChars.length < length) {
-    passwordChars.push(pick(all))
-  }
-
-  for (let i = passwordChars.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]]
-  }
-
-  return passwordChars.join('')
-}
-
 function normalizeSaudiMobile(rawValue) {
   const digits = String(rawValue ?? '').replace(/\D/g, '')
   if (!digits) return null
@@ -162,6 +116,8 @@ function normalizeSaudiMobile(rawValue) {
     if (localNine.length === 9 && localNine.startsWith('5')) {
       return `0${localNine}`
     }
+
+    return digits
   }
 
   if (digits.length === 10 && digits.startsWith('05')) {
@@ -172,17 +128,16 @@ function normalizeSaudiMobile(rawValue) {
     return `0${digits}`
   }
 
-  return null
+  return digits
 }
 
-function UsersAddMultiSelectField({
+function UsersAddSelectField({
   id,
   label,
-  values,
+  value,
   onChange,
   options,
   placeholder,
-  className,
 }) {
   const [open, setOpen] = useState(false)
   const wrapperRef = useRef(null)
@@ -209,28 +164,11 @@ function UsersAddMultiSelectField({
     }
   }, [])
 
-  const selectedLabels = useMemo(
-    () =>
-      options
-        .filter((option) => values.includes(option.value))
-        .map((option) => option.label),
-    [options, values],
-  )
-
-  const summaryText =
-    selectedLabels.length > 0 ? selectedLabels.join('، ') : placeholder
-
-  function toggleValue(nextValue) {
-    if (values.includes(nextValue)) {
-      onChange(values.filter((value) => value !== nextValue))
-      return
-    }
-
-    onChange([...values, nextValue])
-  }
+  const selectedOption = options.find((option) => option.value === value)
+  const summaryText = selectedOption?.label ?? placeholder
 
   return (
-    <UsersAddFieldShell id={id} label={label} className={className}>
+    <UsersAddFieldShell id={id} label={label}>
       <div ref={wrapperRef} className="relative w-full">
         <button
           id={id}
@@ -244,7 +182,7 @@ function UsersAddMultiSelectField({
           <span
             className={cn(
               'line-clamp-1 min-w-0 flex-1 text-start',
-              selectedLabels.length > 0 ? 'text-[#402f28]' : 'text-[#bfab85]',
+              selectedOption ? 'text-[#402f28]' : 'text-[#bfab85]',
             )}
           >
             {summaryText}
@@ -261,11 +199,10 @@ function UsersAddMultiSelectField({
         {open ? (
           <div
             role="listbox"
-            aria-multiselectable="true"
             className="absolute z-20 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-[#d6cbb2] bg-[#f8f3e8] p-1 shadow-[0_12px_24px_rgba(10,13,18,0.08)]"
           >
             {options.map((option) => {
-              const isSelected = values.includes(option.value)
+              const isSelected = value === option.value
 
               return (
                 <button
@@ -273,7 +210,10 @@ function UsersAddMultiSelectField({
                   type="button"
                   role="option"
                   aria-selected={isSelected}
-                  onClick={() => toggleValue(option.value)}
+                  onClick={() => {
+                    onChange(option.value)
+                    setOpen(false)
+                  }}
                   className="flex w-full items-center justify-end gap-2 rounded-md px-3 py-2 text-start text-sm leading-5 text-[#402f28] transition hover:bg-[#eae5d7] focus-visible:bg-[#eae5d7] focus-visible:outline-none"
                 >
                   <span className="min-w-0 flex-1">{option.label}</span>
@@ -334,7 +274,6 @@ export default function UsersAddPage() {
   const { i18n } = useTranslation()
   const createUserMutation = useCreateUserMutation()
   const updateUserMutation = useUpdateUserMutation()
-  const { data: userDetails } = useUserQuery(userId, isEditMode)
 
   const isSubmitting =
     Boolean(createUserMutation.isLoading ?? createUserMutation.isPending) ||
@@ -347,51 +286,42 @@ export default function UsersAddPage() {
     }))
   }
 
-  useEffect(() => {
-    if (!isEditMode || !userDetails?.data) {
-      return
-    }
-
-    const user = userDetails.data
-    setFormValues((currentValues) => ({
-      ...currentValues,
-      fullNameAr: user.full_name ?? currentValues.fullNameAr,
-      fullNameEn: user.full_name ?? currentValues.fullNameEn,
-      email: user.email ?? currentValues.email,
-      mobile: user.mobile_number ?? currentValues.mobile,
-      active: (user.account_status ?? 'active') === 'active',
-    }))
-  }, [isEditMode, userDetails])
+  function navigateToUsers() {
+    navigate(ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage))
+  }
 
   function handleSubmit(event) {
     event.preventDefault()
 
-    const fullName =
-      formValues.fullNameAr.trim() || formValues.fullNameEn.trim()
-    const email = formValues.email.trim()
-    const saudiMobile = normalizeSaudiMobile(formValues.mobile)
+    const payload = {
+      code: formValues.code.trim(),
+      full_name_ar: formValues.fullNameAr.trim(),
+      full_name_en: formValues.fullNameEn.trim(),
+      email: formValues.email.trim(),
+      mobile_number: normalizeSaudiMobile(formValues.mobile),
+      status: formValues.active ? 'active' : 'inactive',
+      role: formValues.role,
+    }
 
-    if (!fullName || !email || !saudiMobile) {
+    if (
+      !payload.code ||
+      !payload.full_name_ar ||
+      !payload.full_name_en ||
+      !payload.email ||
+      !payload.mobile_number ||
+      !payload.role
+    ) {
       showDashboardErrorToast({
         title: 'بيانات غير مكتملة',
         description:
-          'يرجى إدخال الاسم والبريد الإلكتروني ورقم جوال سعودي صحيح (05xxxxxxxx أو +9665xxxxxxxx).',
+          'يرجى إدخال الكود والاسمين العربي والإنجليزي والبريد الإلكتروني ورقم الجوال والدور الوظيفي.',
       })
       return
     }
 
     if (isEditMode) {
       updateUserMutation.mutate(
-        {
-          userId,
-          payload: {
-            full_name: fullName,
-            email,
-            mobile_number: saudiMobile,
-            city_id: null,
-            account_status: formValues.active ? 'active' : 'inactive',
-          },
-        },
+        { userId, payload },
         {
           onSuccess: () => {
             showDashboardSuccessToast({
@@ -400,14 +330,13 @@ export default function UsersAddPage() {
                 'تم حفظ بيانات المستخدم المحدثة بنجاح، ويمكنك متابعة صلاحياته من قائمة المستخدمين.',
               actionLabel: 'إغلاق',
             })
-            navigate(
-              ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
-            )
+            navigateToUsers()
           },
-          onError: () => {
+          onError: (error) => {
             showDashboardErrorToast({
               title: 'فشل التعديل',
-              description: 'تعذر تحديث بيانات المستخدم. حاول مرة أخرى.',
+              description:
+                error?.message ?? 'تعذر تحديث بيانات المستخدم. حاول مرة أخرى.',
             })
           },
         },
@@ -415,43 +344,45 @@ export default function UsersAddPage() {
       return
     }
 
-    const nationalId = saudiMobile.replace(/^0/, '').padStart(10, '0')
-    const password = generateSystemPassword(10)
+    const password = formValues.password.trim()
+
+    if (!password) {
+      showDashboardErrorToast({
+        title: 'بيانات غير مكتملة',
+        description: 'يرجى إدخال كلمة المرور للمستخدم الجديد.',
+      })
+      return
+    }
 
     createUserMutation.mutate(
-      {
-        national_id: nationalId,
-        full_name: fullName,
-        email,
-        mobile_number: saudiMobile,
-        city_id: null,
-        password,
-      },
+      { ...payload, password },
       {
         onSuccess: () => {
           showDashboardSuccessToast({
-            ...addUserSuccessToast,
+            title: 'تم إضافة المستخدم بنجاح',
             description:
-              'تمت إضافة المستخدم إلى النظام بنجاح، وتم توليد كلمة مرور تلقائية.',
+              'تمت إضافة المستخدم إلى النظام بنجاح، ويمكنك الآن إدارة صلاحياته ومتابعة نشاطه.',
+            actionLabel: 'إغلاق',
           })
-          navigate(
-            ROUTE_PATHS.withLocale(ROUTE_PATHS.users, i18n.resolvedLanguage),
-          )
+          navigateToUsers()
         },
-        onError: () => {
+        onError: (error) => {
           showDashboardErrorToast({
             title: 'فشل الإضافة',
-            description: 'تعذر إضافة المستخدم. حاول مرة أخرى.',
+            description:
+              error?.message ?? 'تعذر إضافة المستخدم. حاول مرة أخرى.',
           })
         },
       },
     )
   }
 
+  const { dir } = useDirection()
+
   return (
     <div
       className="-mt-[31px] flex flex-col items-start gap-[60px] px-[26px] py-5 pb-8 text-start"
-      dir="rtl"
+      dir={dir}
     >
       <form
         onSubmit={handleSubmit}
@@ -463,11 +394,12 @@ export default function UsersAddPage() {
               aria-label="مسار الصفحة"
               className="flex w-full items-start justify-start gap-2 text-sm leading-5 font-semibold whitespace-nowrap"
             >
+              <span className="text-[#6d4f3b]">المستخدمين</span>
+              <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
+
               <span className="text-[#ac9063]">
                 {isEditMode ? 'تعديل مستخدم' : 'إضافة مستخدم جديد'}
               </span>
-              <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
-              <span className="text-[#6d4f3b]">المستخدمين</span>
             </nav>
 
             <div className="flex w-full flex-col items-start gap-3">
@@ -483,6 +415,21 @@ export default function UsersAddPage() {
           </header>
 
           <div className="grid w-full grid-cols-1 gap-[30px] md:grid-cols-2 md:gap-x-4">
+            <UsersAddTextField
+              id="user-code"
+              label="الكود"
+              value={formValues.code}
+              onChange={(value) => updateField('code', value)}
+              placeholder="أدخل كود المستخدم مثل ADM-001"
+            />
+            <UsersAddSelectField
+              id="user-role"
+              label="الدور الوظيفي"
+              value={formValues.role}
+              onChange={(value) => updateField('role', value)}
+              options={roleOptions}
+              placeholder="اختر الدور الوظيفي"
+            />
             <UsersAddTextField
               id="user-full-name-en"
               label="الاسم الكامل بالإنجليزية"
@@ -504,7 +451,7 @@ export default function UsersAddPage() {
               onChange={(value) =>
                 updateField('mobile', value.replace(/[^\d+]/g, '').slice(0, 13))
               }
-              placeholder="أدخل رقم الجوال بصيغة سعودية"
+              placeholder="أدخل رقم الجوال "
               type="text"
               inputMode="numeric"
             />
@@ -516,28 +463,19 @@ export default function UsersAddPage() {
               placeholder="أدخل بريدًا إلكترونيًا فعالًا"
               type="email"
             />
-            <UsersAddMultiSelectField
-              id="user-role"
-              label="الدور"
-              values={formValues.roles}
-              onChange={(value) => updateField('roles', value)}
-              options={roleOptions}
-              placeholder="حدد دور أو أكثر يحدد صلاحيات المستخدم داخل النظام"
-            />
+            {!isEditMode ? (
+              <UsersAddTextField
+                id="user-password"
+                label="كلمة المرور"
+                value={formValues.password}
+                onChange={(value) => updateField('password', value)}
+                placeholder="أدخل كلمة المرور"
+                type="password"
+              />
+            ) : null}
             <UsersAddStatusField
               active={formValues.active}
               onChange={(value) => updateField('active', value)}
-            />
-            <UsersAddMultiSelectField
-              id="user-investment-opportunity"
-              label="قائمة الفرص الاستثمارية"
-              values={formValues.investmentOpportunities}
-              onChange={(value) =>
-                updateField('investmentOpportunities', value)
-              }
-              options={investmentOpportunityOptions}
-              placeholder="اختر الفرص الاستثمارية"
-              className="md:col-span-2"
             />
           </div>
         </div>
@@ -555,14 +493,7 @@ export default function UsersAddPage() {
           </Button>
           <Button
             type="button"
-            onClick={() =>
-              navigate(
-                ROUTE_PATHS.withLocale(
-                  ROUTE_PATHS.users,
-                  i18n.resolvedLanguage,
-                ),
-              )
-            }
+            onClick={navigateToUsers}
             className="h-[47px] w-[163px] rounded-lg bg-[#eae5d7] px-3.5 py-2.5 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] hover:bg-[#ded6c4] focus-visible:ring-[#9d7e55]/25"
           >
             إلغاء

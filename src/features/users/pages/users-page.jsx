@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   ArrowDown,
   ArrowLeft,
@@ -30,7 +30,6 @@ import { UserDetailsModal } from '@/features/users/components/user-details-modal
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
 import { useUsersQuery } from '@/features/users/hooks/use-users-query'
 import { useDeleteUserMutation } from '@/features/users/hooks/use-delete-user-mutation'
-import { useUserQuery } from '@/features/users/hooks/use-user-query'
 
 const USERS_PAGE_SIZE = 10
 const TOTAL_USERS = 100
@@ -229,12 +228,6 @@ const usersRows = Array.from({ length: TOTAL_USERS }, (_, index) => {
   }
 })
 
-const roleLabelToValue = {
-  'مدير العمليات': 'operation-admin',
-  'مدير خدمة العملاء': 'operation-admin',
-  'محلل استثمار عقاري': 'investment-manager',
-}
-
 const mockEnglishNamesByBaseUserId = {
   'user-1': 'Abdulaziz Ahmed Salem Alhashmi',
   'user-2': 'Laila Hassan Ali Alghamdi',
@@ -329,24 +322,39 @@ function mapApiUserToRow(user, index, isArabic) {
     inactive: isArabic ? 'غير نشط' : 'Inactive',
     suspended: isArabic ? 'موقوف' : 'Suspended',
   }
+  const fullName =
+    user.full_name_ar ??
+    user.full_name ??
+    user.full_name_en ??
+    user.name ??
+    '-'
+  const fullNameEn =
+    user.full_name_en ??
+    user.full_name ??
+    user.full_name_ar ??
+    user.name ??
+    '-'
+  const roleValue = user.role ?? ''
+  const roleLabel =
+    user.role_label ?? user.role ?? (isArabic ? 'بدون دور' : 'No role')
+  const secondaryRole =
+    Array.isArray(user.roles) && user.roles.length > 0
+      ? user.roles.filter((role) => role !== roleValue).join(' • ')
+      : ''
 
   return {
     id: user.id,
-    fullName: user.full_name ?? '-',
+    fullName,
     identifier:
-      String(user.id ?? '')
-        .slice(0, 8)
-        .toUpperCase() || '-',
-    role:
-      user.city?.name_ar ??
-      user.city?.name_en ??
-      (isArabic ? 'بدون مدينة' : 'No city'),
+      user.code ?? (String(user.id ?? '').slice(0, 8).toUpperCase() || '-'),
+    role: roleLabel,
+    roleValue,
     email: user.email ?? '-',
     phone: user.mobile_number ?? '-',
-    status: statusLabelMap[user.account_status] ?? user.account_status ?? '-',
+    status: statusLabelMap[user.status] ?? user.status ?? '-',
     highlighted: (index + 1) % USERS_PAGE_SIZE === 3,
-    fullNameEn: user.full_name ?? '-',
-    secondaryRole: user.verification_status ?? '-',
+    fullNameEn,
+    secondaryRole,
     activities: [
       {
         date: user.last_login_at
@@ -361,18 +369,19 @@ function mapApiUserToRow(user, index, isArabic) {
         icon: 'account',
       },
       {
-        date: user.registration_date
-          ? new Date(user.registration_date).toLocaleDateString()
+        date: user.created_at
+          ? new Date(user.created_at).toLocaleDateString()
           : '-',
         title: isArabic ? 'تاريخ التسجيل' : 'Registration date',
-        description: user.registration_date
-          ? new Date(user.registration_date).toLocaleString()
+        description: user.created_at
+          ? new Date(user.created_at).toLocaleString()
           : '-',
         icon: 'notification',
       },
     ],
     fromApi: true,
     originalUser: user,
+    isSystemUser: Boolean(user.is_system_protected),
   }
 }
 
@@ -382,12 +391,9 @@ function getBaseUserId(rowId) {
 
 function buildEditFormPrefill(row) {
   const baseUserId = row.id?.startsWith('user-') ? getBaseUserId(row.id) : null
-  const mappedRole = roleLabelToValue[row.role] ?? 'operation-admin'
-  const mappedRoles = row.isFixedSuperAdmin
-    ? ['super-admin', mappedRole]
-    : [mappedRole]
 
   return {
+    code: row.identifier,
     fullNameAr: row.fullName,
     fullNameEn:
       row.fullNameEn ??
@@ -396,13 +402,8 @@ function buildEditFormPrefill(row) {
         : 'Generated User Name'),
     email: row.email,
     mobile: row.phone,
-    roles: mappedRoles,
-    active: row.status === 'نشط',
-    investmentOpportunities: [
-      Number.parseInt(row.id.split('-')[1], 10) % 2 === 0
-        ? 'investment-jeddah-023'
-        : 'investment-riyadh-001',
-    ],
+    role: row.roleValue ?? '',
+    active: row.status === 'نشط' || row.status === 'Active',
   }
 }
 
@@ -563,15 +564,10 @@ function UsersManagementTable() {
   const [deletedUserIds, setDeletedUserIds] = useState([])
   const [pendingDeleteUser, setPendingDeleteUser] = useState(null)
   const [selectedUser, setSelectedUser] = useState(null)
-  const [selectedUserId, setSelectedUserId] = useState(null)
   const isArabic = i18n.resolvedLanguage !== 'en'
   const copy = isArabic ? usersCopy.ar : usersCopy.en
   const { data: usersResponse } = useUsersQuery()
   const deleteUserMutation = useDeleteUserMutation()
-  const { data: selectedUserDetailsResponse } = useUserQuery(
-    selectedUserId,
-    Boolean(selectedUserId),
-  )
 
   const apiUsersRows = useMemo(() => {
     const users = Array.isArray(usersResponse?.data) ? usersResponse.data : []
@@ -588,17 +584,13 @@ function UsersManagementTable() {
     Math.ceil(activeUsersRows.length / USERS_PAGE_SIZE),
   )
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
-    }
-  }, [currentPage, totalPages])
+  const safeCurrentPage = Math.min(currentPage, totalPages)
 
   const visibleUsersRows = useMemo(() => {
-    const startIndex = (currentPage - 1) * USERS_PAGE_SIZE
+    const startIndex = (safeCurrentPage - 1) * USERS_PAGE_SIZE
 
     return activeUsersRows.slice(startIndex, startIndex + USERS_PAGE_SIZE)
-  }, [activeUsersRows, currentPage])
+  }, [activeUsersRows, safeCurrentPage])
 
   function handlePageChange(nextPage) {
     setCurrentPage(Math.min(Math.max(nextPage, 1), totalPages))
@@ -618,7 +610,6 @@ function UsersManagementTable() {
   }
 
   function handleOpenUserDetails(row) {
-    setSelectedUserId(row.id)
     setSelectedUser(row)
   }
 
@@ -687,7 +678,6 @@ function UsersManagementTable() {
         setDeletedUserIds((prev) => [...prev, pendingDeleteUser.id])
         if (selectedUser?.id === pendingDeleteUser.id) {
           setSelectedUser(null)
-          setSelectedUserId(null)
         }
         setPendingDeleteUser(null)
         showDashboardSuccessToast({
@@ -708,19 +698,6 @@ function UsersManagementTable() {
       },
     })
   }
-
-  useEffect(() => {
-    if (!selectedUserDetailsResponse?.data || !selectedUserId) {
-      return
-    }
-
-    const detailsRow = mapApiUserToRow(
-      selectedUserDetailsResponse.data,
-      0,
-      isArabic,
-    )
-    setSelectedUser(detailsRow)
-  }, [isArabic, selectedUserDetailsResponse, selectedUserId])
 
   return (
     <section
@@ -821,6 +798,10 @@ function UsersManagementTable() {
                   ? row.activities
                   : (recentActivitiesByBaseUserId[baseUserId] ??
                     defaultRecentActivities),
+                isSystemUser:
+                  typeof row.isSystemUser === 'boolean'
+                    ? row.isSystemUser
+                    : Boolean(row.originalUser?.is_system_protected),
               }
 
               return (
@@ -845,7 +826,7 @@ function UsersManagementTable() {
                     </div>
                   </td>
                   <td className="px-6 font-normal">{row.identifier}</td>
-                  <td className="px-6 font-medium">{row.role}</td>
+                  <td className="px-6 text-center font-medium">{row.role}</td>
                   <td className="px-6 font-normal">{row.email}</td>
                   <td className="px-6 font-normal">{row.phone}</td>
                   <td className="px-6">
@@ -895,7 +876,7 @@ function UsersManagementTable() {
 
       <UsersPagination
         copy={copy}
-        currentPage={currentPage}
+        currentPage={safeCurrentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
