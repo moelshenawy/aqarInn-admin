@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -37,6 +38,7 @@ const EMPTY_CITY_FORM = {
   nameEn: '',
   latitude: '',
   longitude: '',
+  code: '',
 }
 
 export default function CitiesPage() {
@@ -46,6 +48,7 @@ export default function CitiesPage() {
   const [editingCity, setEditingCity] = useState(null)
   const [pendingDeleteCity, setPendingDeleteCity] = useState(null)
   const [formValues, setFormValues] = useState(EMPTY_CITY_FORM)
+  const [errors, setErrors] = useState({})
   const [coverImageFile, setCoverImageFile] = useState(null)
   const { data, isLoading, isError, isFetching, refetch } = useCitiesQuery()
   const createCityMutation = useCreateCityMutation()
@@ -81,6 +84,7 @@ export default function CitiesPage() {
     setFormValues(EMPTY_CITY_FORM)
     setCoverImageFile(null)
     setEditingCity(null)
+    setErrors({})
   }
 
   function openCreateDialog() {
@@ -95,7 +99,12 @@ export default function CitiesPage() {
       nameEn: city.name_en ?? '',
       latitude: city.latitude ?? '',
       longitude: city.longitude ?? '',
+      code: String(city.code ?? city.short_code ?? '')
+        .toUpperCase()
+        .replace(/[^A-Z]/g, '')
+        .slice(0, 3),
     })
+    setErrors({})
     setCoverImageFile(null)
     setIsFormOpen(true)
   }
@@ -110,6 +119,7 @@ export default function CitiesPage() {
 
   function updateField(field, value) {
     setFormValues((prev) => ({ ...prev, [field]: value }))
+    setErrors((prev) => ({ ...prev, [field]: false }))
   }
 
   function buildCityFormData() {
@@ -119,6 +129,12 @@ export default function CitiesPage() {
     payload.append('name_en', formValues.nameEn.trim())
     payload.append('latitude', formValues.latitude.trim())
     payload.append('longitude', formValues.longitude.trim())
+    const codeVal = String(formValues.code ?? '').trim()
+    // Only include `code` when creating a city. The API prohibits sending
+    // `code` on update operations for existing cities.
+    if (!editingCity && codeVal.length > 0) {
+      payload.append('code', codeVal.toUpperCase())
+    }
 
     if (coverImageFile) {
       payload.append('cover_image', coverImageFile)
@@ -127,21 +143,33 @@ export default function CitiesPage() {
     return payload
   }
 
-  function validateForm() {
-    const requiredValues = [
-      formValues.nameAr,
-      formValues.nameEn,
-      formValues.latitude,
-      formValues.longitude,
-    ]
+  function getValidationErrors() {
+    const newErrors = {}
 
-    return requiredValues.every((value) => String(value).trim().length > 0)
+    // Required fields
+    if (!String(formValues.nameAr ?? '').trim()) newErrors.nameAr = true
+    if (!String(formValues.nameEn ?? '').trim()) newErrors.nameEn = true
+    if (!String(formValues.latitude ?? '').trim()) newErrors.latitude = true
+    if (!String(formValues.longitude ?? '').trim()) newErrors.longitude = true
+
+    const codeVal = String(formValues.code ?? '').trim()
+    const codePattern = /^[A-Z]{3}$/
+
+    // code is required when creating; when editing it's optional but if provided must be valid
+    if (!editingCity) {
+      if (!codePattern.test(codeVal)) newErrors.code = true
+    } else if (codeVal.length > 0 && !codePattern.test(codeVal)) {
+      newErrors.code = true
+    }
+
+    return newErrors
   }
 
   function handleFormSubmit(event) {
     event.preventDefault()
-
-    if (!validateForm()) {
+    const validationErrors = getValidationErrors()
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
       showDashboardErrorToast({
         title: t('citiesPage.form.validationTitle'),
         description: t('citiesPage.form.validationDescription'),
@@ -167,10 +195,21 @@ export default function CitiesPage() {
             })
             handleDialogOpenChange(false)
           },
-          onError: () => {
+          onError: (error) => {
+            const firstField =
+              error?.fields && Object.keys(error.fields).length
+                ? error.fields[Object.keys(error.fields)[0]]
+                : null
+
+            const description = Array.isArray(firstField)
+              ? firstField[0]
+              : typeof error?.message === 'string'
+              ? t(error.message)
+              : t('citiesPage.form.updateErrorDescription')
+
             showDashboardErrorToast({
               title: t('citiesPage.form.updateErrorTitle'),
-              description: t('citiesPage.form.updateErrorDescription'),
+              description,
             })
           },
         },
@@ -191,10 +230,21 @@ export default function CitiesPage() {
           })
           handleDialogOpenChange(false)
         },
-        onError: () => {
+        onError: (error) => {
+          const firstField =
+            error?.fields && Object.keys(error.fields).length
+              ? error.fields[Object.keys(error.fields)[0]]
+              : null
+
+          const description = Array.isArray(firstField)
+            ? firstField[0]
+            : typeof error?.message === 'string'
+            ? t(error.message)
+            : t('citiesPage.form.createErrorDescription')
+
           showDashboardErrorToast({
             title: t('citiesPage.form.createErrorTitle'),
-            description: t('citiesPage.form.createErrorDescription'),
+            description,
           })
         },
       },
@@ -302,8 +352,64 @@ export default function CitiesPage() {
 
         <div className="px-6 py-6">
           {isLoading ? (
-            <div className="rounded-[14px] border border-dashed border-[#d6cbb2] bg-white/70 p-10 text-center text-sm text-[#6d4f3b]">
-              {t('citiesPage.loading')}
+            <div className="overflow-auto">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      {t('citiesPage.table.columns.nameAr')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.nameEn')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.latitude')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.longitude')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.coverImage')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.createdAt')}
+                    </TableHead>
+                    <TableHead>
+                      {t('citiesPage.table.columns.actions')}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[0, 1, 2, 3].map((i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-36" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-10 w-28 rounded-lg" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-end gap-2">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           ) : cities.length > 0 ? (
             <Table className="min-w-full">
@@ -431,6 +537,7 @@ export default function CitiesPage() {
                   onChange={(event) =>
                     updateField('nameAr', event.currentTarget.value)
                   }
+                  aria-invalid={!!errors.nameAr}
                   placeholder={t('citiesPage.form.placeholders.nameAr')}
                   required
                 />
@@ -446,6 +553,7 @@ export default function CitiesPage() {
                   onChange={(event) =>
                     updateField('nameEn', event.currentTarget.value)
                   }
+                  aria-invalid={!!errors.nameEn}
                   placeholder={t('citiesPage.form.placeholders.nameEn')}
                   required
                 />
@@ -463,6 +571,7 @@ export default function CitiesPage() {
                   onChange={(event) =>
                     updateField('latitude', event.currentTarget.value)
                   }
+                  aria-invalid={!!errors.latitude}
                   placeholder={t('citiesPage.form.placeholders.latitude')}
                   required
                 />
@@ -478,8 +587,34 @@ export default function CitiesPage() {
                   onChange={(event) =>
                     updateField('longitude', event.currentTarget.value)
                   }
+                  aria-invalid={!!errors.longitude}
                   placeholder={t('citiesPage.form.placeholders.longitude')}
                   required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="city-code">
+                  {t('citiesPage.form.fields.code')}
+                </Label>
+                <Input
+                  id="city-code"
+                  value={formValues.code}
+                  onChange={(event) => {
+                    // Keep only English letters, uppercase, max 3
+                    const raw = String(event.currentTarget.value || '')
+                    const cleaned = raw
+                      .replace(/[^A-Za-z]/g, '')
+                      .toUpperCase()
+                      .slice(0, 3)
+                    updateField('code', cleaned)
+                  }}
+                  placeholder={t('citiesPage.form.placeholders.code')}
+                  maxLength={3}
+                  required={!editingCity}
+                  aria-invalid={!!errors.code}
                 />
               </div>
             </div>
