@@ -353,14 +353,9 @@ export function InvestmentOpportunityDetailsBody({ details }) {
           <div className="flex w-full flex-col items-end gap-5">
             <div
               dir={dir}
-              className="flex w-full flex-col gap-5 md:flex-row md:items-center md:gap-[60px]"
+              className="grid w-full grid-cols-1 gap-[60px] sm:grid-cols-2"
             >
-              <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
-                <p className="w-full truncate">{details.operator.email}</p>
-                <p className="w-full truncate">{details.operator.phone}</p>
-                <p className="w-full truncate">{details.operator.location}</p>
-              </div>
-              <div className="flex w-full shrink-0 items-center justify-end p-2.5 md:w-[511px]">
+              <div className="flex w-full shrink-0 items-center justify-start p-2.5 md:w-[511px]">
                 <img
                   src={
                     details.operator.logoUrl ||
@@ -370,6 +365,11 @@ export function InvestmentOpportunityDetailsBody({ details }) {
                   className="h-[72px] w-[60px] object-contain"
                 />
               </div>
+              <div className="flex min-w-0 flex-1 flex-col items-end gap-1.5 text-start text-sm leading-5 font-semibold text-[#9d7e55]">
+                <p className="w-full truncate">{details.operator.email}</p>
+                <p className="w-full truncate">{details.operator.phone}</p>
+                <p className="w-full truncate">{details.operator.location}</p>
+              </div>
             </div>
 
             <div
@@ -378,7 +378,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
             >
               <div className="flex min-w-0 flex-col items-start gap-2.5">
                 <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
-                  {details.operator.nameEn}
+                  {details.operator.nameAr}
                 </p>
                 <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
                   {operatorDescription}
@@ -386,7 +386,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
               </div>
               <div className="flex min-w-0 flex-col items-start gap-2.5">
                 <p className="w-full truncate text-lg leading-7 font-semibold text-[#181927]">
-                  {details.operator.nameAr}
+                  {details.operator.nameEn}
                 </p>
                 <p className="h-[60px] w-full overflow-hidden text-sm leading-5 font-semibold text-[#402f28]">
                   {operatorDescription}
