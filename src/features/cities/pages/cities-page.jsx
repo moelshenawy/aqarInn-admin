@@ -204,8 +204,8 @@ export default function CitiesPage() {
             const description = Array.isArray(firstField)
               ? firstField[0]
               : typeof error?.message === 'string'
-              ? t(error.message)
-              : t('citiesPage.form.updateErrorDescription')
+                ? t(error.message)
+                : t('citiesPage.form.updateErrorDescription')
 
             showDashboardErrorToast({
               title: t('citiesPage.form.updateErrorTitle'),
@@ -239,8 +239,8 @@ export default function CitiesPage() {
           const description = Array.isArray(firstField)
             ? firstField[0]
             : typeof error?.message === 'string'
-            ? t(error.message)
-            : t('citiesPage.form.createErrorDescription')
+              ? t(error.message)
+              : t('citiesPage.form.createErrorDescription')
 
           showDashboardErrorToast({
             title: t('citiesPage.form.createErrorTitle'),
