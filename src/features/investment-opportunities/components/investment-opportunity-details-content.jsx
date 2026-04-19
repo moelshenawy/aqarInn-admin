@@ -1,15 +1,16 @@
 ﻿import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
+import { investmentOpportunityDetailsAssets } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
-import { investmentOpportunityDetailsAssets } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 
 function SectionHeading({ children, dir }) {
   return (
     <div
       dir={dir}
-      className="flex items-center justify-end gap-2.5 py-2 text-start"
+      className="flex items-center justify-start gap-2.5 py-2 text-start"
     >
       <img
         src={investmentOpportunityDetailsAssets.chevron}
@@ -59,7 +60,7 @@ function DetailValue({ label, value, className }) {
       <p className="w-full text-sm leading-5 font-semibold text-[#ac9063]">
         {label}
       </p>
-      <p className="text-xl leading-[30px] font-semibold text-[#402f28]">
+      <p className="w-full text-xl leading-[30px] font-semibold text-[#402f28]">
         {value}
       </p>
     </div>
@@ -99,6 +100,9 @@ export function InvestmentOpportunityDetailsActions({
   showDelete = true,
   showEdit = true,
 }) {
+  const { i18n } = useTranslation()
+  const isEnglish = i18n.resolvedLanguage === 'en'
+
   return (
     <div className="flex shrink-0 items-center gap-2">
       {showDelete ? (
@@ -107,7 +111,7 @@ export function InvestmentOpportunityDetailsActions({
           onClick={onDelete}
           className="inline-flex h-[38px] items-center justify-center gap-1.5 rounded-full border border-[#d6cbb2] px-4 py-1 text-sm leading-5 font-semibold text-[#181927] transition hover:bg-[#eae5d7] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
         >
-          <span>حذف</span>
+          <span>{isEnglish ? 'Delete' : 'حذف'}</span>
           <img
             src={investmentOpportunityDetailsAssets.trash}
             alt=""
@@ -122,7 +126,7 @@ export function InvestmentOpportunityDetailsActions({
           onClick={onEdit}
           className="inline-flex h-[38px] items-center justify-center gap-1.5 rounded-full border border-[#d6cbb2] px-4 py-1 text-sm leading-5 font-semibold text-[#181927] transition hover:bg-[#eae5d7] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
         >
-          <span>تعديل</span>
+          <span>{isEnglish ? 'Edit' : 'تعديل'}</span>
           <img
             src={investmentOpportunityDetailsAssets.edit}
             alt=""
@@ -136,8 +140,21 @@ export function InvestmentOpportunityDetailsActions({
 }
 
 export function InvestmentOpportunityDetailsBody({ details }) {
+  const { i18n } = useTranslation()
+  const isEnglish = i18n.resolvedLanguage === 'en'
+  const labels = {
+    propertyDetails: isEnglish ? 'Property details' : 'تفاصيل العقار',
+    financialInfo: isEnglish ? 'Financial information' : 'المعلومات المالية',
+    opportunityImages: isEnglish
+      ? 'Investment opportunity images'
+      : 'صور الفرصة الاستثمارية',
+    investmentSettings: isEnglish ? 'Investment settings' : 'اعدادات الاستثمار',
+    operatorDetails: isEnglish ? 'Operator details' : 'تفاصيل المشغل',
+  }
+
   const { dir } = useDirection()
-  const opportunityTitle = details.title ?? details.titleAr ?? details.titleEn ?? ''
+  const opportunityTitle =
+    details.title ?? details.titleAr ?? details.titleEn ?? ''
   const operatorDescription =
     details.operator.description ??
     details.operator.descriptionAr ??
@@ -154,7 +171,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
     <>
       <section
         className="flex w-full flex-col gap-[30px]"
-        aria-label="تفاصيل العقار"
+        aria-label={labels.propertyDetails}
       >
         <div
           dir="rtl"
@@ -195,7 +212,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
         <div
           dir={dir}
           className="flex w-full items-center justify-between gap-4 py-0.5"
-          aria-label="المعلومات المالية"
+          aria-label={labels.financialInfo}
         >
           {details.metrics.map((metric, index) => (
             <Fragment key={metric.label}>
@@ -209,7 +226,7 @@ export function InvestmentOpportunityDetailsBody({ details }) {
           <div
             dir={dir}
             className="flex w-full flex-col gap-4"
-            aria-label="صور الفرصة الاستثمارية"
+            aria-label={labels.opportunityImages}
           >
             {primaryGallery.length ? (
               <div
@@ -245,14 +262,14 @@ export function InvestmentOpportunityDetailsBody({ details }) {
 
       <section
         className="flex w-full flex-col gap-[30px]"
-        aria-label="اعدادات الاستثمار"
+        aria-label={labels.investmentSettings}
       >
-        <SectionHeading dir={dir}>اعدادات الاستثمار</SectionHeading>
+        <SectionHeading dir={dir}>{labels.investmentSettings}</SectionHeading>
         <div
           dir={dir}
           className="grid w-full grid-cols-1 gap-[60px] sm:grid-cols-2"
         >
-          {details.investmentSettings.map((setting) => (
+          {[...details.investmentSettings].reverse().map((setting) => (
             <DetailValue
               key={setting.label}
               label={setting.label}
@@ -265,9 +282,9 @@ export function InvestmentOpportunityDetailsBody({ details }) {
 
       <section
         className="flex w-full flex-col gap-2.5"
-        aria-label="تفاصيل المشغل"
+        aria-label={labels.operatorDetails}
       >
-        <SectionHeading dir={dir}>تفاصيل المشغل</SectionHeading>
+        <SectionHeading dir={dir}>{labels.operatorDetails}</SectionHeading>
         <div className="flex w-full flex-col items-end gap-5">
           <div
             dir={dir}

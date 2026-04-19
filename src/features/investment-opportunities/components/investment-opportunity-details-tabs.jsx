@@ -1,4 +1,5 @@
-﻿import { NavLink } from 'react-router-dom'
+﻿import { useTranslation } from 'react-i18next'
+import { NavLink } from 'react-router-dom'
 
 import {
   buildInvestmentOpportunityDetailsPath,
@@ -15,7 +16,8 @@ import { cn } from '@/lib/utils'
 const tabs = [
   {
     key: 'details',
-    label: 'تفاصيل الفرصة الاستثمارية',
+    labelAr: 'تفاصيل الفرصة الاستثمارية',
+    labelEn: 'Investment Opportunity Details',
     buildPath: buildInvestmentOpportunityDetailsPath,
     requiredPermissions: [
       createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
@@ -23,7 +25,8 @@ const tabs = [
   },
   {
     key: 'profit-distributions',
-    label: 'توزيعات الأرباح',
+    labelAr: 'توزيعات الأرباح',
+    labelEn: 'Profit Distributions',
     buildPath: buildInvestmentOpportunityProfitDistributionsPath,
     requiredPermissions: [
       createPermission(APP_RESOURCES.profitDistributions, APP_ACTIONS.view),
@@ -35,6 +38,8 @@ export function InvestmentOpportunityDetailsTabs({
   opportunityId,
   activeTab,
 }) {
+  const { i18n } = useTranslation()
+  const isEnglish = i18n.resolvedLanguage === 'en'
   const { canAccessRoute } = useAuthorization()
   const visibleTabs = tabs.filter((tab) =>
     canAccessRoute(tab.requiredPermissions ?? []),
@@ -43,7 +48,11 @@ export function InvestmentOpportunityDetailsTabs({
   return (
     <nav
       dir="rtl"
-      aria-label="تبويبات تفاصيل الفرصة الاستثمارية"
+      aria-label={
+        isEnglish
+          ? 'Investment opportunity details tabs'
+          : 'تبويبات تفاصيل الفرصة الاستثمارية'
+      }
       className="flex h-[69px] w-full gap-2.5 rounded-xl bg-[#eae5d7] p-2.5"
     >
       {visibleTabs.map((tab) => {
@@ -61,7 +70,7 @@ export function InvestmentOpportunityDetailsTabs({
                 : 'text-[#ac9063] hover:bg-[#f8f3e8]/70',
             )}
           >
-            {tab.label}
+            {isEnglish ? tab.labelEn : tab.labelAr}
           </NavLink>
         )
       })}

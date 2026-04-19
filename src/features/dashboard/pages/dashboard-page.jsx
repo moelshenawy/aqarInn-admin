@@ -1,9 +1,11 @@
-import { Banknote, CreditCard, User, UserCheck, Wallet } from 'lucide-react'
+﻿import { Banknote, CreditCard, User, UserCheck, Wallet } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
+import { dashboardQueryKeys } from '@/features/dashboard/api/dashboard-query-keys'
 import { DashboardMetricCard } from '@/features/dashboard/components/dashboard-metric-card'
 import { DashboardOpportunityCard } from '@/features/dashboard/components/dashboard-opportunity-card'
 import { DashboardProgressTable } from '@/features/dashboard/components/dashboard-progress-table'
@@ -64,7 +66,27 @@ function DashboardMetricCardSkeleton({ index }) {
 export default function DashboardPage() {
   const { i18n } = useTranslation(['navigation'])
   const { dir } = useDirection()
-  const { data, isPending } = useDashboardOverviewQuery()
+  const queryClient = useQueryClient()
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const { data, isPending, refetch } = useDashboardOverviewQuery()
+
+  async function handleRefresh() {
+    if (isRefreshing) {
+      return
+    }
+
+    setIsRefreshing(true)
+    try {
+      await Promise.all([
+        refetch(),
+        queryClient.invalidateQueries({
+          queryKey: [...dashboardQueryKeys.all, 'transactions-overview'],
+        }),
+      ])
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
 
   const overview = data ?? EMPTY_DASHBOARD_OVERVIEW
 
@@ -95,6 +117,8 @@ export default function DashboardPage() {
             ? 'ملخص مؤشرات الأداء الرئيسية'
             : 'Key Performance Summary'
         }
+        onRefresh={handleRefresh}
+        isRefreshing={isRefreshing}
       />
 
       <section
