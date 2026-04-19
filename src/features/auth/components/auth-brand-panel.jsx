@@ -1,43 +1,26 @@
 import { Globe } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import {
-  AUTH_BRAND_CONTENT,
-  AUTH_LOGO_SRC,
-} from '@/features/auth/constants/auth-ui'
-import { cn } from '@/lib/utils'
-import { ROUTE_PATHS } from '@/app/router/route-paths'
-import { LocalizedLink } from '@/shared/components/localized-link'
 
-// Helper to get locale from path
-function getLocaleFromPath(pathname) {
-  if (pathname.startsWith('/en')) return 'en'
-  return 'ar'
-}
+import { AUTH_LOGO_SRC } from '@/features/auth/constants/auth-ui'
+import { ROUTE_PATHS } from '@/app/router/route-paths'
+import { getLocaleFromPath, stripLocalePrefix } from '@/lib/i18n/language'
+import { cn } from '@/lib/utils'
+import { LocalizedLink } from '@/shared/components/localized-link'
 
 export function AuthBrandPanel({ className }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { i18n, t } = useTranslation('auth')
+  const { t } = useTranslation('auth')
   const currentLocale = getLocaleFromPath(location.pathname)
 
-  // Switch locale and update URL
   const handleLocaleSwitch = () => {
     const newLocale = currentLocale === 'ar' ? 'en' : 'ar'
-    // Change i18n language
-    i18n.changeLanguage(newLocale)
-    // Update URL prefix
-    let newPath = location.pathname
-    if (newLocale === 'en') {
-      if (!newPath.startsWith('/en')) {
-        newPath = '/en' + (newPath === '/' ? '' : newPath)
-      }
-    } else {
-      if (newPath.startsWith('/en')) {
-        newPath = newPath.replace(/^\/en/, '') || '/'
-      }
-    }
-    navigate(newPath + location.search, { replace: true })
+    const normalizedPath = stripLocalePrefix(location.pathname)
+    const localizedPath = ROUTE_PATHS.withLocale(normalizedPath, newLocale)
+    navigate(`${localizedPath}${location.search}${location.hash}`, {
+      replace: true,
+    })
   }
 
   return (

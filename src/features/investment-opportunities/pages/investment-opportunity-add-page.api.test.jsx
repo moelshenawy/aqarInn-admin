@@ -124,9 +124,6 @@ async function fillPublishRequiredFields() {
     ).not.toBeNull()
   })
 
-  fireEvent.change(document.getElementById('referenceCode'), {
-    target: { value: 'OPP-1001' },
-  })
   fireEvent.change(document.getElementById('titleAr'), {
     target: { value: 'Opportunity Riyadh AR' },
   })
@@ -259,6 +256,8 @@ describe('InvestmentOpportunityAddPage API integration', () => {
   it('loads cities and uses city_id option values', async () => {
     renderAddPage()
 
+    expect(document.getElementById('referenceCode')).toBeNull()
+
     await waitFor(() => {
       expect(getCities).toHaveBeenCalledTimes(1)
     })
@@ -326,6 +325,9 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     await waitFor(() => {
       expect(createOpportunity).toHaveBeenCalledTimes(1)
     })
+    const publishPayload = vi.mocked(createOpportunity).mock.calls[0]?.[0]
+    expect(publishPayload instanceof FormData).toBe(true)
+    expect(publishPayload.get('reference_code')).toBeNull()
     expect(router.state.location.pathname).toBe(
       ROUTE_PATHS.investmentOpportunities,
     )

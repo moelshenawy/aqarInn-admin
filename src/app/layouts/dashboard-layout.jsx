@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Navigate, Outlet, useLocation, useMatches } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { XIcon } from 'lucide-react'
 import { LocalizedLink } from '@/shared/components/localized-link'
 
@@ -30,14 +29,11 @@ import {
 } from '@/features/dashboard/constants/dashboard-storage'
 import { NotificationsProvider } from '@/features/notifications/context/notifications-provider'
 import { useAuth } from '@/features/auth/context/auth-provider'
+import { useSyncLocaleWithPath } from '@/lib/i18n/use-sync-locale-with-path'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
 import { cn } from '@/lib/utils'
 
 const logoMark = '/assets/dashboard/logo-mark.svg'
-
-function getLocaleFromPath(pathname = '') {
-  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'ar'
-}
 
 function DashboardBrand({
   collapsed = false,
@@ -56,7 +52,7 @@ function DashboardBrand({
     >
       <LocalizedLink
         to={ROUTE_PATHS.dashboard}
-        aria-label="\u0639\u0642\u0627\u0631 \u0625\u0646"
+        aria-label="عقار إن"
         className={cn(
           'flex h-[41px] shrink-0 items-center overflow-hidden transition-[width] duration-300 ease-in-out',
           isExpanded ? 'w-[109px] justify-start' : 'w-[33px] justify-center',
@@ -64,7 +60,7 @@ function DashboardBrand({
       >
         <img
           src={isExpanded ? '/assets/Logo.svg' : logoMark}
-          alt="\u0639\u0642\u0627\u0631 \u0625\u0646"
+          alt="عقار إن"
           className={cn(
             'h-[41px] max-w-none transition-[width] duration-300 ease-in-out',
             isExpanded ? 'w-auto' : 'w-[33px]',
@@ -77,8 +73,8 @@ function DashboardBrand({
           type="button"
           aria-label={
             collapsed
-              ? '\u062A\u0648\u0633\u064A\u0639 \u0627\u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u062C\u0627\u0646\u0628\u064A\u0629'
-              : '\u0637\u064A \u0627\u0644\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u062C\u0627\u0646\u0628\u064A\u0629'
+              ? 'توسيع القائمة الجانبية'
+              : 'طي القائمة الجانبية'
           }
           className="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-[color:var(--dashboard-bg)] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/20 focus-visible:outline-none"
           onClick={onToggleCollapse}
@@ -96,7 +92,7 @@ function DashboardBrand({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="\u0625\u063A\u0644\u0627\u0642 \u0627\u0644\u0642\u0627\u0626\u0645\u0629"
+            aria-label="إغلاق القائمة"
             className="size-7 rounded-[min(var(--radius-md),12px)]"
           >
             <XIcon />
@@ -232,19 +228,12 @@ export function DashboardLayout() {
   const location = useLocation()
   const { isAuthenticated } = useAuth()
   const { canAccessRoute } = useAuthorization()
-  const { i18n } = useTranslation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [opportunitySearchQuery, setOpportunitySearchQuery] = useState('')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     getInitialDashboardSidebarCollapsed,
   )
-  const localeFromPath = getLocaleFromPath(location.pathname)
-
-  useEffect(() => {
-    if (i18n.resolvedLanguage !== localeFromPath) {
-      void i18n.changeLanguage(localeFromPath)
-    }
-  }, [i18n, localeFromPath])
+  const localeFromPath = useSyncLocaleWithPath()
 
   const activeRoute = useMemo(
     () => [...matches].reverse().find((match) => match.handle?.key),

@@ -2,20 +2,13 @@ import axios from 'axios'
 
 import i18n from '@/lib/i18n'
 import { normalizeApiError } from '@/lib/api/app-error'
+import { getCurrentPathLocale } from '@/lib/i18n/language'
 
 let unauthorizedHandler = null
 let accessTokenResolver = null
 
-function getLocaleFromPath(pathname = '') {
-  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'ar'
-}
-
 function resolveRequestLocale() {
-  if (typeof window !== 'undefined') {
-    return getLocaleFromPath(window.location.pathname)
-  }
-
-  return i18n?.resolvedLanguage || i18n?.language || 'en'
+  return getCurrentPathLocale() || i18n?.resolvedLanguage || i18n?.language || 'en'
 }
 
 export function registerUnauthorizedHandler(handler) {

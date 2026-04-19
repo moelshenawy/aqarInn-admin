@@ -27,3 +27,23 @@ export function persistLanguage(language) {
 export function getLanguageDirection(language) {
   return language === 'ar' ? 'rtl' : 'ltr'
 }
+
+export function getLocaleFromPath(pathname = '') {
+  return pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'ar'
+}
+
+export function stripLocalePrefix(pathname = '') {
+  if (pathname === '/en' || pathname === '/ar') {
+    return '/'
+  }
+
+  return pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/'
+}
+
+export function getCurrentPathLocale() {
+  if (typeof window === 'undefined') {
+    return DEFAULT_LANGUAGE
+  }
+
+  return getLocaleFromPath(window.location.pathname)
+}

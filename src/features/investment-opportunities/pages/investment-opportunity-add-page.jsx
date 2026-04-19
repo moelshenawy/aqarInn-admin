@@ -173,6 +173,11 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
   }
 }
 
+function stripReferenceCode(values) {
+  const { referenceCode: _referenceCode, ...rest } = values
+  return rest
+}
+
 export default function InvestmentOpportunityAddPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation(['validation'])
@@ -365,7 +370,9 @@ export default function InvestmentOpportunityAddPage() {
     const formValues = getValues()
 
     try {
-      const formData = buildOpportunityFormData(formValues, { mode: 'draft' })
+      const formData = buildOpportunityFormData(stripReferenceCode(formValues), {
+        mode: 'draft',
+      })
       await createDraftMutation.mutateAsync(formData)
       showDashboardSuccessToast(saveDraftSuccessToast)
       navigateToList()
@@ -382,7 +389,9 @@ export default function InvestmentOpportunityAddPage() {
     const formValues = getValues()
 
     try {
-      const formData = buildOpportunityFormData(formValues, { mode: 'publish' })
+      const formData = buildOpportunityFormData(stripReferenceCode(formValues), {
+        mode: 'publish',
+      })
       await createOpportunityMutation.mutateAsync(formData)
       setReviewOpen(false)
       showDashboardSuccessToast(publishSuccessToast)
@@ -394,20 +403,6 @@ export default function InvestmentOpportunityAddPage() {
         actionLabel: 'إغلاق',
       })
     }
-  }
-
-  function handleOpenNeighborhoodMap() {
-    if (!selectedCityId) {
-      showDashboardErrorToast({
-        title: 'المدينة مطلوبة',
-        description: 'اختر المدينة أولاً قبل تحديد الحي من الخريطة.',
-        actionLabel: 'إغلاق',
-      })
-      return
-    }
-
-    setSelectedCityForMap(cityLookup.get(selectedCityId) ?? null)
-    setIsNeighborhoodMapOpen(true)
   }
 
   function handleConfirmNeighborhoodSelection(selection) {
@@ -460,8 +455,7 @@ export default function InvestmentOpportunityAddPage() {
         cancelLabel="الغاء"
         isSubmitting={isSubmitting}
         cityOptions={cityOptions}
-        onOpenNeighborhoodMap={handleOpenNeighborhoodMap}
-        isNeighborhoodMapDisabled={!selectedCityId}
+        showReferenceCode={false}
         onCancel={navigateToList}
       />
       <InvestmentOpportunityNeighborhoodMapDialog

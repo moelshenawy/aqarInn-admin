@@ -52,8 +52,7 @@ export function InvestmentOpportunityForm({
   isSubmitting = false,
   fileFields = {},
   fileUploadState = {},
-  onOpenNeighborhoodMap,
-  isNeighborhoodMapDisabled = false,
+  showReferenceCode = true,
 }) {
   return (
     <form className="px-0 sm:px-4 lg:px-[26px]" onSubmit={onSubmit} noValidate>
@@ -79,6 +78,7 @@ export function InvestmentOpportunityForm({
 
       <div className="space-y-[30px]">
         <InvestmentOpportunityFormGrid>
+          {showReferenceCode ? (
           <InvestmentOpportunityTextField
             id="referenceCode"
             label="الكود المرجعي"
@@ -87,6 +87,7 @@ export function InvestmentOpportunityForm({
             error={errors.referenceCode?.message}
             {...register('referenceCode')}
           />
+          ) : null}
           <InvestmentOpportunityTextField
             id="titleAr"
             label="العنوان بالعربية"

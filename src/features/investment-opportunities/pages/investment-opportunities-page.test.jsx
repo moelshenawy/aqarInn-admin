@@ -145,10 +145,6 @@ async function fillPublishRequiredFields() {
   await waitFor(() => {
     expect(document.getElementById('cityId')).not.toBeNull()
   })
-
-  fireEvent.change(document.getElementById('referenceCode'), {
-    target: { value: 'OPP-1001' },
-  })
   fireEvent.change(document.getElementById('titleAr'), {
     target: { value: 'فرصة استثمارية - الرياض' },
   })

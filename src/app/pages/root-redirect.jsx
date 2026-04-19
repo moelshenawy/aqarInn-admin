@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useLocation } from 'react-router-dom'
 
-import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { OnboardingScreen } from '@/features/auth/components/onboarding-screen'
 import { ONBOARDING_SEEN_STORAGE_KEY } from '@/features/auth/constants/auth-ui'
-import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '@/lib/i18n/language'
-
-// Helper to get locale from path
-function getLocaleFromPath(pathname) {
-  if (pathname.startsWith('/en')) return 'en'
-  return 'ar'
-}
+import { getLocaleFromPath } from '@/lib/i18n/language'
 
 export function RootRedirectPage() {
   const navigate = useNavigate()
