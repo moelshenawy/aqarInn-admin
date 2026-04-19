@@ -17,6 +17,11 @@
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import { createElement } from 'react'
+import {
+  APP_ACTIONS,
+  APP_RESOURCES,
+  createPermission,
+} from '@/lib/permissions/constants'
 
 const avatarImage = '/assets/dashboard/avatar-omar.png'
 const logoMark = '/assets/dashboard/logo-mark.svg'
@@ -77,6 +82,9 @@ export const dashboardNavItems = [
     labelEn: 'Dashboard',
     path: ROUTE_PATHS.dashboard,
     icon: LayoutDashboard,
+    requiredPermissions: [
+      createPermission(APP_RESOURCES.dashboard, APP_ACTIONS.view),
+    ],
   },
   {
     key: 'investment-opportunities',
@@ -84,6 +92,9 @@ export const dashboardNavItems = [
     labelEn: 'Investment Opportunities',
     path: ROUTE_PATHS.investmentOpportunities,
     icon: Grid2x2,
+    requiredPermissions: [
+      createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
+    ],
   },
   {
     key: 'users',
@@ -91,6 +102,7 @@ export const dashboardNavItems = [
     labelEn: 'Users Management',
     path: ROUTE_PATHS.users,
     icon: Users,
+    requiredPermissions: [createPermission(APP_RESOURCES.users, APP_ACTIONS.view)],
   },
   {
     key: 'cities',

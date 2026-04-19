@@ -16,6 +16,12 @@ import {
   useProfitDistributionDetailsQuery,
   useProfitDistributionsQuery,
 } from '@/features/investment-opportunities/hooks/use-profit-distributions-query'
+import {
+  APP_ACTIONS,
+  APP_RESOURCES,
+  createPermission,
+} from '@/lib/permissions/constants'
+import { useAuthorization } from '@/lib/permissions/use-authorization'
 
 function formatNumber(value, digits = 0) {
   const parsed = Number(value)
@@ -101,9 +107,16 @@ function resolveApiErrorMessage(error) {
 export default function InvestmentOpportunityProfitDistributionsPage() {
   const { i18n } = useTranslation()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
+  const { hasAllPermissions } = useAuthorization()
   const [distributionDialogOpen, setDistributionDialogOpen] = useState(false)
   const [selectedDistributionId, setSelectedDistributionId] = useState(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
+  const canAddDistribution = hasAllPermissions([
+    createPermission(
+      APP_RESOURCES.profitDistributions,
+      APP_ACTIONS.distributeProfits,
+    ),
+  ])
 
   const { data: distributions = [], isLoading } =
     useProfitDistributionsQuery(opportunityId)
@@ -141,6 +154,10 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
   }
 
   const handleCreateDistribution = async (payload) => {
+    if (!canAddDistribution) {
+      return
+    }
+
     try {
       await createDistributionMutation.mutateAsync(payload)
       setDistributionDialogOpen(false)
@@ -163,8 +180,9 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
       <InvestmentOpportunityDistributionsTable
         rows={rows}
         isLoading={isLoading}
-        onAddDistribution={() => setDistributionDialogOpen(true)}
+        onAddDistribution={() => setDistributionDialogOpen(canAddDistribution)}
         onViewDistribution={handleViewDistribution}
+        canAddDistribution={canAddDistribution}
       />
       <InvestmentOpportunityAddDistributionDialog
         open={distributionDialogOpen}

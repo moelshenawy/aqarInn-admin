@@ -12,6 +12,10 @@ import {
   registerAccessTokenResolver,
 } from '@/lib/api/http-client'
 import { APP_ROLES } from '@/lib/permissions/constants'
+import {
+  getPrimaryPermissionRole,
+  normalizePermissionRoles,
+} from '@/lib/permissions/role-utils'
 
 const AuthContext = createContext(null)
 
@@ -37,18 +41,9 @@ function normalizeAuthUser(user) {
   }
 }
 
-function getRoleFromAuthUser(user) {
+function getRolesFromAuthUser(user) {
   if (!user) {
-    return APP_ROLES.operationsAdmin
-  }
-
-  if (
-    user.is_super_admin ||
-    user.isSuperAdmin ||
-    user.is_admin ||
-    user.isAdmin
-  ) {
-    return APP_ROLES.superAdmin
+    return [APP_ROLES.operationsAdmin]
   }
 
   const possibleRoles = []
@@ -68,58 +63,37 @@ function getRoleFromAuthUser(user) {
     })
   }
 
-  const normalizedRoles = new Set(
-    possibleRoles
-      .filter(Boolean)
-      .map((value) =>
-        value.toString().trim().toLowerCase().replace(/[-\s]/g, '_'),
-      ),
-  )
+  const normalizedRoles = normalizePermissionRoles(possibleRoles)
 
   if (
-    normalizedRoles.has(APP_ROLES.superAdmin) ||
-    normalizedRoles.has('superadmin') ||
-    normalizedRoles.has('admin')
+    user.is_super_admin ||
+    user.isSuperAdmin ||
+    user.is_admin ||
+    user.isAdmin
   ) {
-    return APP_ROLES.superAdmin
+    if (!normalizedRoles.includes(APP_ROLES.superAdmin)) {
+      normalizedRoles.unshift(APP_ROLES.superAdmin)
+    }
   }
 
-  if (
-    normalizedRoles.has(APP_ROLES.operationsAdmin) ||
-    normalizedRoles.has('operationsadmin') ||
-    normalizedRoles.has('operations') ||
-    normalizedRoles.has('operationadmin')
-  ) {
-    return APP_ROLES.operationsAdmin
-  }
+  return normalizedRoles.length > 0 ? normalizedRoles : [APP_ROLES.operationsAdmin]
+}
 
-  if (
-    normalizedRoles.has(APP_ROLES.investmentManager) ||
-    normalizedRoles.has('investmentmanager')
-  ) {
-    return APP_ROLES.investmentManager
+function getInitialRolesFromStorage() {
+  try {
+    const raw = localStorage.getItem('authUser')
+    const storedUser = raw ? normalizeAuthUser(JSON.parse(raw)) : null
+    return getRolesFromAuthUser(storedUser)
+  } catch (e) {
+    return [APP_ROLES.operationsAdmin]
   }
-
-  if (
-    normalizedRoles.has(APP_ROLES.readOnlyViewer) ||
-    normalizedRoles.has('readonlyviewer')
-  ) {
-    return APP_ROLES.readOnlyViewer
-  }
-
-  return APP_ROLES.operationsAdmin
 }
 
 export function AuthProvider({ children }) {
-  const [role, setRole] = useState(() => {
-    try {
-      const raw = localStorage.getItem('authUser')
-      const storedUser = raw ? normalizeAuthUser(JSON.parse(raw)) : null
-      return getRoleFromAuthUser(storedUser)
-    } catch (e) {
-      return APP_ROLES.operationsAdmin
-    }
-  })
+  const [roles, setRoles] = useState(() => getInitialRolesFromStorage())
+  const [role, setRole] = useState(() =>
+    getPrimaryPermissionRole(getInitialRolesFromStorage(), APP_ROLES.operationsAdmin),
+  )
 
   const [user, setUser] = useState(() => {
     try {
@@ -135,17 +109,24 @@ export function AuthProvider({ children }) {
   )
 
   const setPreviewRole = useCallback((nextRole) => {
-    setRole(nextRole)
+    const nextRoles = normalizePermissionRoles(nextRole, APP_ROLES.operationsAdmin)
+    setRoles(nextRoles)
+    setRole(getPrimaryPermissionRole(nextRoles, APP_ROLES.operationsAdmin))
   }, [])
 
   const resetPreviewRole = useCallback(() => {
+    setRoles([APP_ROLES.operationsAdmin])
     setRole(APP_ROLES.operationsAdmin)
   }, [])
 
   const login = useCallback(({ token, admin, user }) => {
     const authUser = admin ?? user
     const nextUser = normalizeAuthUser(authUser)
-    const nextRole = getRoleFromAuthUser(authUser)
+    const nextRoles = getRolesFromAuthUser(authUser)
+    const nextRole = getPrimaryPermissionRole(
+      nextRoles,
+      APP_ROLES.operationsAdmin,
+    )
 
     try {
       localStorage.setItem('authToken', token)
@@ -156,6 +137,7 @@ export function AuthProvider({ children }) {
 
     setUser(nextUser)
     setRole(nextRole)
+    setRoles(nextRoles)
     setIsAuthenticated(true)
   }, [])
 
@@ -184,6 +166,7 @@ export function AuthProvider({ children }) {
       session: null,
       user,
       role,
+      roles,
       isAuthenticated,
       setPreviewRole,
       resetPreviewRole,
@@ -194,6 +177,7 @@ export function AuthProvider({ children }) {
       user,
       resetPreviewRole,
       role,
+      roles,
       setPreviewRole,
       isAuthenticated,
       login,

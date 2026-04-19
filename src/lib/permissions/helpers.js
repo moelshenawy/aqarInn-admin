@@ -1,31 +1,39 @@
 import { rolePermissions } from '@/lib/permissions/role-permissions'
+import { normalizePermissionRoles } from '@/lib/permissions/role-utils'
 
-export function hasPermission(role, permission) {
-  if (!role || !permission) {
+export function hasPermission(roleOrRoles, permission) {
+  if (!roleOrRoles || !permission) {
     return false
   }
 
-  return (rolePermissions[role] ?? []).some(
-    (entry) =>
-      entry.resource === permission.resource &&
-      entry.action === permission.action,
+  const normalizedRoles = normalizePermissionRoles(roleOrRoles)
+  if (!normalizedRoles.length) {
+    return false
+  }
+
+  return normalizedRoles.some((role) =>
+    (rolePermissions[role] ?? []).some(
+      (entry) =>
+        entry.resource === permission.resource &&
+        entry.action === permission.action,
+    ),
   )
 }
 
-export function hasAnyPermission(role, permissions = []) {
+export function hasAnyPermission(roleOrRoles, permissions = []) {
   if (!permissions.length) {
     return true
   }
-  return permissions.some((permission) => hasPermission(role, permission))
+  return permissions.some((permission) => hasPermission(roleOrRoles, permission))
 }
 
-export function hasAllPermissions(role, permissions = []) {
+export function hasAllPermissions(roleOrRoles, permissions = []) {
   if (!permissions.length) {
     return true
   }
-  return permissions.every((permission) => hasPermission(role, permission))
+  return permissions.every((permission) => hasPermission(roleOrRoles, permission))
 }
 
-export function canAccessRoute(role, requiredPermissions = []) {
-  return hasAllPermissions(role, requiredPermissions)
+export function canAccessRoute(roleOrRoles, requiredPermissions = []) {
+  return hasAllPermissions(roleOrRoles, requiredPermissions)
 }

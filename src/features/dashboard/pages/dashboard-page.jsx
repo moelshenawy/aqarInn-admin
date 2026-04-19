@@ -11,6 +11,7 @@ import { DashboardTransactionsOverviewSection } from '@/features/dashboard/compo
 import { DashboardTransactionsSummaryV2Section } from '@/features/dashboard/components/dashboard-transactions-summary-v2-section'
 import { useDashboardOverviewQuery } from '@/features/dashboard/hooks/use-dashboard-overview-query'
 import { useDirection } from '@/lib/i18n/direction-provider'
+import { buildInvestmentOpportunityDetailsPath } from '@/app/router/route-paths'
 
 const EMPTY_DASHBOARD_OVERVIEW = {
   summary_cards: [],
@@ -156,6 +157,10 @@ export default function DashboardPage() {
               className={index < 3 ? 'lg:col-span-2' : 'lg:col-span-3'}
             >
               <DashboardOpportunityCard
+                to={buildInvestmentOpportunityDetailsPath(
+                  opportunity.id,
+                  i18n.resolvedLanguage,
+                )}
                 referenceCode={opportunity.reference_code}
                 title={opportunity.title}
                 soldShares={`${numberFormatter.format(opportunity.funded_shares ?? 0)} / ${numberFormatter.format(opportunity.total_shares ?? 0)}`}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { useCreateUserMutation } from '@/features/users/hooks/use-create-user-mutation'
 import { useUpdateUserMutation } from '@/features/users/hooks/use-update-user-mutation'
 import { useDirection } from '@/lib/i18n/direction-provider'
+import { useOpportunitiesQuery } from '@/features/investment-opportunities/hooks/use-opportunities-query'
 
 function getToastDirection() {
   return i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
@@ -34,15 +35,32 @@ const initialFormValues = {
   fullNameEn: '',
   email: '',
   mobile: '',
-  role: '',
+  roles: [],
+  investmentOpportunityIds: [],
   password: '',
   active: true,
+}
+
+function asStringArray(value) {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((entry) => typeof entry === 'string' && entry.trim())
 }
 
 function getInitialFormValues(prefillValues) {
   if (!prefillValues) {
     return initialFormValues
   }
+
+  const prefillRoles = asStringArray(prefillValues.roles)
+  const normalizedRoles =
+    prefillRoles.length > 0
+      ? prefillRoles
+      : prefillValues.role
+        ? [prefillValues.role]
+        : []
 
   return {
     ...initialFormValues,
@@ -52,7 +70,10 @@ function getInitialFormValues(prefillValues) {
     fullNameEn: prefillValues.fullNameEn ?? '',
     email: prefillValues.email ?? '',
     mobile: prefillValues.mobile ?? '',
-    role: prefillValues.role ?? '',
+    roles: normalizedRoles,
+    investmentOpportunityIds: asStringArray(
+      prefillValues.investmentOpportunityIds,
+    ),
     password: '',
     active:
       typeof prefillValues.active === 'boolean'
@@ -131,10 +152,18 @@ function normalizeSaudiMobile(rawValue) {
   return digits
 }
 
-function UsersAddSelectField({
+function toggleSelection(items, nextItem) {
+  if (items.includes(nextItem)) {
+    return items.filter((item) => item !== nextItem)
+  }
+
+  return [...items, nextItem]
+}
+
+function UsersAddMultiSelectField({
   id,
   label,
-  value,
+  values,
   onChange,
   options,
   placeholder,
@@ -164,8 +193,13 @@ function UsersAddSelectField({
     }
   }, [])
 
-  const selectedOption = options.find((option) => option.value === value)
-  const summaryText = selectedOption?.label ?? placeholder
+  const selectedOptions = options.filter((option) =>
+    values.includes(option.value),
+  )
+  const summaryText =
+    selectedOptions.length > 0
+      ? selectedOptions.map((option) => option.label).join(' • ')
+      : placeholder
 
   return (
     <UsersAddFieldShell id={id} label={label}>
@@ -182,7 +216,7 @@ function UsersAddSelectField({
           <span
             className={cn(
               'line-clamp-1 min-w-0 flex-1 text-start',
-              selectedOption ? 'text-[#402f28]' : 'text-[#bfab85]',
+              selectedOptions.length > 0 ? 'text-[#402f28]' : 'text-[#bfab85]',
             )}
           >
             {summaryText}
@@ -199,10 +233,11 @@ function UsersAddSelectField({
         {open ? (
           <div
             role="listbox"
+            aria-multiselectable="true"
             className="absolute z-20 mt-2 max-h-56 w-full overflow-y-auto rounded-lg border border-[#d6cbb2] bg-[#f8f3e8] p-1 shadow-[0_12px_24px_rgba(10,13,18,0.08)]"
           >
             {options.map((option) => {
-              const isSelected = value === option.value
+              const isSelected = values.includes(option.value)
 
               return (
                 <button
@@ -210,10 +245,9 @@ function UsersAddSelectField({
                   type="button"
                   role="option"
                   aria-selected={isSelected}
-                  onClick={() => {
-                    onChange(option.value)
-                    setOpen(false)
-                  }}
+                  onClick={() =>
+                    onChange(toggleSelection(values, option.value))
+                  }
                   className="flex w-full items-center justify-end gap-2 rounded-md px-3 py-2 text-start text-sm leading-5 text-[#402f28] transition hover:bg-[#eae5d7] focus-visible:bg-[#eae5d7] focus-visible:outline-none"
                 >
                   <span className="min-w-0 flex-1">{option.label}</span>
@@ -232,6 +266,66 @@ function UsersAddSelectField({
             })}
           </div>
         ) : null}
+      </div>
+    </UsersAddFieldShell>
+  )
+}
+
+function UsersAddInvestmentOpportunitiesField({
+  id,
+  values,
+  onChange,
+  options,
+  isLoading,
+}) {
+  return (
+    <UsersAddFieldShell
+      id={id}
+      label="قائمة الفرص الاستثمارية"
+      className="md:col-span-2"
+    >
+      <div
+        id={id}
+        className="w-full rounded-lg border border-[#bfab85] bg-[#f8f3e8] p-3 shadow-[var(--dashboard-shadow)]"
+      >
+        {isLoading ? (
+          <p className="text-sm leading-5 text-[#9d7e55]">
+            جارٍ تحميل الفرص الاستثمارية...
+          </p>
+        ) : options.length === 0 ? (
+          <p className="text-sm leading-5 text-[#9d7e55]">
+            لا توجد فرص استثمارية منشورة متاحة حالياً.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {options.map((option) => {
+              const isChecked = values.includes(option.value)
+
+              return (
+                <label
+                  key={option.value}
+                  className="flex cursor-pointer items-center justify-end gap-2 rounded-md px-2 py-1.5 transition hover:bg-[#eae5d7]"
+                >
+                  <span className="min-w-0 flex-1 text-sm leading-5 font-medium text-[#402f28]">
+                    {option.label}
+                  </span>
+                  <span className="relative inline-flex size-5 shrink-0 items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() =>
+                        onChange(toggleSelection(values, option.value))
+                      }
+                      className="peer sr-only"
+                    />
+                    <span className="pointer-events-none size-5 rounded-[6px] border border-[#d6cbb2] bg-transparent transition peer-checked:border-[#402f28] peer-checked:bg-[#402f28]" />
+                    <Check className="pointer-events-none absolute size-3 text-white opacity-0 transition peer-checked:opacity-100" />
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        )}
       </div>
     </UsersAddFieldShell>
   )
@@ -275,6 +369,35 @@ export default function UsersAddPage() {
   const createUserMutation = useCreateUserMutation()
   const updateUserMutation = useUpdateUserMutation()
 
+  const isInvestmentManagerSelected =
+    formValues.roles.includes('investmentManager')
+
+  const { data: opportunitiesPayload, isLoading: isLoadingOpportunities } =
+    useOpportunitiesQuery(1, '', {
+      enabled: isInvestmentManagerSelected,
+    })
+
+  const publishedOpportunityOptions = useMemo(() => {
+    const opportunities = Array.isArray(opportunitiesPayload?.data)
+      ? opportunitiesPayload.data
+      : []
+
+    return opportunities
+      .filter((opportunity) => opportunity?.status === 'published')
+      .map((opportunity) => {
+        const localizedTitle =
+          i18n.resolvedLanguage === 'en'
+            ? (opportunity?.title_en ?? opportunity?.title_ar)
+            : (opportunity?.title_ar ?? opportunity?.title_en)
+
+        return {
+          value: String(opportunity?.id ?? ''),
+          label: `${opportunity?.reference_code ?? opportunity?.id} - ${localizedTitle ?? ''}`,
+        }
+      })
+      .filter((option) => option.value.trim())
+  }, [i18n.resolvedLanguage, opportunitiesPayload])
+
   const isSubmitting =
     Boolean(createUserMutation.isLoading ?? createUserMutation.isPending) ||
     Boolean(updateUserMutation.isLoading ?? updateUserMutation.isPending)
@@ -293,6 +416,7 @@ export default function UsersAddPage() {
   function handleSubmit(event) {
     event.preventDefault()
 
+    const selectedRoles = asStringArray(formValues.roles)
     const payload = {
       code: formValues.code.trim(),
       full_name_ar: formValues.fullNameAr.trim(),
@@ -300,7 +424,8 @@ export default function UsersAddPage() {
       email: formValues.email.trim(),
       mobile_number: normalizeSaudiMobile(formValues.mobile),
       status: formValues.active ? 'active' : 'inactive',
-      role: formValues.role,
+      role: selectedRoles[0] ?? '',
+      roles: selectedRoles,
     }
 
     if (
@@ -309,12 +434,24 @@ export default function UsersAddPage() {
       !payload.full_name_en ||
       !payload.email ||
       !payload.mobile_number ||
-      !payload.role
+      payload.roles.length === 0
     ) {
       showDashboardErrorToast({
         title: 'بيانات غير مكتملة',
         description:
           'يرجى إدخال الكود والاسمين العربي والإنجليزي والبريد الإلكتروني ورقم الجوال والدور الوظيفي.',
+      })
+      return
+    }
+
+    if (
+      selectedRoles.includes('investmentManager') &&
+      formValues.investmentOpportunityIds.length === 0
+    ) {
+      showDashboardErrorToast({
+        title: 'بيانات غير مكتملة',
+        description:
+          'يرجى تحديد فرصة استثمارية واحدة على الأقل عند اختيار دور مدير الاستثمار.',
       })
       return
     }
@@ -422,14 +559,25 @@ export default function UsersAddPage() {
               onChange={(value) => updateField('code', value)}
               placeholder="أدخل كود المستخدم مثل ADM-001"
             />
-            <UsersAddSelectField
+            <UsersAddMultiSelectField
               id="user-role"
               label="الدور الوظيفي"
-              value={formValues.role}
-              onChange={(value) => updateField('role', value)}
+              values={formValues.roles}
+              onChange={(value) => updateField('roles', value)}
               options={roleOptions}
               placeholder="اختر الدور الوظيفي"
             />
+            {isInvestmentManagerSelected ? (
+              <UsersAddInvestmentOpportunitiesField
+                id="user-investment-opportunities"
+                values={formValues.investmentOpportunityIds}
+                onChange={(value) =>
+                  updateField('investmentOpportunityIds', value)
+                }
+                options={publishedOpportunityOptions}
+                isLoading={isLoadingOpportunities}
+              />
+            ) : null}
             <UsersAddTextField
               id="user-full-name-en"
               label="الاسم الكامل بالإنجليزية"
@@ -451,7 +599,7 @@ export default function UsersAddPage() {
               onChange={(value) =>
                 updateField('mobile', value.replace(/[^\d+]/g, '').slice(0, 13))
               }
-              placeholder="أدخل رقم الجوال "
+              placeholder="أدخل رقم الجوال"
               type="text"
               inputMode="numeric"
             />

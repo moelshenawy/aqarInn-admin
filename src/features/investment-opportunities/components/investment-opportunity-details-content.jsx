@@ -97,6 +97,7 @@ export function InvestmentOpportunityDetailsActions({
   onDelete,
   onEdit,
   showDelete = true,
+  showEdit = true,
 }) {
   return (
     <div className="flex shrink-0 items-center gap-2">
@@ -115,19 +116,21 @@ export function InvestmentOpportunityDetailsActions({
           />
         </button>
       ) : null}
-      <button
-        type="button"
-        onClick={onEdit}
-        className="inline-flex h-[38px] items-center justify-center gap-1.5 rounded-full border border-[#d6cbb2] px-4 py-1 text-sm leading-5 font-semibold text-[#181927] transition hover:bg-[#eae5d7] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
-      >
-        <span>تعديل</span>
-        <img
-          src={investmentOpportunityDetailsAssets.edit}
-          alt=""
-          className="size-[19px]"
-          aria-hidden="true"
-        />
-      </button>
+      {showEdit ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          className="inline-flex h-[38px] items-center justify-center gap-1.5 rounded-full border border-[#d6cbb2] px-4 py-1 text-sm leading-5 font-semibold text-[#181927] transition hover:bg-[#eae5d7] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+        >
+          <span>تعديل</span>
+          <img
+            src={investmentOpportunityDetailsAssets.edit}
+            alt=""
+            className="size-[19px]"
+            aria-hidden="true"
+          />
+        </button>
+      ) : null}
     </div>
   )
 }

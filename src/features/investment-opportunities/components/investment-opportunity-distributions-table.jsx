@@ -89,6 +89,7 @@ export function InvestmentOpportunityDistributionsTable({
   isLoading = false,
   onAddDistribution,
   onViewDistribution,
+  canAddDistribution = true,
 }) {
   return (
     <section
@@ -108,14 +109,16 @@ export function InvestmentOpportunityDistributionsTable({
           <span className="rounded-full bg-white px-3 py-1 text-xs leading-[18px] font-medium text-[#402f28]">
             {rows.length} مجموع التوزيعات
           </span>
-          <button
-            type="button"
-            onClick={onAddDistribution}
-            className="ms-auto inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#402f28] px-5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
-          >
-            <span>{investmentOpportunityDistributionSummary.addLabel}</span>
-            <Plus className="size-5 stroke-[2]" aria-hidden="true" />
-          </button>
+          {canAddDistribution ? (
+            <button
+              type="button"
+              onClick={onAddDistribution}
+              className="ms-auto inline-flex h-9 items-center justify-center gap-2 rounded-full bg-[#402f28] px-5 text-sm leading-5 font-semibold text-white shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
+            >
+              <span>{investmentOpportunityDistributionSummary.addLabel}</span>
+              <Plus className="size-5 stroke-[2]" aria-hidden="true" />
+            </button>
+          ) : null}
         </div>
       </header>
 

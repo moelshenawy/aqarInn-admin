@@ -32,7 +32,7 @@ import { useUsersQuery } from '@/features/users/hooks/use-users-query'
 import { useDeleteUserMutation } from '@/features/users/hooks/use-delete-user-mutation'
 
 const USERS_PAGE_SIZE = 10
-const TOTAL_USERS = 100
+const USERS_TABLE_SKELETON_ROWS = 6
 
 const usersCopy = {
   ar: {
@@ -54,6 +54,7 @@ const usersCopy = {
     paginationLabel: 'ترقيم صفحات المستخدمين',
     previousPage: 'السابق',
     nextPage: 'التالي',
+    emptyState: 'لا يوجد مستخدمون',
     deleteDialog: {
       title: 'حذف المستخدم',
       description:
@@ -93,6 +94,7 @@ const usersCopy = {
     paginationLabel: 'Users pagination',
     previousPage: 'Previous',
     nextPage: 'Next',
+    emptyState: 'No users found',
     deleteDialog: {
       title: 'Delete user',
       description:
@@ -115,207 +117,6 @@ const usersCopy = {
   },
 }
 
-const baseUsersRows = [
-  {
-    id: 'user-1',
-    fullName: 'عبد العزيز أحمد سالم الهاشمي',
-    identifier: 'AQIN001',
-    role: 'مدير العمليات',
-    email: 'phoenix@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-    isFixedSuperAdmin: true,
-  },
-  {
-    id: 'user-2',
-    fullName: 'ليلى حسن علي الغامدي',
-    identifier: 'AQIN001',
-    role: 'مدير خدمة العملاء',
-    email: 'phoenix@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-    isSystemUser: true,
-  },
-  {
-    id: 'user-3',
-    fullName: 'ريم عبد الرحمن سعود البلوي',
-    identifier: 'AQIN001',
-    role: 'أخصائي تطوير الأعمال',
-    email: 'lana@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-    highlighted: true,
-  },
-  {
-    id: 'user-4',
-    fullName: 'منى فيصل حمد السبيعي',
-    identifier: 'AQIN001',
-    role: 'مهندس معماري',
-    email: 'demi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-5',
-    fullName: 'عبير سعد مبارك الدوسري',
-    identifier: 'AQIN001',
-    role: 'مدير مبيعات',
-    email: 'demi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-6',
-    fullName: 'نورة خالد فهد الرويلي',
-    identifier: 'AQIN001',
-    role: 'مدير التسويق الرقمي',
-    email: 'demi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-7',
-    fullName: 'فهد عبد الله مبارك العتيبي',
-    identifier: 'AQIN001',
-    role: 'أخصائي قانوني عقاري',
-    email: 'demi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-8',
-    fullName: 'محمد إبراهيم حسن العسيري',
-    identifier: 'AQIN001',
-    role: 'محاسب مالي',
-    email: 'orlando@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-9',
-    fullName: 'سالم علي محمد الناصر',
-    identifier: 'AQIN001',
-    role: 'محلل استثمار عقاري',
-    email: 'andi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-  {
-    id: 'user-10',
-    fullName: 'هند طلال عبد العزيز العتيبي',
-    identifier: 'AQIN001',
-    role: 'مدير مشاريع البناء',
-    email: 'demi@AqarInn',
-    phone: '+966 55 555 5555',
-    status: 'نشط',
-  },
-]
-
-const usersRows = Array.from({ length: TOTAL_USERS }, (_, index) => {
-  const baseRow = baseUsersRows[index % baseUsersRows.length]
-  const rowNumber = index + 1
-
-  return {
-    ...baseRow,
-    id: `user-${rowNumber}`,
-    identifier:
-      index < USERS_PAGE_SIZE
-        ? baseRow.identifier
-        : `AQIN${String(rowNumber).padStart(3, '0')}`,
-    highlighted: rowNumber % USERS_PAGE_SIZE === 3,
-    isFixedSuperAdmin: baseRow.isFixedSuperAdmin ?? false,
-    isSystemUser: baseRow.isSystemUser ?? false,
-  }
-})
-
-const mockEnglishNamesByBaseUserId = {
-  'user-1': 'Abdulaziz Ahmed Salem Alhashmi',
-  'user-2': 'Laila Hassan Ali Alghamdi',
-  'user-3': 'Reem Abdulrahman Saud Albalawi',
-  'user-4': 'Mona Faisal Hamad Alsobaii',
-  'user-5': 'Abeer Saad Mubarak Aldosari',
-  'user-6': 'Noura Khaled Fahad Alruwaili',
-  'user-7': 'Fahad Abdullah Mubarak Alotaibi',
-  'user-8': 'Mohammed Ibrahim Hassan Alasiri',
-  'user-9': 'Salem Ali Mohammed Alnasser',
-  'user-10': 'Hind Talal Abdulaziz Alotaibi',
-}
-
-const mockSecondaryRoleByBaseUserId = {
-  'user-1': 'أخصائي قانوني عقاري',
-  'user-2': 'مدير علاقات المستثمرين',
-  'user-3': 'مدير العمليات',
-  'user-4': 'مستشار تطوير أعمال',
-  'user-5': 'مشرف قنوات البيع',
-  'user-6': 'أخصائي تجربة العميل',
-  'user-7': 'محلل امتثال',
-  'user-8': 'أخصائي تقارير مالية',
-  'user-9': 'مشرف جودة الاستثمار',
-  'user-10': 'أخصائي تنفيذ المشاريع',
-}
-
-const defaultRecentActivities = [
-  {
-    date: '01 يناير 2025',
-    title: 'إنشاء حساب جديد للمستخدم',
-    description:
-      'تم إدخال البيانات الأساسية (الاسم بالعربي والإنجليزي، رقم الجوال، البريد الإلكتروني) وتفعيل الحساب بشكل أولي مع تعيين الإعدادات الافتراضية للإشعارات.',
-    icon: 'account',
-  },
-  {
-    date: '01 يناير 2025',
-    title: 'عرض تفاصيل فرصة استثمارية',
-    description:
-      'قام المستخدم بفتح تفاصيل الفرصة الاستثمارية رقم RES-RUH-001 وراجع البيانات الأساسية بهدف تقييم إمكانية الدخول في الاستثمار.',
-    icon: 'opportunity',
-  },
-  {
-    date: '01 يناير 2025',
-    title: 'البحث عن فرص في مدينة محددة',
-    description:
-      'استخدم المستخدم خانة البحث عن الفرص في مدينة الرياض مع تطبيق فلتر الحالة المنشورة فقط لتسهيل المقارنة بين الفرص المتاحة.',
-    icon: 'search',
-  },
-  {
-    date: '01 يناير 2025',
-    title: 'إضافة فرصة إلى قائمة المتابعة',
-    description:
-      'أضاف المستخدم الفرصة الاستثمارية RES-JED-012 إلى قائمة المتابعة الخاصة به لسهولة الرجوع إليها لاحقًا.',
-    icon: 'watchlist',
-  },
-  {
-    date: '01 يناير 2025',
-    title: 'إنشاء طلب استثمار جديد',
-    description:
-      'قام المستخدم بإنشاء طلب استثمار جديد وتم تسجيل الطلب بحالة قيد المراجعة وإرسال إشعار داخلي بالاستلام.',
-    icon: 'notification',
-  },
-]
-
-const recentActivitiesByBaseUserId = {
-  'user-2': [
-    ...defaultRecentActivities.slice(0, 2),
-    {
-      date: '03 يناير 2025',
-      title: 'تحديث صلاحيات مستخدم',
-      description:
-        'تم تعديل صلاحيات أحد مستخدمي العمليات وإعادة توزيع نطاق الوصول بما يتوافق مع السياسات الداخلية.',
-      icon: 'account',
-    },
-    ...defaultRecentActivities.slice(3),
-  ],
-  'user-3': [
-    {
-      date: '05 يناير 2025',
-      title: 'مراجعة تقرير فرص جديدة',
-      description:
-        'راجع المستخدم تقرير الفرص الاستثمارية الجديدة وقام بترتيب النتائج حسب العائد المتوقع.',
-      icon: 'opportunity',
-    },
-    ...defaultRecentActivities.slice(1),
-  ],
-}
-
 function mapApiUserToRow(user, index, isArabic) {
   const statusLabelMap = {
     active: isArabic ? 'نشط' : 'Active',
@@ -323,17 +124,9 @@ function mapApiUserToRow(user, index, isArabic) {
     suspended: isArabic ? 'موقوف' : 'Suspended',
   }
   const fullName =
-    user.full_name_ar ??
-    user.full_name ??
-    user.full_name_en ??
-    user.name ??
-    '-'
+    user.full_name_ar ?? user.full_name ?? user.full_name_en ?? user.name ?? '-'
   const fullNameEn =
-    user.full_name_en ??
-    user.full_name ??
-    user.full_name_ar ??
-    user.name ??
-    '-'
+    user.full_name_en ?? user.full_name ?? user.full_name_ar ?? user.name ?? '-'
   const roleValue = user.role ?? ''
   const roleLabel =
     user.role_label ?? user.role ?? (isArabic ? 'بدون دور' : 'No role')
@@ -346,7 +139,11 @@ function mapApiUserToRow(user, index, isArabic) {
     id: user.id,
     fullName,
     identifier:
-      user.code ?? (String(user.id ?? '').slice(0, 8).toUpperCase() || '-'),
+      user.code ??
+      (String(user.id ?? '')
+        .slice(0, 8)
+        .toUpperCase() ||
+        '-'),
     role: roleLabel,
     roleValue,
     email: user.email ?? '-',
@@ -382,24 +179,15 @@ function mapApiUserToRow(user, index, isArabic) {
     fromApi: true,
     originalUser: user,
     isSystemUser: Boolean(user.is_system_protected),
+    isFixedSuperAdmin: false,
   }
 }
 
-function getBaseUserId(rowId) {
-  return `user-${((Number.parseInt(rowId.split('-')[1], 10) - 1) % 10) + 1}`
-}
-
 function buildEditFormPrefill(row) {
-  const baseUserId = row.id?.startsWith('user-') ? getBaseUserId(row.id) : null
-
   return {
     code: row.identifier,
     fullNameAr: row.fullName,
-    fullNameEn:
-      row.fullNameEn ??
-      (baseUserId
-        ? (mockEnglishNamesByBaseUserId[baseUserId] ?? 'Generated User Name')
-        : 'Generated User Name'),
+    fullNameEn: row.fullNameEn ?? '',
     email: row.email,
     mobile: row.phone,
     role: row.roleValue ?? '',
@@ -557,6 +345,54 @@ function UsersPagination({ copy, currentPage, totalPages, onPageChange }) {
   )
 }
 
+function UsersTableSkeleton({ copy, isArabic }) {
+  return (
+    <tbody aria-label="users-loading">
+      {Array.from({ length: USERS_TABLE_SKELETON_ROWS }, (_, index) => (
+        <tr
+          key={`users-skeleton-${index + 1}`}
+          className="h-[72px] border-b border-[#eae5d7] text-sm leading-5 last:border-b-0"
+        >
+          <td className="px-6">
+            <div
+              className="flex items-center justify-start gap-3"
+              dir={isArabic ? 'rtl' : 'ltr'}
+            >
+              <span className="size-5 rounded-[6px] bg-[#ece3d2]" />
+              <span className="size-10 rounded-full bg-[#ece3d2]" />
+              <span className="h-4 w-40 rounded-full bg-[#ece3d2]" />
+            </div>
+          </td>
+          <td className="px-6">
+            <span className="block h-4 w-16 rounded-full bg-[#ece3d2]" />
+          </td>
+          <td className="px-6">
+            <span className="mx-auto block h-4 w-28 rounded-full bg-[#ece3d2]" />
+          </td>
+          <td className="px-6">
+            <span className="block h-4 w-32 rounded-full bg-[#ece3d2]" />
+          </td>
+          <td className="px-6">
+            <span className="block h-4 w-24 rounded-full bg-[#ece3d2]" />
+          </td>
+          <td className="px-6">
+            <span className="block h-6 w-20 rounded-full bg-[#ece3d2]" />
+          </td>
+          <td className="px-4">
+            <div className="flex items-center gap-2">
+              <span className="size-7 rounded-md bg-[#ece3d2]" />
+              <span className="size-7 rounded-md bg-[#ece3d2]" />
+            </div>
+          </td>
+        </tr>
+      ))}
+      <tr className="sr-only">
+        <td colSpan={7}>{copy.tableTitle}</td>
+      </tr>
+    </tbody>
+  )
+}
+
 function UsersManagementTable() {
   const navigate = useNavigate()
   const { i18n } = useTranslation()
@@ -566,7 +402,7 @@ function UsersManagementTable() {
   const [selectedUser, setSelectedUser] = useState(null)
   const isArabic = i18n.resolvedLanguage !== 'en'
   const copy = isArabic ? usersCopy.ar : usersCopy.en
-  const { data: usersResponse } = useUsersQuery()
+  const { data: usersResponse, isLoading, isPending } = useUsersQuery()
   const deleteUserMutation = useDeleteUserMutation()
 
   const apiUsersRows = useMemo(() => {
@@ -574,10 +410,10 @@ function UsersManagementTable() {
     return users.map((user, index) => mapApiUserToRow(user, index, isArabic))
   }, [isArabic, usersResponse])
 
-  const activeUsersRows = useMemo(() => {
-    const sourceRows = apiUsersRows.length > 0 ? apiUsersRows : usersRows
-    return sourceRows.filter((row) => !deletedUserIds.includes(row.id))
-  }, [apiUsersRows, deletedUserIds])
+  const activeUsersRows = useMemo(
+    () => apiUsersRows.filter((row) => !deletedUserIds.includes(row.id)),
+    [apiUsersRows, deletedUserIds],
+  )
 
   const totalPages = Math.max(
     1,
@@ -585,10 +421,8 @@ function UsersManagementTable() {
   )
 
   const safeCurrentPage = Math.min(currentPage, totalPages)
-
   const visibleUsersRows = useMemo(() => {
     const startIndex = (safeCurrentPage - 1) * USERS_PAGE_SIZE
-
     return activeUsersRows.slice(startIndex, startIndex + USERS_PAGE_SIZE)
   }, [activeUsersRows, safeCurrentPage])
 
@@ -699,6 +533,9 @@ function UsersManagementTable() {
     })
   }
 
+  const isTableLoading = Boolean(isLoading || isPending)
+  const showEmptyState = !isTableLoading && visibleUsersRows.length === 0
+
   return (
     <section
       dir={isArabic ? 'rtl' : 'ltr'}
@@ -715,7 +552,8 @@ function UsersManagementTable() {
             {copy.tableTitle}
           </h1>
           <span className="rounded-full bg-[#f8f3e8] px-4 py-1.5 text-center text-xs leading-[18px] font-medium text-[#6d4f3b]">
-            {activeUsersRows.length} {copy.usersCountSuffix}
+            {isTableLoading ? '...' : activeUsersRows.length}{' '}
+            {copy.usersCountSuffix}
           </span>
           <Can
             allOf={[createPermission(APP_RESOURCES.users, APP_ACTIONS.create)]}
@@ -780,38 +618,21 @@ function UsersManagementTable() {
               <th className="px-4 font-bold" aria-label={copy.actionsHeader} />
             </tr>
           </thead>
-          <tbody>
-            {visibleUsersRows.map((row) => {
-              const baseUserId = row.id?.startsWith('user-')
-                ? getBaseUserId(row.id)
-                : null
-              const rowWithDetails = {
-                ...row,
-                fullNameEn: row.fullNameEn
-                  ? row.fullNameEn
-                  : (mockEnglishNamesByBaseUserId[baseUserId] ??
-                    'Generated User Name'),
-                secondaryRole: row.secondaryRole
-                  ? row.secondaryRole
-                  : mockSecondaryRoleByBaseUserId[baseUserId],
-                activities: Array.isArray(row.activities)
-                  ? row.activities
-                  : (recentActivitiesByBaseUserId[baseUserId] ??
-                    defaultRecentActivities),
-                isSystemUser:
-                  typeof row.isSystemUser === 'boolean'
-                    ? row.isSystemUser
-                    : Boolean(row.originalUser?.is_system_protected),
-              }
 
-              return (
+          {isTableLoading ? (
+            <UsersTableSkeleton copy={copy} isArabic={isArabic} />
+          ) : null}
+
+          {!isTableLoading ? (
+            <tbody>
+              {visibleUsersRows.map((row) => (
                 <tr
                   key={row.id}
                   className={cn(
                     'h-[72px] cursor-pointer border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0',
                     row.highlighted && 'bg-[#eae5d7]',
                   )}
-                  onClick={() => handleOpenUserDetails(rowWithDetails)}
+                  onClick={() => handleOpenUserDetails(row)}
                 >
                   <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
                     <div
@@ -844,9 +665,7 @@ function UsersManagementTable() {
                       >
                         <UserTableAction
                           label={`${copy.deleteUser} ${row.fullName}`}
-                          onClick={(event) =>
-                            handleDeleteUser(event, rowWithDetails)
-                          }
+                          onClick={(event) => handleDeleteUser(event, row)}
                         >
                           <Trash2
                             className="size-4 stroke-[1.8]"
@@ -856,7 +675,7 @@ function UsersManagementTable() {
                         <UserTableAction
                           label={`${copy.editUser} ${row.fullName}`}
                           onClick={(event) =>
-                            handleEditUserFromTable(event, rowWithDetails)
+                            handleEditUserFromTable(event, row)
                           }
                         >
                           <Edit
@@ -868,18 +687,31 @@ function UsersManagementTable() {
                     </Can>
                   </td>
                 </tr>
-              )
-            })}
-          </tbody>
+              ))}
+
+              {showEmptyState ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-6 py-16 text-center text-sm font-medium text-[#6d4f3b]"
+                  >
+                    {copy.emptyState}
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          ) : null}
         </table>
       </div>
 
-      <UsersPagination
-        copy={copy}
-        currentPage={safeCurrentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      {!isTableLoading && activeUsersRows.length > 0 ? (
+        <UsersPagination
+          copy={copy}
+          currentPage={safeCurrentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      ) : null}
 
       <ConfirmationDialog
         open={Boolean(pendingDeleteUser)}
@@ -919,7 +751,10 @@ export default function UsersPage() {
   const isArabic = i18n.resolvedLanguage !== 'en'
 
   return (
-    <div className="-mt-[17px]" dir={isArabic ? 'rtl' : 'ltr'}>
+    <div
+      dir={isArabic ? 'rtl' : 'ltr'}
+      className="-mt-[31px] flex flex-col gap-6 px-[26px] py-5 pb-8"
+    >
       <UsersManagementTable />
     </div>
   )

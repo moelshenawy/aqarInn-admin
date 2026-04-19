@@ -23,6 +23,12 @@ import {
 import { useDeleteOpportunityMutation } from '@/features/investment-opportunities/hooks/use-delete-opportunity-mutation'
 import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/hooks/use-opportunity-details-query'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
+import {
+  APP_ACTIONS,
+  APP_RESOURCES,
+  createPermission,
+} from '@/lib/permissions/constants'
+import { useAuthorization } from '@/lib/permissions/use-authorization'
 
 const deleteSuccessToast = {
   title: 'تم حذف الفرصة الاستثمارية بنجاح',
@@ -41,11 +47,21 @@ export default function InvestmentOpportunityDetailsPage() {
   const { i18n } = useTranslation()
   const dir = i18n.resolvedLanguage === 'ar' ? 'rtl' : 'ltr'
   const { opportunityId = 'investment-riyadh-001' } = useParams()
+  const { hasAllPermissions } = useAuthorization()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const { data: opportunity, isLoading } =
     useOpportunityDetailsQuery(opportunityId)
   const deleteOpportunityMutation = useDeleteOpportunityMutation()
-  const canDeleteOpportunity = opportunity?.status === 'draft'
+  const canEditOpportunity = hasAllPermissions([
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.edit),
+  ])
+  const canDeleteOpportunity =
+    hasAllPermissions([
+      createPermission(
+        APP_RESOURCES.investmentOpportunities,
+        APP_ACTIONS.delete,
+      ),
+    ]) && opportunity?.status === 'draft'
 
   const details = useMemo(
     () =>
@@ -108,14 +124,18 @@ export default function InvestmentOpportunityDetailsPage() {
             </h1>
             <InvestmentOpportunityDetailsActions
               showDelete={canDeleteOpportunity}
+              showEdit={canEditOpportunity}
               onDelete={handleDeleteClick}
-              onEdit={() =>
-                navigate(
-                  buildInvestmentOpportunityEditPath(
-                    details.id,
-                    i18n.resolvedLanguage,
-                  ),
-                )
+              onEdit={
+                canEditOpportunity
+                  ? () =>
+                      navigate(
+                        buildInvestmentOpportunityEditPath(
+                          details.id,
+                          i18n.resolvedLanguage,
+                        ),
+                      )
+                  : undefined
               }
             />
           </header>

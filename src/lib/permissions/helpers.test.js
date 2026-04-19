@@ -56,4 +56,115 @@ describe('permission helpers', () => {
       ]),
     ).toBe(false)
   })
+
+  it('blocks non-super-admin roles from dashboard', () => {
+    expect(
+      hasPermission(
+        APP_ROLES.operationsAdmin,
+        createPermission(APP_RESOURCES.dashboard, APP_ACTIONS.view),
+      ),
+    ).toBe(false)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(APP_RESOURCES.dashboard, APP_ACTIONS.view),
+      ),
+    ).toBe(false)
+  })
+
+  it('limits users module to super admin only', () => {
+    expect(
+      hasPermission(
+        APP_ROLES.readOnlyViewer,
+        createPermission(APP_RESOURCES.users, APP_ACTIONS.view),
+      ),
+    ).toBe(false)
+    expect(
+      hasPermission(
+        APP_ROLES.operationsAdmin,
+        createPermission(APP_RESOURCES.users, APP_ACTIONS.view),
+      ),
+    ).toBe(false)
+  })
+
+  it('supports role-union permission checks', () => {
+    expect(
+      hasPermission(
+        [APP_ROLES.readOnlyViewer, APP_ROLES.investmentManager],
+        createPermission(
+          APP_RESOURCES.profitDistributions,
+          APP_ACTIONS.distributeProfits,
+        ),
+      ),
+    ).toBe(true)
+    expect(
+      hasPermission(
+        ['investmentManager', 'readOnlyViewer'],
+        createPermission(
+          APP_RESOURCES.profitDistributions,
+          APP_ACTIONS.distributeProfits,
+        ),
+      ),
+    ).toBe(true)
+  })
+
+  it('enforces investment manager action boundaries', () => {
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
+      ),
+    ).toBe(true)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(APP_RESOURCES.profitDistributions, APP_ACTIONS.view),
+      ),
+    ).toBe(true)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(
+          APP_RESOURCES.profitDistributions,
+          APP_ACTIONS.distributeProfits,
+        ),
+      ),
+    ).toBe(true)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(
+          APP_RESOURCES.investmentOpportunities,
+          APP_ACTIONS.create,
+        ),
+      ),
+    ).toBe(false)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(
+          APP_RESOURCES.investmentOpportunities,
+          APP_ACTIONS.edit,
+        ),
+      ),
+    ).toBe(false)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(
+          APP_RESOURCES.investmentOpportunities,
+          APP_ACTIONS.delete,
+        ),
+      ),
+    ).toBe(false)
+    expect(
+      hasPermission(
+        APP_ROLES.investmentManager,
+        createPermission(
+          APP_RESOURCES.investmentOpportunities,
+          APP_ACTIONS.publish,
+        ),
+      ),
+    ).toBe(false)
+  })
 })

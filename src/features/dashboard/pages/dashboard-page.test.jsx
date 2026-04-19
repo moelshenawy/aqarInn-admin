@@ -157,6 +157,8 @@ async function renderDashboardRoute({
       email: 'admin@aqarinn.test',
       full_name_ar: 'مدير النظام',
       full_name_en: 'System Admin',
+      role: 'superAdmin',
+      roles: ['superAdmin'],
     }),
   )
 

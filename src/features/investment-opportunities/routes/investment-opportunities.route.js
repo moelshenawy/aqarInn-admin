@@ -68,7 +68,7 @@ export const investmentOpportunityProfitDistributionsRouteMeta = {
   showInNav: false,
   icon: BriefcaseBusiness,
   requiredPermissions: [
-    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.view),
+    createPermission(APP_RESOURCES.profitDistributions, APP_ACTIONS.view),
   ],
 }
 

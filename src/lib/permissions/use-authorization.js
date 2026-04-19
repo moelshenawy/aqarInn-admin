@@ -9,16 +9,21 @@ import {
 } from '@/lib/permissions/helpers'
 
 export function useAuthorization() {
-  const { role } = useAuth()
+  const { role, roles } = useAuth()
+  const effectiveRoles = Array.isArray(roles) && roles.length ? roles : role
 
   return useMemo(
     () => ({
       role,
-      hasPermission: (permission) => hasPermission(role, permission),
-      hasAnyPermission: (permissions) => hasAnyPermission(role, permissions),
-      hasAllPermissions: (permissions) => hasAllPermissions(role, permissions),
-      canAccessRoute: (permissions) => canAccessRoute(role, permissions),
+      roles: Array.isArray(roles) ? roles : [],
+      hasPermission: (permission) => hasPermission(effectiveRoles, permission),
+      hasAnyPermission: (permissions) =>
+        hasAnyPermission(effectiveRoles, permissions),
+      hasAllPermissions: (permissions) =>
+        hasAllPermissions(effectiveRoles, permissions),
+      canAccessRoute: (permissions) =>
+        canAccessRoute(effectiveRoles, permissions),
     }),
-    [role],
+    [effectiveRoles, role, roles],
   )
 }
