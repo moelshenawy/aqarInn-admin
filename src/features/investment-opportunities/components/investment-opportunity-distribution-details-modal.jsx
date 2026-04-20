@@ -1,4 +1,5 @@
 import { AlertCircle, ChevronUp, User } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -34,19 +35,22 @@ function DistributionSummaryItem({ label, children, className }) {
   )
 }
 
-function DistributionSummary({ details }) {
+function DistributionSummary({ details, labels }) {
   return (
     <div className="flex w-full items-center justify-between overflow-hidden rounded-[14px] py-2.5">
-      <DistributionSummaryItem label="صافي مبلغ الربح" className="w-36">
+      <DistributionSummaryItem label={labels.netProfitLabel} className="w-36">
         <RiyalIcon className="text-[22px]" />
         <span>{details.netProfit}</span>
       </DistributionSummaryItem>
       <span className="h-[49px] w-px bg-[#d6cbb2]" aria-hidden="true" />
-      <DistributionSummaryItem label="تاريخ التوزيع" className="w-36">
+      <DistributionSummaryItem
+        label={labels.distributionDateLabel}
+        className="w-36"
+      >
         {details.executionDate}
       </DistributionSummaryItem>
       <span className="h-[49px] w-px bg-[#d6cbb2]" aria-hidden="true" />
-      <DistributionSummaryItem label="عدد الحصص" className="w-[147px]">
+      <DistributionSummaryItem label={labels.shareCountLabel} className="w-[147px]">
         {details.shareCount}
       </DistributionSummaryItem>
     </div>
@@ -67,7 +71,7 @@ function DistributionDetailsLoadingState() {
   )
 }
 
-function DistributionDetailsErrorState({ onRetry }) {
+function DistributionDetailsErrorState({ onRetry, labels }) {
   return (
     <section
       className="flex w-full flex-col items-center gap-4 rounded-xl border border-[#eae5d7] bg-[#f8f3e8] p-6 text-center"
@@ -75,7 +79,7 @@ function DistributionDetailsErrorState({ onRetry }) {
     >
       <AlertCircle className="size-6 text-[#b54708]" aria-hidden="true" />
       <p className="text-sm font-semibold text-[#6d4f3b]">
-        تعذر تحميل تفاصيل التوزيع. حاول مرة أخرى.
+        {labels.errorMessage}
       </p>
       <Button
         type="button"
@@ -83,13 +87,13 @@ function DistributionDetailsErrorState({ onRetry }) {
         onClick={onRetry}
         className="bg-[#eae5d7] text-[#402f28] hover:bg-[#d6cbb2]"
       >
-        إعادة المحاولة
+        {labels.retryLabel}
       </Button>
     </section>
   )
 }
 
-function ExecutorDetails({ details }) {
+function ExecutorDetails({ details, labels }) {
   return (
     <section
       className="flex w-full flex-col gap-2.5"
@@ -122,7 +126,7 @@ function ExecutorDetails({ details }) {
           </div>
         </div>
         <div className="flex flex-col items-start gap-[13px] text-start font-semibold">
-          <span className="text-sm leading-5 text-[#ac9063]">رقم المستخدم</span>
+          <span className="text-sm leading-5 text-[#ac9063]">{labels.userIdLabel}</span>
           <span className="w-[147px] text-lg leading-7 text-[#402f28]">
             {details.executor.userId}
           </span>
@@ -132,7 +136,7 @@ function ExecutorDetails({ details }) {
   )
 }
 
-function InvestorsTable({ details }) {
+function InvestorsTable({ details, labels }) {
   return (
     <section
       className="w-full overflow-hidden rounded-xl border border-[#eae5d7] shadow-[0_1px_2px_rgba(10,13,18,0.05)]"
@@ -160,11 +164,11 @@ function InvestorsTable({ details }) {
           </colgroup>
           <thead>
             <tr className="h-11 border-b border-[#eae5d7] bg-[#f8f3e8] text-xs leading-[18px] font-bold text-[#5c4437]">
-              <th className="px-6 font-bold">الاسم بالكامل</th>
-              <th className="px-6 font-bold">رقم الهوية الوطنية</th>
-              <th className="px-6 font-bold">رقم الجوال</th>
-              <th className="px-6 font-bold">عدد الحصص</th>
-              <th className="px-6 font-bold">مبلغ الربح</th>
+              <th className="px-6 font-bold">{labels.fullNameColumn}</th>
+              <th className="px-6 font-bold">{labels.nationalIdColumn}</th>
+              <th className="px-6 font-bold">{labels.mobileColumn}</th>
+              <th className="px-6 font-bold">{labels.sharesColumn}</th>
+              <th className="px-6 font-bold">{labels.profitAmountColumn}</th>
             </tr>
           </thead>
           <tbody>
@@ -205,15 +209,34 @@ export function InvestmentOpportunityDistributionDetailsModal({
   error = null,
   onRetry,
 }) {
+  const { i18n } = useTranslation()
   const details =
     distribution ?? investmentOpportunityDistributionDetailDefaults
   const { dir } = useDirection()
+  const isEnglish = i18n.resolvedLanguage === 'en'
+  const labels = {
+    closeLabel: isEnglish ? 'Close distribution details' : 'إغلاق تفاصيل التوزيع',
+    netProfitLabel: isEnglish ? 'Net profit amount' : 'صافي مبلغ الربح',
+    distributionDateLabel: isEnglish ? 'Distribution date' : 'تاريخ التوزيع',
+    shareCountLabel: isEnglish ? 'Number of shares' : 'عدد الحصص',
+    errorMessage: isEnglish
+      ? 'Unable to load distribution details. Please try again.'
+      : 'تعذر تحميل تفاصيل التوزيع. حاول مرة أخرى.',
+    retryLabel: isEnglish ? 'Retry' : 'إعادة المحاولة',
+    userIdLabel: isEnglish ? 'User ID' : 'رقم المستخدم',
+    fullNameColumn: isEnglish ? 'Full name' : 'الاسم بالكامل',
+    nationalIdColumn: isEnglish ? 'National ID' : 'رقم الهوية الوطنية',
+    mobileColumn: isEnglish ? 'Mobile number' : 'رقم الجوال',
+    sharesColumn: isEnglish ? 'Shares count' : 'عدد الحصص',
+    profitAmountColumn: isEnglish ? 'Profit amount' : 'مبلغ الربح',
+  }
+
   return (
     <SideModalShell
       open={open}
       onOpenChange={onOpenChange}
       title={details.title}
-      closeLabel="إغلاق تفاصيل التوزيع"
+      closeLabel={labels.closeLabel}
       contentClassName="h-dvh overflow-visible"
       dir={dir}
       closeButtonClassName="max-sm:right-auto max-sm:left-4"
@@ -222,7 +245,7 @@ export function InvestmentOpportunityDistributionDetailsModal({
       <p className="sr-only">{details.description}</p>
       {isLoading ? <DistributionDetailsLoadingState /> : null}
       {!isLoading && error ? (
-        <DistributionDetailsErrorState onRetry={onRetry} />
+        <DistributionDetailsErrorState onRetry={onRetry} labels={labels} />
       ) : null}
       {!isLoading && !error ? (
         <>
@@ -238,11 +261,11 @@ export function InvestmentOpportunityDistributionDetailsModal({
               </p>
             </div>
 
-            <DistributionSummary details={details} />
+            <DistributionSummary details={details} labels={labels} />
           </section>
 
-          <ExecutorDetails details={details} />
-          <InvestorsTable details={details} />
+          <ExecutorDetails details={details} labels={labels} />
+          <InvestorsTable details={details} labels={labels} />
         </>
       ) : null}
     </SideModalShell>

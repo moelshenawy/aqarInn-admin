@@ -15,6 +15,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useTranslation } from 'react-i18next'
 import { useDirection } from '@/lib/i18n/direction-provider'
 import { cn } from '@/lib/utils'
 
@@ -26,11 +27,13 @@ function InvestmentOpportunityFieldShell({
   error,
   children,
 }) {
+  const { dir } = useDirection()
+
   return (
     <div className={cn('space-y-3 text-start', className)}>
       <label
         htmlFor={id}
-        dir="rtl"
+        dir={dir}
         className="inline-flex items-start gap-0.5 text-sm leading-5 font-medium text-[#402f28]"
       >
         <span>{label}</span>
@@ -93,7 +96,18 @@ function FileSelectionSummary({
   loadingMessage,
   onRemoveFile,
 }) {
+  const { t } = useTranslation('navigation')
   const files = normalizeFiles(selectedFiles)
+  const selectedCountLabel = t(
+    'investmentOpportunity.form.files.summary.selectedCount',
+    {
+      count: files.length,
+    },
+  )
+  const removeFileAriaLabel = (fileName) =>
+    t('investmentOpportunity.form.files.common.removeAria', {
+      name: fileName,
+    })
 
   if (isLoading) {
     return (
@@ -120,7 +134,7 @@ function FileSelectionSummary({
       <p>
         {files.length === 1
           ? files[0].name
-          : `\u062A\u0645 \u0627\u062E\u062A\u064A\u0627\u0631 ${files.length} \u0645\u0644\u0641\u0627\u062A`}
+          : selectedCountLabel}
       </p>
       <div className="flex w-full flex-wrap justify-end gap-2">
         {files.map((file, index) => (
@@ -132,7 +146,7 @@ function FileSelectionSummary({
               type="button"
               onClick={() => onRemoveFile?.(index)}
               className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[#9d7e55] transition hover:text-[#402f28] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-              aria-label={`\u0625\u0632\u0627\u0644\u0629 ${file.name}`}
+              aria-label={removeFileAriaLabel(file.name)}
             >
               <X className="size-3 stroke-[2.2]" aria-hidden="true" />
             </button>
@@ -177,7 +191,7 @@ function revokeObjectUrlSafe(url) {
   }
 }
 
-function buildCompactFileNames(files) {
+function buildCompactFileNames(files, listSeparator = ', ') {
   if (!files.length) {
     return ''
   }
@@ -188,10 +202,10 @@ function buildCompactFileNames(files) {
   }
 
   if (files.length <= 3) {
-    return visibleNames.join('، ')
+    return visibleNames.join(listSeparator)
   }
 
-  return `${visibleNames.join('، ')} +${files.length - 3}`
+  return `${visibleNames.join(listSeparator)} +${files.length - 3}`
 }
 
 function getFileExtension(fileName) {
@@ -275,6 +289,9 @@ function InvestmentOpportunityUploadedFilesModal({
   onUploadMore,
   onRemoveFile,
 }) {
+  const { t } = useTranslation('navigation')
+  const { dir } = useDirection()
+
   return (
     <Dialog
       open={open}
@@ -285,7 +302,7 @@ function InvestmentOpportunityUploadedFilesModal({
       }}
     >
       <DialogContent
-        dir="rtl"
+        dir={dir}
         showCloseButton={false}
         className="w-[min(848px,calc(100vw-32px))] max-w-none rounded-[17px] border-0 bg-[#f8f3e8] px-[27px] pt-5 pb-[30px] text-start shadow-none"
       >
@@ -293,18 +310,16 @@ function InvestmentOpportunityUploadedFilesModal({
           <button
             type="button"
             onClick={() => onOpenChange?.(false)}
-            aria-label={
-              '\u0625\u063A\u0644\u0627\u0642 \u0646\u0627\u0641\u0630\u0629 \u0627\u0644\u0645\u0644\u0641\u0627\u062A'
-            }
+            aria-label={t('investmentOpportunity.form.files.uploadedModal.closeAria')}
             className="inline-flex size-12 items-center justify-center rounded-full border border-[#eae5d7] bg-[#f8f3e8] text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)] transition hover:bg-[#f1ead8] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
           >
             <X className="size-5 stroke-[2]" aria-hidden="true" />
           </button>
           <DialogTitle className="min-w-0 flex-1 text-end text-2xl leading-8 font-semibold text-[#181927]">
-            {'\u0627\u0644\u0645\u0633\u062A\u0646\u062F\u0627\u062A \u0627\u0644\u0645\u062A\u0627\u062D\u0629'}
+            {t('investmentOpportunity.form.files.uploadedModal.title')}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            {'\u0639\u0631\u0636 \u0648\u0645\u0631\u0627\u062C\u0639\u0629 \u0627\u0644\u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0631\u0641\u0648\u0639\u0629'}
+            {t('investmentOpportunity.form.files.uploadedModal.description')}
           </DialogDescription>
         </div>
 
@@ -325,7 +340,10 @@ function InvestmentOpportunityUploadedFilesModal({
                   type="button"
                   onClick={() => onOpenFilePreview?.(previewItem)}
                   className="inline-flex size-8 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f5f1e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-                  aria-label={`\u0645\u0639\u0627\u064A\u0646\u0629 ${previewItem.name}`}
+                  aria-label={t(
+                    'investmentOpportunity.form.files.uploadedModal.previewAria',
+                    { name: previewItem.name },
+                  )}
                 >
                   <Eye className="size-[18px] stroke-[1.8]" aria-hidden="true" />
                 </button>
@@ -333,7 +351,10 @@ function InvestmentOpportunityUploadedFilesModal({
                   type="button"
                   onClick={() => onRemoveFile?.(previewItem.index)}
                   className="inline-flex size-8 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f5f1e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-                  aria-label={`\u0625\u0632\u0627\u0644\u0629 ${previewItem.name}`}
+                  aria-label={t(
+                    'investmentOpportunity.form.files.common.removeAria',
+                    { name: previewItem.name },
+                  )}
                 >
                   <X className="size-[18px] stroke-[2]" aria-hidden="true" />
                 </button>
@@ -347,7 +368,7 @@ function InvestmentOpportunityUploadedFilesModal({
           onClick={onUploadMore}
           className="mt-5 flex h-[60px] w-full items-center justify-center rounded-lg border-2 border-white/10 bg-[#402f28] px-3.5 text-xl leading-[30px] font-medium text-[#fafafa] shadow-[var(--dashboard-shadow)] transition hover:bg-[#4c382f] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
         >
-          {'\u0631\u0641\u0639 \u0645\u0644\u0641'}
+          {t('investmentOpportunity.form.files.uploadedModal.uploadButton')}
         </button>
       </DialogContent>
     </Dialog>
@@ -360,6 +381,8 @@ function InvestmentOpportunitySingleFilePreviewModal({
   onOpenChange,
   onBackToFilesModal,
 }) {
+  const { t } = useTranslation('navigation')
+  const { dir } = useDirection()
   const [previewUrl, setPreviewUrl] = useState('')
   const previewKind = getPreviewKind(selectedPreviewItem)
   const selectedFileName = selectedPreviewItem?.name ?? ''
@@ -388,7 +411,7 @@ function InvestmentOpportunitySingleFilePreviewModal({
       }}
     >
       <DialogContent
-        dir="rtl"
+        dir={dir}
         showCloseButton={false}
         className="h-auto w-[min(848px,calc(100vw-32px))] max-w-none rounded-[17px] border-0 bg-[#f8f3e8] px-[27px] pt-5 pb-[30px] text-start shadow-none"
       >
@@ -396,9 +419,7 @@ function InvestmentOpportunitySingleFilePreviewModal({
           <button
             type="button"
             onClick={() => onOpenChange?.(false)}
-            aria-label={
-              '\u0625\u063A\u0644\u0627\u0642 \u0645\u0639\u0627\u064A\u0646\u0629 \u0627\u0644\u0645\u0644\u0641'
-            }
+            aria-label={t('investmentOpportunity.form.files.previewModal.closeAria')}
             className="inline-flex size-12 items-center justify-center rounded-full border border-[#eae5d7] bg-[#f8f3e8] text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.05)] transition hover:bg-[#f1ead8] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none"
           >
             <X className="size-5 stroke-[2]" aria-hidden="true" />
@@ -410,16 +431,14 @@ function InvestmentOpportunitySingleFilePreviewModal({
             <button
               type="button"
               onClick={onBackToFilesModal}
-              aria-label={
-                '\u0627\u0644\u0631\u062C\u0648\u0639 \u0625\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u0644\u0641\u0627\u062A'
-              }
+              aria-label={t('investmentOpportunity.form.files.previewModal.backAria')}
               className="inline-flex size-8 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f1ead8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
             >
               <ArrowRight className="size-5 stroke-[1.8]" aria-hidden="true" />
             </button>
           </div>
           <DialogDescription className="sr-only">
-            {'\u0645\u0639\u0627\u064A\u0646\u0629 \u0645\u062D\u062A\u0648\u0649 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0645\u062D\u062F\u062F'}
+            {t('investmentOpportunity.form.files.previewModal.description')}
           </DialogDescription>
         </div>
 
@@ -442,10 +461,10 @@ function InvestmentOpportunitySingleFilePreviewModal({
             <div className="flex size-full flex-col items-center justify-center gap-3 px-6 text-center text-[#6d4f3b]">
               <FileText className="size-10 stroke-[1.8]" aria-hidden="true" />
               <p className="text-base leading-6 font-semibold">
-                {'\u062A\u0639\u0630\u0631 \u0639\u0631\u0636 \u0627\u0644\u0645\u0644\u0641 \u062F\u0627\u062E\u0644 \u0627\u0644\u0645\u0639\u0627\u064A\u0646\u0629'}
+                {t('investmentOpportunity.form.files.previewModal.unsupportedTitle')}
               </p>
               <p className="text-sm leading-5 font-medium text-[#535862]">
-                {'\u064A\u0645\u0643\u0646 \u0641\u062A\u062D \u0627\u0644\u0645\u0644\u0641 \u0645\u062D\u0644\u064A\u0627\u064B \u0644\u0645\u0631\u0627\u062C\u0639\u062A\u0647'}
+                {t('investmentOpportunity.form.files.previewModal.unsupportedBody')}
               </p>
             </div>
           ) : null}
@@ -563,6 +582,8 @@ export const InvestmentOpportunityTextField = forwardRef(
     },
     ref,
   ) {
+    const { dir } = useDirection()
+
     return (
       <InvestmentOpportunityFieldShell
         id={id}
@@ -576,7 +597,7 @@ export const InvestmentOpportunityTextField = forwardRef(
             ref={ref}
             id={id}
             type={type}
-            dir="rtl"
+            dir={dir}
             aria-required={required}
             className={cn(
               'h-12 w-full rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
@@ -610,6 +631,8 @@ export const InvestmentOpportunityTextareaField = forwardRef(
     },
     ref,
   ) {
+    const { dir } = useDirection()
+
     return (
       <InvestmentOpportunityFieldShell
         id={id}
@@ -622,7 +645,7 @@ export const InvestmentOpportunityTextareaField = forwardRef(
           <textarea
             ref={ref}
             id={id}
-            dir="rtl"
+            dir={dir}
             aria-required={required}
             className={cn(
               'min-h-[124px] w-full resize-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] px-3 text-start text-sm leading-5 font-normal text-[#402f28] shadow-[var(--dashboard-shadow)] transition outline-none placeholder:text-[#bfab85] focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20 disabled:cursor-not-allowed disabled:opacity-60',
@@ -656,6 +679,8 @@ export const InvestmentOpportunitySelectField = forwardRef(
     },
     ref,
   ) {
+    const { dir } = useDirection()
+
     return (
       <InvestmentOpportunityFieldShell
         id={id}
@@ -668,7 +693,7 @@ export const InvestmentOpportunitySelectField = forwardRef(
           <select
             ref={ref}
             id={id}
-            dir="rtl"
+            dir={dir}
             aria-required={required}
             className={cn(
               'h-12 w-full appearance-none rounded-lg border border-[#bfab85] bg-[color:var(--dashboard-bg)] pr-3 pl-12 text-start text-sm leading-5 font-medium text-[#bfab85] shadow-[var(--dashboard-shadow)] transition outline-none focus-visible:border-[#9d7e55] focus-visible:ring-3 focus-visible:ring-[#9d7e55]/20',
@@ -738,9 +763,14 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
     },
     ref,
   ) {
+    const { t } = useTranslation('navigation')
     const files = normalizeFiles(selectedFiles)
     const isDocumentsFilledState = enableFilesModal && files.length > 0
-    const compactFileNames = buildCompactFileNames(files) || placeholder
+    const compactFileNames =
+      buildCompactFileNames(
+        files,
+        t('investmentOpportunity.form.files.summary.listSeparator'),
+      ) || placeholder
     const resolvedPreviewItems = previewItems.length
       ? previewItems
       : files.map((file, index) => buildPreviewItemFromFile(file, index))
@@ -769,9 +799,9 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
               <button
                 type="button"
                 onClick={handleUploadMore}
-                aria-label={
-                  '\u0631\u0641\u0639 \u0645\u0644\u0641 \u0625\u0636\u0627\u0641\u064A'
-                }
+                aria-label={t(
+                  'investmentOpportunity.form.files.picker.uploadMoreAria',
+                )}
                 className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f1ead8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
               >
                 {isLoading ? (
@@ -786,9 +816,9 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
               <button
                 type="button"
                 onClick={onOpenFilesModal}
-                aria-label={
-                  '\u0639\u0631\u0636 \u0627\u0644\u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0631\u0641\u0648\u0639\u0629'
-                }
+                aria-label={t(
+                  'investmentOpportunity.form.files.picker.viewUploadedAria',
+                )}
                 className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f1ead8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
               >
                 <Eye className="size-5 stroke-[1.8]" aria-hidden="true" />
@@ -843,9 +873,9 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
             <FileSelectionSummary
               selectedFiles={selectedFiles}
               isLoading={isLoading}
-              loadingMessage={
-                '\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0645\u0644\u0641...'
-              }
+              loadingMessage={t(
+                'investmentOpportunity.form.files.summary.loadingFile',
+              )}
               onRemoveFile={onRemoveFile}
             />
           </>
@@ -870,6 +900,7 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
     },
     ref,
   ) {
+    const { t } = useTranslation('navigation')
     const files = normalizeFiles(selectedFiles)
     const hasFilledGallery = files.length > 0
     const galleryItems = files.map((file, index) => ({
@@ -910,7 +941,12 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
                   type="button"
                   onClick={() => onRemoveFile?.(galleryItem.index)}
                   className="absolute top-2 left-2 inline-flex size-6 items-center justify-center rounded-full bg-[#f8f3e8]/95 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.08)] transition hover:bg-[#f8f3e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-                  aria-label={`\u0625\u0632\u0627\u0644\u0629 ${galleryItem.file.name}`}
+                  aria-label={t(
+                    'investmentOpportunity.form.files.common.removeAria',
+                    {
+                      name: galleryItem.file.name,
+                    },
+                  )}
                 >
                   <X className="size-4 stroke-[2]" aria-hidden="true" />
                 </button>
@@ -935,7 +971,7 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
                 )}
               </span>
               <span className="text-sm leading-5 font-normal text-[#535862]">
-                {'\u0627\u0646\u0642\u0631 \u0644\u0644\u0631\u0641\u0639 \u0623\u0648 \u0627\u0633\u062D\u0628 \u0648\u0623\u0641\u0644\u062A'}
+                {t('investmentOpportunity.form.files.dropzone.clickOrDrag')}
               </span>
             </label>
           </div>
@@ -965,27 +1001,31 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
               <span className="flex flex-wrap items-center justify-center gap-1 text-sm leading-5">
                 <span className="font-semibold text-[#6d4f3b]">
                   {files.length
-                    ? '\u062A\u0645 \u0631\u0641\u0639 \u0627\u0644\u0635\u0648\u0631'
-                    : '\u0627\u0646\u0642\u0631 \u0644\u0644\u0631\u0641\u0639'}
+                    ? t('investmentOpportunity.form.files.dropzone.uploadedImages')
+                    : t('investmentOpportunity.form.files.dropzone.clickOrDrag')}
                 </span>
                 <span className="font-normal text-[#535862]">
                   {files.length
-                    ? `${files.length} \u0635\u0648\u0631\u0629`
-                    : '\u0623\u0648 \u0627\u0633\u062D\u0628 \u0648\u0623\u0641\u0644\u062A'}
+                    ? t('investmentOpportunity.form.files.dropzone.imagesCount', {
+                        count: files.length,
+                      })
+                    : null}
                 </span>
               </span>
               <span className="mt-1 text-xs leading-[18px] text-[#535862]">
                 {isLoading
-                  ? '\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0635\u0648\u0631 \u0627\u0644\u0645\u0631\u0641\u0648\u0639\u0629...'
-                  : 'SVG \u0623\u0648 PNG \u0623\u0648 JPG \u0623\u0648 GIF (\u0628\u062D\u062F \u0623\u0642\u0635\u0649 800\u00D7400 \u0628\u0643\u0633\u0644)'}
+                  ? t(
+                      'investmentOpportunity.form.files.dropzone.loadingUploadedImages',
+                    )
+                  : t('investmentOpportunity.form.files.dropzone.specHint')}
               </span>
             </label>
             <FileSelectionSummary
               selectedFiles={selectedFiles}
               isLoading={isLoading}
-              loadingMessage={
-                '\u062C\u0627\u0631\u064A \u062A\u062C\u0647\u064A\u0632 \u0627\u0644\u0635\u0648\u0631...'
-              }
+              loadingMessage={t(
+                'investmentOpportunity.form.files.summary.loadingImages',
+              )}
               onRemoveFile={onRemoveFile}
             />
           </>

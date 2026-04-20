@@ -73,5 +73,293 @@
   "notifications": "الإشعارات",
   "login": "تسجيل الدخول",
   "forgotPassword": "نسيت كلمة السر",
-  "resetPassword": "إعادة تعيين كلمة السر"
+  "resetPassword": "إعادة تعيين كلمة السر",
+  "investmentOpportunity": {
+    "add": {
+      "breadcrumbCurrent": "إضافة فرصة استثمارية",
+      "title": "إضافة فرصة استثمارية جديدة",
+      "description": "يمكنك إضافة فرصة استثمارية جديدة من خلال تعبئة البيانات المطلوبة، ثم حفظها ليتم تسجيلها في النظام وإتاحتها للمستخدمين المصرح لهم.",
+      "submitLabel": "التالي",
+      "draftLabel": "حفظ كمسودة",
+      "cancelLabel": "الغاء",
+      "toasts": {
+        "draftSuccess": {
+          "title": "تم حفظ الفرصة كمسودة",
+          "description": "تم حفظ بيانات الفرصة الاستثمارية بحالة مسودة بنجاح.",
+          "actionLabel": "إغلاق"
+        },
+        "publishSuccess": {
+          "title": "تم نشر الفرصة الاستثمارية بنجاح",
+          "description": "تم إنشاء الفرصة الاستثمارية وتحويل حالتها إلى منشورة.",
+          "actionLabel": "إغلاق"
+        },
+        "draftError": {
+          "title": "تعذر حفظ المسودة",
+          "actionLabel": "إغلاق"
+        },
+        "publishError": {
+          "title": "تعذر نشر الفرصة",
+          "actionLabel": "إغلاق"
+        }
+      }
+    },
+    "edit": {
+      "breadcrumbCurrent": "تعديل الفرصة الاستثمارية",
+      "title": "تعديل الفرصة الاستثمارية",
+      "description": "يمكنك تعديل بيانات الفرصة الاستثمارية من خلال تحديث الحقول المطلوبة، ثم حفظها ليتم تحديث بياناتها في النظام.",
+      "submitLabel": "حفظ التعديلات",
+      "cancelLabel": "الغاء",
+      "discardDialog": {
+        "title": "مغادرة الصفحة دون حفظ؟",
+        "description": "لديك تغييرات غير محفوظة. هل تريد مغادرة الصفحة بدون حفظ التعديلات؟",
+        "confirmLabel": "مغادرة",
+        "cancelLabel": "البقاء"
+      },
+      "toasts": {
+        "success": {
+          "title": "تم تعديل الفرصة الاستثمارية بنجاح",
+          "description": "تم حفظ التعديلات على بيانات الفرصة الاستثمارية.",
+          "actionLabel": "إغلاق"
+        },
+        "error": {
+          "title": "تعذر تعديل الفرصة الاستثمارية",
+          "actionLabel": "إغلاق"
+        }
+      }
+    },
+    "reviewDialog": {
+      "title": "عرض تفاصيل الفرصة الاستثمارية",
+      "description": "مراجعة بيانات الفرصة الاستثمارية قبل النشر.",
+      "closeAria": "إغلاق نافذة مراجعة الفرصة",
+      "publishLabel": "نشر الفرصة",
+      "publishingLabel": "جاري النشر..."
+    },
+    "reviewDetails": {
+      "propertyType": {
+        "commercial": "عقار تجاري",
+        "residential": "عقار سكني"
+      },
+      "units": {
+        "floors": "أدوار",
+        "totalArea": "م² مساحة إجمالية"
+      },
+      "metrics": {
+        "expectedNetReturn": "العائد الصافي المتوقع",
+        "expectedReturn": "العائد المتوقع",
+        "shareCount": "عدد الحصص",
+        "sharePrice": "سعر الحصة",
+        "propertyPrice": "سعر العقار"
+      },
+      "investmentSettings": {
+        "startDate": "تاريخ بداية الاستثمار",
+        "scheduleStart": "جدولة بداية الاستثمار",
+        "yes": "نعم",
+        "no": "لا"
+      }
+    },
+    "form": {
+      "breadcrumbAria": "مسار الصفحة",
+      "sections": {
+        "propertyDetails": "تفاصيل العقار",
+        "operatorDetails": "تفاصيل المشغل",
+        "financialInfo": "المعلومات المالية",
+        "investmentSettings": "اعدادات الاستثمار"
+      },
+      "options": {
+        "propertyType": {
+          "residential": "سكني",
+          "commercial": "تجاري"
+        },
+        "yesNo": {
+          "yes": "نعم",
+          "no": "لا"
+        },
+        "returnFrequency": {
+          "monthly": "شهرية",
+          "quarterly": "ربع سنوية",
+          "semiAnnual": "نصف سنوية",
+          "annual": "سنوية"
+        },
+        "investmentDuration": {
+          "6": "6 أشهر",
+          "12": "1 سنة",
+          "24": "2 سنة",
+          "36": "3 سنوات"
+        }
+      },
+      "fields": {
+        "referenceCode": {
+          "label": "الكود المرجعي",
+          "placeholder": "قم بإدخال الكود المرجعي للفرصة"
+        },
+        "titleAr": {
+          "label": "العنوان بالعربية",
+          "placeholder": "قم بإدخال العنوان بالعربية"
+        },
+        "titleEn": {
+          "label": "العنوان بالإنجليزية",
+          "placeholder": "قم بإدخال العنوان بالإنجليزية"
+        },
+        "cityId": {
+          "label": "المدينة",
+          "placeholder": "اختر المدينة"
+        },
+        "neighborhood": {
+          "label": "الحي",
+          "placeholder": "يتم تحديد الحي من الخريطة"
+        },
+        "propertyType": {
+          "label": "نوع العقار",
+          "placeholder": "اختر نوع العقار"
+        },
+        "propertyArea": {
+          "label": "مساحة العقار (م²)",
+          "placeholder": "قم بإدخال مساحة العقار"
+        },
+        "floorCount": {
+          "label": "عدد الأدوار",
+          "placeholder": "قم بإدخال عدد الأدوار"
+        },
+        "buildYear": {
+          "label": "سنة البناء",
+          "placeholder": "قم بإدخال سنة البناء"
+        },
+        "propertyLocation": {
+          "label": "موقع العقار",
+          "placeholder": "قم بتحديد موقع العقار"
+        },
+        "propertyDocuments": {
+          "label": "المستندات المتاحة",
+          "placeholder": "أضف المستندات المتاحة للعقار"
+        },
+        "propertyImages": {
+          "label": "صور العقار"
+        },
+        "virtualTour": {
+          "label": "صورة 360",
+          "placeholder": "ارفع صورة 360 (اختياري)"
+        },
+        "developerNameAr": {
+          "label": "اسم المطوّر بالعربية",
+          "placeholder": "قم بإدخال اسم المطوّر بالعربية"
+        },
+        "developerNameEn": {
+          "label": "اسم المطوّر بالإنجليزية",
+          "placeholder": "قم بإدخال اسم المطوّر بالإنجليزية"
+        },
+        "developerDescriptionAr": {
+          "label": "وصف المطوّر بالعربية",
+          "placeholder": "قم بإدخال وصف بالعربية"
+        },
+        "developerDescriptionEn": {
+          "label": "وصف المطوّر بالإنجليزية",
+          "placeholder": "قم بإدخال وصف بالإنجليزية"
+        },
+        "developerEmail": {
+          "label": "البريد الإلكتروني",
+          "placeholder": "قم بإدخال البريد الإلكتروني"
+        },
+        "developerLogo": {
+          "label": "الشعار",
+          "placeholder": "قم برفع شعار المطوّر"
+        },
+        "developerPhone": {
+          "label": "رقم الجوال",
+          "placeholder": "قم بإدخال رقم الجوال"
+        },
+        "developerLocation": {
+          "label": "موقع المطوّر",
+          "placeholder": "قم بتحديد موقع المطوّر"
+        },
+        "propertyPrice": {
+          "label": "سعر العقار",
+          "placeholder": "قم بإدخال السعر الإجمالي"
+        },
+        "currency": {
+          "label": "العملة",
+          "placeholder": "رمز العملة"
+        },
+        "shareCount": {
+          "label": "عدد الحصص",
+          "placeholder": "قم بإدخال عدد الحصص"
+        },
+        "sharePrice": {
+          "label": "سعر الحصة",
+          "placeholder": "قم بإدخال سعر الحصة"
+        },
+        "minInvestmentShares": {
+          "label": "الحد الأدنى للحصص",
+          "placeholder": "أدخل الحد الأدنى للحصص"
+        },
+        "maxSharesPerUser": {
+          "label": "الحد الأقصى للحصص لكل مستخدم",
+          "placeholder": "أدخل الحد الأعلى للحصص"
+        },
+        "maxUserOwnershipPct": {
+          "label": "نسبة الملكية القصوى (%)",
+          "placeholder": "أدخل النسبة المئوية"
+        },
+        "expectedNetReturn": {
+          "label": "العائد الصافي المتوقع",
+          "placeholder": "قم بإدخال قيمة العائد الصافي"
+        },
+        "expectedReturn": {
+          "label": "العائد المتوقع (%)",
+          "placeholder": "قم بإدخال نسبة العائد المتوقعة"
+        },
+        "returnFrequency": {
+          "label": "دورية العائد",
+          "placeholder": "اختر دورية توزيع العائد"
+        },
+        "investmentDurationMonths": {
+          "label": "مدة الاستثمار",
+          "placeholder": "اختر مدة الاستثمار"
+        },
+        "scheduleInvestmentStart": {
+          "label": "جدولة بداية الاستثمار",
+          "placeholder": "هل تريد جدولة بداية الاستثمار؟"
+        },
+        "investmentStartDate": {
+          "label": "تاريخ بداية الاستثمار",
+          "placeholder": "قم بتحديد تاريخ بداية الاستثمار"
+        }
+      },
+      "files": {
+        "summary": {
+          "selectedCount": "تم اختيار {{count}} ملفات",
+          "loadingFile": "جاري تجهيز الملف...",
+          "loadingImages": "جاري تجهيز الصور...",
+          "listSeparator": "، "
+        },
+        "common": {
+          "removeAria": "إزالة {{name}}"
+        },
+        "picker": {
+          "uploadMoreAria": "رفع ملف إضافي",
+          "viewUploadedAria": "عرض الملفات المرفوعة"
+        },
+        "uploadedModal": {
+          "closeAria": "إغلاق نافذة الملفات",
+          "title": "المستندات المتاحة",
+          "description": "عرض ومراجعة الملفات المرفوعة",
+          "previewAria": "معاينة {{name}}",
+          "uploadButton": "رفع ملف"
+        },
+        "previewModal": {
+          "closeAria": "إغلاق معاينة الملف",
+          "backAria": "الرجوع إلى قائمة الملفات",
+          "description": "معاينة محتوى الملف المحدد",
+          "unsupportedTitle": "تعذر عرض الملف داخل المعاينة",
+          "unsupportedBody": "يمكن فتح الملف محلياً لمراجعته"
+        },
+        "dropzone": {
+          "clickOrDrag": "انقر للرفع أو اسحب وأفلت",
+          "uploadedImages": "تم رفع الصور",
+          "imagesCount": "{{count}} صورة",
+          "loadingUploadedImages": "جاري تجهيز الصور المرفوعة...",
+          "specHint": "SVG أو PNG أو JPG أو GIF (بحد أقصى 800×400 بكسل)"
+        }
+      }
+    }
+  }
 }

@@ -10,8 +10,8 @@ import { XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const confirmButtonVariants = {
-  default: 'bg-[#b42318] text-white hover:bg-[#912018]',
-  destructive: 'bg-[#Eae5d7] text-white hover:bg-[#Eae5d7]',
+  default: 'bg-[#b42318] text-white bg-[#912018]',
+  destructive: 'bg-[#b42318] text-white hover:bg-red-600  ',
 }
 
 export function ConfirmationDialog({
@@ -20,7 +20,7 @@ export function ConfirmationDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = (dir = ar ? 'إلغاء' : 'close'),
+  cancelLabel = 'إلغاء',
   closeLabel = 'إغلاق النافذة',
   onConfirm,
   onCancel,
@@ -103,7 +103,7 @@ export function ConfirmationDialog({
             className={cn(
               'relative flex h-full w-[172px] items-center justify-center overflow-hidden rounded-lg border-2 border-white/10 px-3.5 py-2.5 text-sm leading-5 font-semibold whitespace-nowrap shadow-[0_1px_2px_rgba(10,13,18,0.05),inset_0_0_0_1px_rgba(10,13,18,0.18),inset_0_-2px_0_rgba(10,13,18,0.05)] transition focus-visible:ring-3 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60',
               confirmButtonVariants[confirmVariant] ??
-                confirmButtonVariants.default,
+                confirmButtonVariants.destructive,
             )}
           >
             {confirmLabel}

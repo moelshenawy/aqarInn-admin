@@ -21,6 +21,7 @@ import {
   APP_RESOURCES,
   createPermission,
 } from '@/lib/permissions/constants'
+import { useDirection } from '@/lib/i18n/direction-provider'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
 
 function formatNumber(value, digits = 0) {
@@ -51,9 +52,55 @@ function mapDistributionToTableRow(distribution, language) {
   }
 }
 
-function mapDistributionDetailsToModal(distributionDetails) {
+function getProfitDistributionsCopy(language = 'ar') {
+  const isEnglish = language === 'en'
+
+  return {
+    distributionDetailsTitle: isEnglish ? 'Distribution details' : 'تفاصيل التوزيع',
+    distributionDetailsDescription: isEnglish
+      ? 'All distribution details to review net profit, distribution date, executor, and the investor list with due profits in one place for easy monitoring.'
+      : 'جميع تفاصيل التوزيع التي تُمكّنك من مراجعة صافي الربح، تاريخ التوزيع، منفّذ العملية، وقائمة المستثمرين مع أرباحهم المستحقة في مكان واحد لسهولة المتابعة والرقابة.',
+    executorSectionTitle: isEnglish ? 'Executor details' : 'بيانات المنفّذ',
+    investorsTitle: isEnglish
+      ? 'Investors in this distribution'
+      : 'قائمة المستثمرين في هذا التوزيع',
+    investorsCountLabel: (count) =>
+      isEnglish ? `${count} investor` : `${count} مستثمر`,
+    toasts: {
+      distributionSuccess: {
+        title: isEnglish
+          ? 'Investor profit distributions added successfully'
+          : 'تم اضافة توزيعات ارباح المستثمرين بنجاح',
+        description: isEnglish
+          ? 'Net return was added and profit distributions were applied to investment portfolios.'
+          : 'تم اضافة صافي العائد من توزيعات الارباح على المحافظ الاستثمارية',
+        actionLabel: isEnglish ? 'Close' : 'إغلاق',
+      },
+      distributionError: {
+        title: isEnglish ? 'Unable to add distribution' : 'تعذر اضافة التوزيع',
+        actionLabel: isEnglish ? 'Close' : 'إغلاق',
+      },
+    },
+    fallbackApiError: isEnglish
+      ? 'Unable to complete the request. Please try again.'
+      : 'تعذر تنفيذ الطلب، حاول مرة أخرى.',
+  }
+}
+
+function mapDistributionDetailsToModal(distributionDetails, language = 'ar') {
+  const copy = getProfitDistributionsCopy(language)
+
   if (!distributionDetails) {
-    return investmentOpportunityDistributionDetailDefaults
+    return {
+      ...investmentOpportunityDistributionDetailDefaults,
+      title: copy.distributionDetailsTitle,
+      description: copy.distributionDetailsDescription,
+      executorSectionTitle: copy.executorSectionTitle,
+      investorsTitle: copy.investorsTitle,
+      investorsCountLabel: copy.investorsCountLabel(
+        investmentOpportunityDistributionDetailDefaults.investors.length,
+      ),
+    }
   }
 
   const lines = Array.isArray(distributionDetails.lines)
@@ -75,6 +122,10 @@ function mapDistributionDetailsToModal(distributionDetails) {
 
   return {
     ...investmentOpportunityDistributionDetailDefaults,
+    title: copy.distributionDetailsTitle,
+    description: copy.distributionDetailsDescription,
+    executorSectionTitle: copy.executorSectionTitle,
+    investorsTitle: copy.investorsTitle,
     netProfit: formatNumber(distributionDetails.net_profit_amount, 2),
     executionDate: distributionDetails.distribution_date,
     shareCount: formatNumber(sharesCount, 0),
@@ -85,28 +136,23 @@ function mapDistributionDetailsToModal(distributionDetails) {
       nameEn: admin?.full_name_en || '-',
     },
     investors,
-    investorsCountLabel: `${investors.length} مستثمر`,
+    investorsCountLabel: copy.investorsCountLabel(investors.length),
   }
 }
 
-const distributionSuccessToast = {
-  title: 'تم اضافة توزيعات ارباح المستثمرين بنجاح',
-  description:
-    'تم اضافة صافي العائد من توزيعات الارباح على المحافظ الاستثمارية',
-  actionLabel: 'إغلاق',
-}
-
-function resolveApiErrorMessage(error) {
+function resolveApiErrorMessage(error, fallbackMessage) {
   if (typeof error?.message === 'string' && error.message.trim()) {
     return error.message
   }
 
-  return 'تعذر تنفيذ الطلب، حاول مرة أخرى.'
+  return fallbackMessage
 }
 
 export default function InvestmentOpportunityProfitDistributionsPage() {
   const { i18n } = useTranslation()
+  const { dir } = useDirection()
   const { opportunityId = 'investment-riyadh-001' } = useParams()
+  const copy = getProfitDistributionsCopy(i18n.resolvedLanguage)
   const { hasAllPermissions } = useAuthorization()
   const [distributionDialogOpen, setDistributionDialogOpen] = useState(false)
   const [selectedDistributionId, setSelectedDistributionId] = useState(null)
@@ -161,18 +207,18 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
     try {
       await createDistributionMutation.mutateAsync(payload)
       setDistributionDialogOpen(false)
-      showDashboardSuccessToast(distributionSuccessToast)
+      showDashboardSuccessToast(copy.toasts.distributionSuccess)
     } catch (error) {
       showDashboardErrorToast({
-        title: 'تعذر اضافة التوزيع',
-        description: resolveApiErrorMessage(error),
-        actionLabel: 'إغلاق',
+        title: copy.toasts.distributionError.title,
+        description: resolveApiErrorMessage(error, copy.fallbackApiError),
+        actionLabel: copy.toasts.distributionError.actionLabel,
       })
     }
   }
 
   return (
-    <div className="-mt-[17px] space-y-4 text-start" dir="rtl">
+    <div className="-mt-[17px] space-y-4 text-start" dir={dir}>
       <InvestmentOpportunityDetailsTabs
         opportunityId={opportunityId}
         activeTab="profit-distributions"
@@ -193,7 +239,10 @@ export default function InvestmentOpportunityProfitDistributionsPage() {
       <InvestmentOpportunityDistributionDetailsModal
         open={isDetailsModalOpen}
         onOpenChange={handleDistributionDetailsOpenChange}
-        distribution={mapDistributionDetailsToModal(distributionDetails)}
+        distribution={mapDistributionDetailsToModal(
+          distributionDetails,
+          i18n.resolvedLanguage,
+        )}
         isLoading={
           isDistributionDetailsLoading || isDistributionDetailsFetching
         }

@@ -1,4 +1,5 @@
 import { Calendar, MapPin } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { RiyalIcon } from '@/components/ui/riyal-icon'
 import {
@@ -11,30 +12,7 @@ import {
   InvestmentOpportunityTextareaField,
   InvestmentOpportunityTextField,
 } from '@/features/investment-opportunities/components/investment-opportunity-form-controls'
-
-const PROPERTY_TYPE_OPTIONS = [
-  { value: 'residential', label: 'سكني' },
-  { value: 'commercial', label: 'تجاري' },
-]
-
-const YES_NO_OPTIONS = [
-  { value: 'yes', label: 'نعم' },
-  { value: 'no', label: 'لا' },
-]
-
-const RETURN_FREQUENCY_OPTIONS = [
-  { value: 'monthly', label: 'شهرية' },
-  { value: 'quarterly', label: 'ربع سنوية' },
-  { value: 'semi_annual', label: 'نصف سنوية' },
-  { value: 'annual', label: 'سنوية' },
-]
-
-const INVESTMENT_DURATION_OPTIONS = [
-  { value: '6', label: '6 أشهر' },
-  { value: '12', label: '1 سنة' },
-  { value: '24', label: '2 سنة' },
-  { value: '36', label: '3 سنوات' },
-]
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 export function InvestmentOpportunityForm({
   breadcrumbCurrent,
@@ -59,14 +37,56 @@ export function InvestmentOpportunityForm({
   sharePriceReadOnly = false,
   onOpenLocationPicker,
 }) {
+  const { t } = useTranslation('navigation')
+  const { dir } = useDirection()
+  const formCopy = t('investmentOpportunity.form', { returnObjects: true })
+
+  const propertyTypeOptions = [
+    {
+      value: 'residential',
+      label: formCopy.options.propertyType.residential,
+    },
+    {
+      value: 'commercial',
+      label: formCopy.options.propertyType.commercial,
+    },
+  ]
+
+  const yesNoOptions = [
+    { value: 'yes', label: formCopy.options.yesNo.yes },
+    { value: 'no', label: formCopy.options.yesNo.no },
+  ]
+
+  const returnFrequencyOptions = [
+    { value: 'monthly', label: formCopy.options.returnFrequency.monthly },
+    { value: 'quarterly', label: formCopy.options.returnFrequency.quarterly },
+    {
+      value: 'semi_annual',
+      label: formCopy.options.returnFrequency.semiAnnual,
+    },
+    { value: 'annual', label: formCopy.options.returnFrequency.annual },
+  ]
+
+  const investmentDurationOptions = [
+    { value: '6', label: formCopy.options.investmentDuration['6'] },
+    { value: '12', label: formCopy.options.investmentDuration['12'] },
+    { value: '24', label: formCopy.options.investmentDuration['24'] },
+    { value: '36', label: formCopy.options.investmentDuration['36'] },
+  ]
+
   return (
-    <form className="px-0 sm:px-4 lg:px-[26px]" onSubmit={onSubmit} noValidate>
+    <form
+      className="px-0 sm:px-4 lg:px-[26px]"
+      onSubmit={onSubmit}
+      noValidate
+      dir={dir}
+    >
       <header className="mb-10 space-y-[19px]">
         <nav
           className="flex flex-wrap items-center justify-start gap-2 text-sm leading-5 font-semibold"
-          aria-label="مسار الصفحة"
+          aria-label={formCopy.breadcrumbAria}
         >
-          <span className="text-[#6d4f3b]">الفرص الاستثمارية</span>
+          <span className="text-[#6d4f3b]">{t('investmentOpportunities')}</span>
           <span className="text-lg leading-7 text-[#6d4f3b]">/</span>
           <span className="text-[#ac9063]">{breadcrumbCurrent}</span>
         </nav>
@@ -86,8 +106,8 @@ export function InvestmentOpportunityForm({
           {showReferenceCode ? (
             <InvestmentOpportunityTextField
               id="referenceCode"
-              label="الكود المرجعي"
-              placeholder="قم بإدخال الكود المرجعي للفرصة"
+              label={formCopy.fields.referenceCode.label}
+              placeholder={formCopy.fields.referenceCode.placeholder}
               required
               error={errors.referenceCode?.message}
               {...register('referenceCode')}
@@ -95,16 +115,16 @@ export function InvestmentOpportunityForm({
           ) : null}
           <InvestmentOpportunityTextField
             id="titleAr"
-            label="العنوان بالعربية"
-            placeholder="قم بإدخال العنوان بالعربية"
+            label={formCopy.fields.titleAr.label}
+            placeholder={formCopy.fields.titleAr.placeholder}
             required
             error={errors.titleAr?.message}
             {...register('titleAr')}
           />
           <InvestmentOpportunityTextField
             id="titleEn"
-            label="العنوان بالإنجليزية"
-            placeholder="قم بإدخال العنوان بالإنجليزية"
+            label={formCopy.fields.titleEn.label}
+            placeholder={formCopy.fields.titleEn.placeholder}
             required
             error={errors.titleEn?.message}
             {...register('titleEn')}
@@ -113,8 +133,8 @@ export function InvestmentOpportunityForm({
             <>
               <InvestmentOpportunitySelectField
                 id="cityId"
-                label="المدينة"
-                placeholder="اختر المدينة"
+                label={formCopy.fields.cityId.label}
+                placeholder={formCopy.fields.cityId.placeholder}
                 options={cityOptions}
                 required
                 error={errors.cityId?.message}
@@ -122,8 +142,8 @@ export function InvestmentOpportunityForm({
               />
               <InvestmentOpportunityTextField
                 id="neighborhood"
-                label="الحي"
-                placeholder="يتم تحديد الحي من الخريطة"
+                label={formCopy.fields.neighborhood.label}
+                placeholder={formCopy.fields.neighborhood.placeholder}
                 required
                 readOnly
                 error={errors.neighborhood?.message}
@@ -133,21 +153,21 @@ export function InvestmentOpportunityForm({
           ) : null}
         </InvestmentOpportunityFormGrid>
 
-        <InvestmentOpportunityFormSection title="تفاصيل العقار">
+        <InvestmentOpportunityFormSection title={formCopy.sections.propertyDetails}>
           <InvestmentOpportunityFormGrid>
             <InvestmentOpportunitySelectField
               id="propertyType"
-              label="نوع العقار"
-              placeholder="اختر نوع العقار"
-              options={PROPERTY_TYPE_OPTIONS}
+              label={formCopy.fields.propertyType.label}
+              placeholder={formCopy.fields.propertyType.placeholder}
+              options={propertyTypeOptions}
               required
               error={errors.propertyType?.message}
               {...register('propertyType')}
             />
             <InvestmentOpportunityTextField
               id="propertyArea"
-              label="مساحة العقار (م²)"
-              placeholder="قم بإدخال مساحة العقار"
+              label={formCopy.fields.propertyArea.label}
+              placeholder={formCopy.fields.propertyArea.placeholder}
               inputMode="decimal"
               required
               error={errors.propertyArea?.message}
@@ -155,24 +175,24 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="floorCount"
-              label="عدد الأدوار"
-              placeholder="قم بإدخال عدد الأدوار"
+              label={formCopy.fields.floorCount.label}
+              placeholder={formCopy.fields.floorCount.placeholder}
               inputMode="numeric"
               error={errors.floorCount?.message}
               {...register('floorCount')}
             />
             <InvestmentOpportunityTextField
               id="buildYear"
-              label="سنة البناء"
-              placeholder="قم بإدخال سنة البناء"
+              label={formCopy.fields.buildYear.label}
+              placeholder={formCopy.fields.buildYear.placeholder}
               inputMode="numeric"
               error={errors.buildYear?.message}
               {...register('buildYear')}
             />
             <InvestmentOpportunityTextField
               id="propertyLocation"
-              label="موقع العقار"
-              placeholder="قم بتحديد موقع العقار"
+              label={formCopy.fields.propertyLocation.label}
+              placeholder={formCopy.fields.propertyLocation.placeholder}
               icon={MapPin}
               required
               readOnly={propertyLocationReadOnly}
@@ -199,8 +219,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityFilePickerField
               id="propertyDocuments"
-              label="المستندات المتاحة"
-              placeholder="أضف المستندات المتاحة للعقار"
+              label={formCopy.fields.propertyDocuments.label}
+              placeholder={formCopy.fields.propertyDocuments.placeholder}
               accept=".pdf,.png,.jpg,.jpeg,.webp,.heic,.heif"
               multiple
               required
@@ -220,12 +240,8 @@ export function InvestmentOpportunityForm({
                 fileUploadState.propertyDocuments?.isPreviewModalOpen
               }
               onOpenFilesModal={fileUploadState.propertyDocuments?.onOpenFilesModal}
-              onCloseFilesModal={
-                fileUploadState.propertyDocuments?.onCloseFilesModal
-              }
-              onOpenFilePreview={
-                fileUploadState.propertyDocuments?.onOpenFilePreview
-              }
+              onCloseFilesModal={fileUploadState.propertyDocuments?.onCloseFilesModal}
+              onOpenFilePreview={fileUploadState.propertyDocuments?.onOpenFilePreview}
               onClosePreviewModal={
                 fileUploadState.propertyDocuments?.onClosePreviewModal
               }
@@ -238,7 +254,7 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityDropzoneField
               id="propertyImages"
-              label="صور العقار"
+              label={formCopy.fields.propertyImages.label}
               accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/heif"
               multiple
               required
@@ -251,8 +267,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityFilePickerField
               id="virtualTour"
-              label="صورة 360"
-              placeholder="ارفع صورة 360 (اختياري)"
+              label={formCopy.fields.virtualTour.label}
+              placeholder={formCopy.fields.virtualTour.placeholder}
               accept="image/png,image/jpeg,image/jpg,image/webp,image/heic,image/heif"
               error={errors.virtualTour?.message}
               selectedFiles={fileUploadState.virtualTour?.files}
@@ -263,42 +279,42 @@ export function InvestmentOpportunityForm({
           </InvestmentOpportunityFormGrid>
         </InvestmentOpportunityFormSection>
 
-        <InvestmentOpportunityFormSection title="تفاصيل المشغل">
+        <InvestmentOpportunityFormSection title={formCopy.sections.operatorDetails}>
           <InvestmentOpportunityFormGrid>
             <InvestmentOpportunityTextField
               id="developerNameAr"
-              label="اسم المطوّر بالعربية"
-              placeholder="قم بإدخال اسم المطوّر بالعربية"
+              label={formCopy.fields.developerNameAr.label}
+              placeholder={formCopy.fields.developerNameAr.placeholder}
               required
               error={errors.developerNameAr?.message}
               {...register('developerNameAr')}
             />
             <InvestmentOpportunityTextField
               id="developerNameEn"
-              label="اسم المطوّر بالإنجليزية"
-              placeholder="قم بإدخال اسم المطوّر بالإنجليزية"
+              label={formCopy.fields.developerNameEn.label}
+              placeholder={formCopy.fields.developerNameEn.placeholder}
               required
               error={errors.developerNameEn?.message}
               {...register('developerNameEn')}
             />
             <InvestmentOpportunityTextareaField
               id="developerDescriptionAr"
-              label="وصف المطوّر بالعربية"
-              placeholder="قم بإدخال وصف بالعربية"
+              label={formCopy.fields.developerDescriptionAr.label}
+              placeholder={formCopy.fields.developerDescriptionAr.placeholder}
               error={errors.developerDescriptionAr?.message}
               {...register('developerDescriptionAr')}
             />
             <InvestmentOpportunityTextareaField
               id="developerDescriptionEn"
-              label="وصف المطوّر بالإنجليزية"
-              placeholder="قم بإدخال وصف بالإنجليزية"
+              label={formCopy.fields.developerDescriptionEn.label}
+              placeholder={formCopy.fields.developerDescriptionEn.placeholder}
               error={errors.developerDescriptionEn?.message}
               {...register('developerDescriptionEn')}
             />
             <InvestmentOpportunityTextField
               id="developerEmail"
-              label="البريد الإلكتروني"
-              placeholder="قم بإدخال البريد الإلكتروني"
+              label={formCopy.fields.developerEmail.label}
+              placeholder={formCopy.fields.developerEmail.placeholder}
               type="email"
               required
               error={errors.developerEmail?.message}
@@ -306,8 +322,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityFilePickerField
               id="developerLogo"
-              label="الشعار"
-              placeholder="قم برفع شعار المطوّر"
+              label={formCopy.fields.developerLogo.label}
+              placeholder={formCopy.fields.developerLogo.placeholder}
               accept="image/svg+xml,image/png,image/jpeg"
               error={errors.developerLogo?.message}
               selectedFiles={fileUploadState.developerLogo?.files}
@@ -317,8 +333,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="developerPhone"
-              label="رقم الجوال"
-              placeholder="قم بإدخال رقم الجوال"
+              label={formCopy.fields.developerPhone.label}
+              placeholder={formCopy.fields.developerPhone.placeholder}
               addon="+966"
               inputMode="numeric"
               required
@@ -327,8 +343,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="developerLocation"
-              label="موقع المطوّر"
-              placeholder="قم بتحديد موقع المطوّر"
+              label={formCopy.fields.developerLocation.label}
+              placeholder={formCopy.fields.developerLocation.placeholder}
               icon={MapPin}
               error={errors.developerLocation?.message}
               {...register('developerLocation')}
@@ -336,12 +352,12 @@ export function InvestmentOpportunityForm({
           </InvestmentOpportunityFormGrid>
         </InvestmentOpportunityFormSection>
 
-        <InvestmentOpportunityFormSection title="المعلومات المالية">
+        <InvestmentOpportunityFormSection title={formCopy.sections.financialInfo}>
           <InvestmentOpportunityFormGrid>
             <InvestmentOpportunityTextField
               id="propertyPrice"
-              label="سعر العقار"
-              placeholder="قم بإدخال السعر الإجمالي"
+              label={formCopy.fields.propertyPrice.label}
+              placeholder={formCopy.fields.propertyPrice.placeholder}
               addon={<RiyalIcon className="text-xl" />}
               inputMode="decimal"
               required
@@ -351,8 +367,8 @@ export function InvestmentOpportunityForm({
             {showCurrencyField ? (
               <InvestmentOpportunityTextField
                 id="currency"
-                label="العملة"
-                placeholder="رمز العملة"
+                label={formCopy.fields.currency.label}
+                placeholder={formCopy.fields.currency.placeholder}
                 required
                 error={errors.currency?.message}
                 {...register('currency')}
@@ -360,8 +376,8 @@ export function InvestmentOpportunityForm({
             ) : null}
             <InvestmentOpportunityTextField
               id="shareCount"
-              label="عدد الحصص"
-              placeholder="قم بإدخال عدد الحصص"
+              label={formCopy.fields.shareCount.label}
+              placeholder={formCopy.fields.shareCount.placeholder}
               inputMode="numeric"
               required
               error={errors.shareCount?.message}
@@ -369,8 +385,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="sharePrice"
-              label="سعر الحصة"
-              placeholder="قم بإدخال سعر الحصة"
+              label={formCopy.fields.sharePrice.label}
+              placeholder={formCopy.fields.sharePrice.placeholder}
               addon={<RiyalIcon className="text-xl" />}
               inputMode="decimal"
               required
@@ -380,8 +396,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="minInvestmentShares"
-              label="الحد الأدنى للحصص"
-              placeholder="أدخل الحد الأدنى للحصص"
+              label={formCopy.fields.minInvestmentShares.label}
+              placeholder={formCopy.fields.minInvestmentShares.placeholder}
               inputMode="numeric"
               required
               error={errors.minInvestmentShares?.message}
@@ -389,8 +405,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="maxSharesPerUser"
-              label="الحد الأعلى للحصص لكل مستخدم"
-              placeholder="أدخل الحد الأعلى للحصص"
+              label={formCopy.fields.maxSharesPerUser.label}
+              placeholder={formCopy.fields.maxSharesPerUser.placeholder}
               inputMode="numeric"
               required
               error={errors.maxSharesPerUser?.message}
@@ -398,8 +414,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="maxUserOwnershipPct"
-              label="نسبة الملكية القصوى (%)"
-              placeholder="أدخل النسبة المئوية"
+              label={formCopy.fields.maxUserOwnershipPct.label}
+              placeholder={formCopy.fields.maxUserOwnershipPct.placeholder}
               addon="%"
               inputMode="decimal"
               required
@@ -408,8 +424,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="expectedNetReturn"
-              label="العائد الصافي المتوقع"
-              placeholder="قم بإدخال قيمة العائد الصافي"
+              label={formCopy.fields.expectedNetReturn.label}
+              placeholder={formCopy.fields.expectedNetReturn.placeholder}
               addon={<RiyalIcon className="text-xl" />}
               inputMode="decimal"
               required
@@ -418,8 +434,8 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunityTextField
               id="expectedReturn"
-              label="العائد المتوقع (%)"
-              placeholder="قم بإدخال نسبة العائد المتوقعة"
+              label={formCopy.fields.expectedReturn.label}
+              placeholder={formCopy.fields.expectedReturn.placeholder}
               addon="%"
               inputMode="decimal"
               required
@@ -428,18 +444,18 @@ export function InvestmentOpportunityForm({
             />
             <InvestmentOpportunitySelectField
               id="returnFrequency"
-              label="دورية العائد"
-              placeholder="اختر دورية توزيع العائد"
-              options={RETURN_FREQUENCY_OPTIONS}
+              label={formCopy.fields.returnFrequency.label}
+              placeholder={formCopy.fields.returnFrequency.placeholder}
+              options={returnFrequencyOptions}
               required
               error={errors.returnFrequency?.message}
               {...register('returnFrequency')}
             />
             <InvestmentOpportunitySelectField
               id="investmentDurationMonths"
-              label="مدة الاستثمار"
-              placeholder="اختر مدة الاستثمار"
-              options={INVESTMENT_DURATION_OPTIONS}
+              label={formCopy.fields.investmentDurationMonths.label}
+              placeholder={formCopy.fields.investmentDurationMonths.placeholder}
+              options={investmentDurationOptions}
               required
               error={errors.investmentDurationMonths?.message}
               {...register('investmentDurationMonths')}
@@ -447,19 +463,19 @@ export function InvestmentOpportunityForm({
           </InvestmentOpportunityFormGrid>
         </InvestmentOpportunityFormSection>
 
-        <InvestmentOpportunityFormSection title="اعدادات الاستثمار">
+        <InvestmentOpportunityFormSection title={formCopy.sections.investmentSettings}>
           <InvestmentOpportunityFormGrid>
             <InvestmentOpportunitySelectField
               id="scheduleInvestmentStart"
-              label="جدولة بداية الاستثمار"
-              placeholder="هل تريد جدولة بداية الاستثمار؟"
-              options={YES_NO_OPTIONS}
+              label={formCopy.fields.scheduleInvestmentStart.label}
+              placeholder={formCopy.fields.scheduleInvestmentStart.placeholder}
+              options={yesNoOptions}
               {...register('scheduleInvestmentStart')}
             />
             <InvestmentOpportunityTextField
               id="investmentStartDate"
-              label="تاريخ بداية الاستثمار"
-              placeholder="قم بتحديد تاريخ بداية الاستثمار"
+              label={formCopy.fields.investmentStartDate.label}
+              placeholder={formCopy.fields.investmentStartDate.placeholder}
               type="date"
               onClick={(event) => {
                 event.currentTarget.showPicker?.()

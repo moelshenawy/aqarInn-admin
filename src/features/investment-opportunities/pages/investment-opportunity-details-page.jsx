@@ -51,16 +51,20 @@ export default function InvestmentOpportunityDetailsPage() {
   const { data: opportunity, isLoading } =
     useOpportunityDetailsQuery(opportunityId)
   const deleteOpportunityMutation = useDeleteOpportunityMutation()
-  const canEditOpportunity = hasAllPermissions([
+
+  const hasEditPermission = hasAllPermissions([
     createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.edit),
   ])
-  const canDeleteOpportunity =
-    hasAllPermissions([
-      createPermission(
-        APP_RESOURCES.investmentOpportunities,
-        APP_ACTIONS.delete,
-      ),
-    ]) && opportunity?.status === 'draft'
+  const hasDeletePermission = hasAllPermissions([
+    createPermission(
+      APP_RESOURCES.investmentOpportunities,
+      APP_ACTIONS.delete,
+    ),
+  ])
+  const isDraftOpportunity =
+    String(opportunity?.status ?? '').toLowerCase() === 'draft'
+  const canEditOpportunity = hasEditPermission && !isDraftOpportunity
+  const canDeleteOpportunity = hasDeletePermission && !isDraftOpportunity
 
   const details = useMemo(
     () =>

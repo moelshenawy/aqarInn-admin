@@ -36,8 +36,8 @@ function createTestQueryClient() {
   })
 }
 
-function renderEditPage() {
-  window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+function renderEditPage(locale = 'ar') {
+  window.localStorage.setItem('aqarinn.backoffice.language', locale)
   window.localStorage.setItem('authToken', 'test-auth-token')
   window.localStorage.setItem(
     'authUser',
@@ -73,9 +73,29 @@ function renderEditPage() {
           },
         ],
       },
+      {
+        path: '/en/app',
+        element: <DashboardLayout />,
+        children: [
+          {
+            path: 'investment-opportunities/:opportunityId/edit',
+            element: <InvestmentOpportunityEditPage />,
+            handle: {
+              requiredPermissions: [],
+            },
+          },
+          {
+            path: 'investment-opportunities/:opportunityId',
+            element: <div>Investment Opportunity Details Page</div>,
+            handle: {
+              requiredPermissions: [],
+            },
+          },
+        ],
+      },
     ],
     {
-      initialEntries: [buildInvestmentOpportunityEditPath(opportunityId)],
+      initialEntries: [buildInvestmentOpportunityEditPath(opportunityId, locale)],
     },
   )
 
@@ -155,6 +175,61 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
         name_en: 'Riyadh',
       },
     })
+  })
+
+  it('renders rtl form direction in arabic locale', async () => {
+    renderEditPage('ar')
+
+    await waitFor(() => {
+      expect(document.querySelector('form')).toHaveAttribute('dir', 'rtl')
+    })
+  })
+
+  it('renders localized english edit copy and discard dialog with ltr direction', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    renderEditPage('en')
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Edit investment opportunity' }),
+      ).toBeInTheDocument()
+    })
+
+    expect(
+      screen.getByRole('button', { name: 'Save changes' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(document.querySelector('form')).toHaveAttribute('dir', 'ltr')
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
+    })
+
+    fireEvent.change(document.getElementById('titleEn'), {
+      target: { value: 'Edited title in English' },
+    })
+    const form = document.querySelector('form')
+    fireEvent.click(within(form).getByRole('button', { name: 'Cancel' }))
+
+    const discardDialogTitle = await screen.findByText(
+      'Leave page without saving?',
+    )
+    const discardDialog = discardDialogTitle.closest('[role="dialog"]')
+    expect(discardDialog).not.toBeNull()
+    expect(
+      within(discardDialog).getByText(
+        'You have unsaved changes. Do you want to leave this page without saving updates?',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      within(discardDialog).getByRole('button', { name: 'Leave' }),
+    ).toBeInTheDocument()
+    expect(
+      within(discardDialog).getByRole('button', { name: 'Stay' }),
+    ).toBeInTheDocument()
   })
 
   it('supports files modal, preview, append, and remove flows on edit page', async () => {

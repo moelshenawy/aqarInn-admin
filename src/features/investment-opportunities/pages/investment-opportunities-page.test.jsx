@@ -645,7 +645,9 @@ describe('InvestmentOpportunitiesPage route', () => {
       screen.getByRole('link', { name: 'توزيعات الأرباح' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'تعديل' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'حذف' })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /حذف|delete/i }),
+    ).toBeInTheDocument()
     expect(await screen.findByText('4,800,000')).toBeInTheDocument()
     expect(screen.getByText('اعدادات الاستثمار')).toBeInTheDocument()
     expect(screen.getByText('تفاصيل المشغل')).toBeInTheDocument()
@@ -686,7 +688,7 @@ describe('InvestmentOpportunitiesPage route', () => {
     vi.stubGlobal('fetch', fetchMock)
     vi.mocked(getOpportunityById).mockResolvedValueOnce({
       ...opportunityDetailsFixture,
-      status: 'draft',
+      status: 'published',
     })
     const detailsPath = buildInvestmentOpportunityDetailsPath(
       'investment-riyadh-001',
@@ -742,7 +744,12 @@ describe('InvestmentOpportunitiesPage route', () => {
     ).toBeInTheDocument()
   })
 
-  it('hides delete action on details page when opportunity status is not draft', async () => {
+  it('hides edit and delete actions on details page when opportunity status is draft', async () => {
+    vi.mocked(getOpportunityById).mockResolvedValueOnce({
+      ...opportunityDetailsFixture,
+      status: 'draft',
+    })
+
     renderInvestmentOpportunitiesRoute({
       initialEntries: [
         buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
@@ -751,7 +758,10 @@ describe('InvestmentOpportunitiesPage route', () => {
 
     expect(await screen.findByText('4,800,000')).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'حذف' }),
+      screen.queryByRole('button', { name: /تعديل|edit/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /حذف|delete/i }),
     ).not.toBeInTheDocument()
   })
 

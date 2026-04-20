@@ -40,8 +40,8 @@ function createTestQueryClient() {
   })
 }
 
-function renderAddPage() {
-  window.localStorage.setItem('aqarinn.backoffice.language', 'ar')
+function renderAddPage(locale = 'ar') {
+  window.localStorage.setItem('aqarinn.backoffice.language', locale)
   window.localStorage.setItem('authToken', 'test-auth-token')
   window.localStorage.setItem(
     'authUser',
@@ -71,8 +71,28 @@ function renderAddPage() {
           },
         ],
       },
+      {
+        path: '/en/app',
+        element: <DashboardLayout />,
+        children: [
+          {
+            path: 'investment-opportunities',
+            element: <div>Investment Opportunities Page</div>,
+            handle: investmentOpportunitiesRouteMeta,
+          },
+          {
+            path: 'investment-opportunities/add',
+            element: <InvestmentOpportunityAddPage />,
+            handle: investmentOpportunityAddRouteMeta,
+          },
+        ],
+      },
     ],
-    { initialEntries: [ROUTE_PATHS.investmentOpportunityAdd] },
+    {
+      initialEntries: [
+        ROUTE_PATHS.withLocale(ROUTE_PATHS.investmentOpportunityAdd, locale),
+      ],
+    },
   )
 
   render(
@@ -296,6 +316,35 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     vi.clearAllMocks()
   })
 
+  it('renders rtl form direction in arabic locale', async () => {
+    renderAddPage('ar')
+
+    await waitFor(() => {
+      expect(document.querySelector('form')).toHaveAttribute('dir', 'rtl')
+    })
+  })
+
+  it('renders localized english add copy and ltr direction', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    renderAddPage('en')
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: 'Add a new investment opportunity',
+        }),
+      ).toBeInTheDocument()
+    })
+
+    expect(screen.getByText('Add investment opportunity')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Enter title in Arabic')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Enter property area')).toBeInTheDocument()
+    expect(document.querySelector('form')).toHaveAttribute('dir', 'ltr')
+  })
+
   it('loads cities and exposes city options in the location modal', async () => {
     renderAddPage()
 
@@ -423,6 +472,29 @@ describe('InvestmentOpportunityAddPage API integration', () => {
     expect(router.state.location.pathname).toBe(
       ROUTE_PATHS.investmentOpportunities,
     )
+  })
+
+  it('renders localized english review dialog labels and details', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    renderAddPage('en')
+
+    await fillPublishRequiredFields()
+    fireEvent.click(getMainButtons().submitButton)
+
+    const dialog = await screen.findByRole('dialog', {
+      name: 'View investment opportunity details',
+    })
+
+    expect(
+      within(dialog).getByText('View investment opportunity details'),
+    ).toBeInTheDocument()
+    expect(within(dialog).getByText('Expected net return')).toBeInTheDocument()
+    expect(
+      within(dialog).getByText('Schedule investment start'),
+    ).toBeInTheDocument()
   })
 
   it('shows uploaded files and renders only uploaded gallery images in review', async () => {

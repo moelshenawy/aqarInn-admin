@@ -10,6 +10,7 @@ import {
   APP_RESOURCES,
   createPermission,
 } from '@/lib/permissions/constants'
+import { useDirection } from '@/lib/i18n/direction-provider'
 import { useAuthorization } from '@/lib/permissions/use-authorization'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +40,7 @@ export function InvestmentOpportunityDetailsTabs({
   activeTab,
 }) {
   const { i18n } = useTranslation()
+  const { dir } = useDirection()
   const isEnglish = i18n.resolvedLanguage === 'en'
   const { canAccessRoute } = useAuthorization()
   const visibleTabs = tabs.filter((tab) =>
@@ -47,7 +49,7 @@ export function InvestmentOpportunityDetailsTabs({
 
   return (
     <nav
-      dir="rtl"
+      dir={dir}
       aria-label={
         isEnglish
           ? 'Investment opportunity details tabs'
@@ -61,7 +63,7 @@ export function InvestmentOpportunityDetailsTabs({
         return (
           <NavLink
             key={tab.key}
-            to={tab.buildPath(opportunityId)}
+            to={tab.buildPath(opportunityId, i18n.resolvedLanguage)}
             end={tab.key === 'details'}
             className={cn(
               'flex min-w-0 flex-1 items-center justify-center rounded-xl px-5 py-[13px] text-center text-lg leading-7 font-semibold transition-colors',

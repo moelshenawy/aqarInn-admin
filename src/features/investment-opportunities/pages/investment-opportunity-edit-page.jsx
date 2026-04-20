@@ -2,6 +2,7 @@ import { AlertTriangle } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useDirection } from '@/lib/i18n/direction-provider'
 import {
   useBeforeUnload,
   useBlocker,
@@ -23,15 +24,6 @@ import { useOpportunityDetailsQuery } from '@/features/investment-opportunities/
 import { useUpdateOpportunityMutation } from '@/features/investment-opportunities/hooks/use-update-opportunity-mutation'
 import { buildOpportunityFormData } from '@/features/investment-opportunities/services/build-opportunity-form-data'
 import { ConfirmationDialog } from '@/shared/components/confirmation-dialog'
-
-const editOpportunityDescription =
-  'يمكنك تعديل بيانات الفرصة الاستثمارية من خلال تحديث الحقول المطلوبة، ثم حفظها ليتم تحديث بياناتها في النظام.'
-
-const editSuccessToast = {
-  title: 'تم تعديل الفرصة الاستثمارية بنجاح',
-  description: 'تم حفظ التعديلات على بيانات الفرصة الاستثمارية.',
-  actionLabel: 'إغلاق',
-}
 
 function parseNumber(value) {
   const normalized = String(value ?? '')
@@ -109,7 +101,12 @@ function resolveApiErrorMessage(error, t) {
 
 export default function InvestmentOpportunityEditPage() {
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation(['validation'])
+  const { t, i18n } = useTranslation(['navigation', 'validation'])
+  const { dir } = useDirection()
+  const editCopy = t('investmentOpportunity.edit', {
+    ns: 'navigation',
+    returnObjects: true,
+  })
   const { opportunityId = 'investment-riyadh-001' } = useParams()
   const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
   const [selectedCityIdForMap, setSelectedCityIdForMap] = useState('')
@@ -247,19 +244,20 @@ export default function InvestmentOpportunityEditPage() {
 
         allowNavigationRef.current = true
         reset(submissionValues)
-        showDashboardSuccessToast(editSuccessToast)
+        showDashboardSuccessToast(editCopy.toasts.success)
         navigate(detailsPath)
       } catch (error) {
         showDashboardErrorToast({
-          title: 'Failed to update investment opportunity',
+          title: editCopy.toasts.error.title,
           description: resolveApiErrorMessage(error, t),
-          actionLabel: 'Close',
+          actionLabel: editCopy.toasts.error.actionLabel,
         })
       }
     },
     [
       allowedCityIds,
       detailsPath,
+      editCopy,
       getManagedFilesSnapshot,
       navigate,
       reset,
@@ -342,11 +340,11 @@ export default function InvestmentOpportunityEditPage() {
   }
 
   return (
-    <div className="pb-8 text-start" dir="rtl">
+    <div className="pb-8 text-start" dir={dir}>
       <InvestmentOpportunityForm
-        breadcrumbCurrent="تعديل الفرصة الاستثمارية"
-        title="تعديل الفرصة الاستثمارية"
-        description={editOpportunityDescription}
+        breadcrumbCurrent={editCopy.breadcrumbCurrent}
+        title={editCopy.title}
+        description={editCopy.description}
         register={register}
         fileFields={fileFields}
         fileUploadState={fileUploadState}
@@ -360,8 +358,8 @@ export default function InvestmentOpportunityEditPage() {
         sharePriceReadOnly
         onOpenLocationPicker={handleOpenLocationPicker}
         onSubmit={handleSave}
-        submitLabel="حفظ التعديلات"
-        cancelLabel="الغاء"
+        submitLabel={editCopy.submitLabel}
+        cancelLabel={editCopy.cancelLabel}
         onCancel={() => navigate(detailsPath)}
       />
       <InvestmentOpportunityNeighborhoodMapDialog
@@ -378,16 +376,16 @@ export default function InvestmentOpportunityEditPage() {
       <ConfirmationDialog
         open={discardOpen}
         onOpenChange={handleDiscardOpenChange}
-        title="مغادرة الصفحة دون حفظ؟"
-        description="لديك تغييرات غير محفوظة. هل تريد مغادرة الصفحة بدون حفظ التعديلات؟"
+        title={editCopy.discardDialog.title}
+        description={editCopy.discardDialog.description}
         icon={
           <AlertTriangle
             className="size-[30px] text-[#b42318]"
             aria-hidden="true"
           />
         }
-        confirmLabel="مغادرة"
-        cancelLabel="البقاء"
+        confirmLabel={editCopy.discardDialog.confirmLabel}
+        cancelLabel={editCopy.discardDialog.cancelLabel}
         confirmVariant="destructive"
         onConfirm={handleLeaveWithoutSaving}
       />

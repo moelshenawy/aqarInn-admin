@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 import { ROUTE_PATHS } from '@/app/router/route-paths'
 import {
@@ -27,21 +28,6 @@ import {
   investmentOpportunityDefaultDetails,
   investmentOpportunityGalleryTileClassNames,
 } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
-
-const addOpportunityDescription =
-  'يمكنك إضافة فرصة استثمارية جديدة من خلال تعبئة البيانات المطلوبة، ثم حفظها ليتم تسجيلها في النظام وإتاحتها للمستخدمين المصرح لهم.'
-
-const saveDraftSuccessToast = {
-  title: 'تم حفظ الفرصة كمسودة',
-  description: 'تم حفظ بيانات الفرصة الاستثمارية بحالة مسودة بنجاح.',
-  actionLabel: 'إغلاق',
-}
-
-const publishSuccessToast = {
-  title: 'تم نشر الفرصة الاستثمارية بنجاح',
-  description: 'تم إنشاء الفرصة الاستثمارية وتحويل حالتها إلى منشورة.',
-  actionLabel: 'إغلاق',
-}
 
 function resolveApiErrorMessage(error, t) {
   const message = error?.message
@@ -127,7 +113,13 @@ function buildReviewGallery(previewUrls = []) {
     }))
 }
 
-function buildReviewDetails(values, cityName, previewUrls = []) {
+function buildReviewDetails(
+  values,
+  cityName,
+  previewUrls = [],
+  reviewDetailsCopy,
+  locationSeparator = ', ',
+) {
   return {
     ...investmentOpportunityDefaultDetails,
     title:
@@ -138,46 +130,45 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
     titleEn: values.titleEn || investmentOpportunityDefaultDetails.titleEn,
     propertyType:
       values.propertyType === 'commercial'
-        ? '\u0639\u0642\u0627\u0631 \u062A\u062C\u0627\u0631\u064A'
-        : '\u0639\u0642\u0627\u0631 \u0633\u0643\u0646\u064A',
+        ? reviewDetailsCopy.propertyType.commercial
+        : reviewDetailsCopy.propertyType.residential,
     floors: values.floorCount
-      ? `${values.floorCount} \u0623\u062F\u0648\u0627\u0631`
+      ? `${values.floorCount} ${reviewDetailsCopy.units.floors}`
       : investmentOpportunityDefaultDetails.floors,
     totalArea: values.propertyArea
-      ? `${values.propertyArea} \u0645\u00B2 \u0645\u0633\u0627\u062D\u0629 \u0625\u062C\u0645\u0627\u0644\u064A\u0629`
+      ? `${values.propertyArea} ${reviewDetailsCopy.units.totalArea}`
       : investmentOpportunityDefaultDetails.totalArea,
     buildYear: values.buildYear || investmentOpportunityDefaultDetails.buildYear,
     locationDisplay:
-      [values.neighborhood, cityName].filter(Boolean).join('\u060C ') ||
+      [values.neighborhood, cityName].filter(Boolean).join(locationSeparator) ||
       values.propertyLocation ||
       investmentOpportunityDefaultDetails.locationDisplay,
     location:
-      [values.neighborhood, cityName].filter(Boolean).join('\u060C ') ||
+      [values.neighborhood, cityName].filter(Boolean).join(locationSeparator) ||
       values.propertyLocation ||
       investmentOpportunityDefaultDetails.location,
     metrics: [
       {
-        label:
-          '\u0627\u0644\u0639\u0627\u0626\u062F \u0627\u0644\u0635\u0627\u0641\u064A \u0627\u0644\u0645\u062A\u0648\u0642\u0639',
+        label: reviewDetailsCopy.metrics.expectedNetReturn,
         value:
           values.expectedNetReturn ||
           investmentOpportunityDefaultDetails.metrics[0].value,
       },
       {
-        label: '\u0627\u0644\u0639\u0627\u0626\u062F \u0627\u0644\u0645\u062A\u0648\u0642\u0639',
+        label: reviewDetailsCopy.metrics.expectedReturn,
         value:
           values.expectedReturn || investmentOpportunityDefaultDetails.metrics[1].value,
       },
       {
-        label: '\u0639\u062F\u062F \u0627\u0644\u062D\u0635\u0635',
+        label: reviewDetailsCopy.metrics.shareCount,
         value: values.shareCount || investmentOpportunityDefaultDetails.metrics[2].value,
       },
       {
-        label: '\u0633\u0639\u0631 \u0627\u0644\u062D\u0635\u0629',
+        label: reviewDetailsCopy.metrics.sharePrice,
         value: values.sharePrice || investmentOpportunityDefaultDetails.metrics[3].value,
       },
       {
-        label: '\u0633\u0639\u0631 \u0627\u0644\u0639\u0642\u0627\u0631',
+        label: reviewDetailsCopy.metrics.propertyPrice,
         value:
           values.propertyPrice ||
           investmentOpportunityDefaultDetails.metrics[4].value,
@@ -187,19 +178,17 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
     gallery: buildReviewGallery(previewUrls),
     investmentSettings: [
       {
-        label:
-          '\u062A\u0627\u0631\u064A\u062E \u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u0627\u0633\u062A\u062B\u0645\u0627\u0631',
+        label: reviewDetailsCopy.investmentSettings.startDate,
         value:
           values.investmentStartDate ||
           investmentOpportunityDefaultDetails.investmentSettings[0].value,
       },
       {
-        label:
-          '\u062C\u062F\u0648\u0644\u0629 \u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u0627\u0633\u062A\u062B\u0645\u0627\u0631',
+        label: reviewDetailsCopy.investmentSettings.scheduleStart,
         value:
           values.scheduleInvestmentStart === 'no'
-            ? '\u0644\u0627'
-            : '\u0646\u0639\u0645',
+            ? reviewDetailsCopy.investmentSettings.no
+            : reviewDetailsCopy.investmentSettings.yes,
       },
     ],
     operator: {
@@ -232,7 +221,17 @@ function buildReviewDetails(values, cityName, previewUrls = []) {
 
 export default function InvestmentOpportunityAddPage() {
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation(['validation'])
+  const { t, i18n } = useTranslation(['navigation', 'validation'])
+  const { dir } = useDirection()
+  const addCopy = t('investmentOpportunity.add', {
+    ns: 'navigation',
+    returnObjects: true,
+  })
+  const reviewDetailsCopy = t('investmentOpportunity.reviewDetails', {
+    ns: 'navigation',
+    returnObjects: true,
+  })
+  const locationSeparator = i18n.resolvedLanguage === 'ar' ? '، ' : ', '
   const [reviewOpen, setReviewOpen] = useState(false)
   const [isNeighborhoodMapOpen, setIsNeighborhoodMapOpen] = useState(false)
   const [selectedCityIdForMap, setSelectedCityIdForMap] = useState('')
@@ -359,7 +358,13 @@ export default function InvestmentOpportunityAddPage() {
       cityOptions.find((cityOption) => cityOption.value === formValues.cityId)
         ?.label ?? ''
     setReviewDetails(
-      buildReviewDetails(formValues, cityName, propertyImagePreviewUrls),
+      buildReviewDetails(
+        formValues,
+        cityName,
+        propertyImagePreviewUrls,
+        reviewDetailsCopy,
+        locationSeparator,
+      ),
     )
     setReviewOpen(true)
   }
@@ -379,13 +384,13 @@ export default function InvestmentOpportunityAddPage() {
         mode: 'draft',
       })
       await createDraftMutation.mutateAsync(formData)
-      showDashboardSuccessToast(saveDraftSuccessToast)
+      showDashboardSuccessToast(addCopy.toasts.draftSuccess)
       navigateToList()
     } catch (error) {
       showDashboardErrorToast({
-        title: 'تعذر حفظ المسودة',
+        title: addCopy.toasts.draftError.title,
         description: resolveApiErrorMessage(error, t),
-        actionLabel: 'إغلاق',
+        actionLabel: addCopy.toasts.draftError.actionLabel,
       })
     }
   }
@@ -407,13 +412,13 @@ export default function InvestmentOpportunityAddPage() {
       })
       await createOpportunityMutation.mutateAsync(formData)
       setReviewOpen(false)
-      showDashboardSuccessToast(publishSuccessToast)
+      showDashboardSuccessToast(addCopy.toasts.publishSuccess)
       navigateToList()
     } catch (error) {
       showDashboardErrorToast({
-        title: 'تعذر نشر الفرصة',
+        title: addCopy.toasts.publishError.title,
         description: resolveApiErrorMessage(error, t),
-        actionLabel: 'إغلاق',
+        actionLabel: addCopy.toasts.publishError.actionLabel,
       })
     }
   }
@@ -466,20 +471,20 @@ export default function InvestmentOpportunityAddPage() {
   }
 
   return (
-    <div className="pb-8 text-start" dir="rtl">
+    <div className="pb-8 text-start" dir={dir}>
       <InvestmentOpportunityForm
-        breadcrumbCurrent="إضافة فرصة استثمارية"
-        title="إضافة فرصة استثمارية جديدة"
-        description={addOpportunityDescription}
+        breadcrumbCurrent={addCopy.breadcrumbCurrent}
+        title={addCopy.title}
+        description={addCopy.description}
         register={register}
         fileFields={fileFields}
         fileUploadState={fileUploadState}
         errors={errors}
         onSubmit={handleContinue}
-        submitLabel="التالي"
-        draftLabel="حفظ كمسودة"
+        submitLabel={addCopy.submitLabel}
+        draftLabel={addCopy.draftLabel}
         onDraft={handleSaveDraft}
-        cancelLabel="الغاء"
+        cancelLabel={addCopy.cancelLabel}
         isSubmitting={isSubmitting}
         cityOptions={cityOptions}
         showCityNeighborhoodFields={false}

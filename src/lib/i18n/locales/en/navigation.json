@@ -3,6 +3,294 @@
   "users": "Users Management",
   "investmentOpportunities": "Investment Opportunities",
   "addInvestmentOpportunity": "Add investment opportunity",
+  "investmentOpportunity": {
+    "add": {
+      "breadcrumbCurrent": "Add investment opportunity",
+      "title": "Add a new investment opportunity",
+      "description": "You can add a new investment opportunity by filling in the required data, then saving it so it is registered in the system and available to authorized users.",
+      "submitLabel": "Next",
+      "draftLabel": "Save as draft",
+      "cancelLabel": "Cancel",
+      "toasts": {
+        "draftSuccess": {
+          "title": "Opportunity saved as draft",
+          "description": "Investment opportunity data was saved successfully as draft.",
+          "actionLabel": "Close"
+        },
+        "publishSuccess": {
+          "title": "Investment opportunity published successfully",
+          "description": "The investment opportunity was created and moved to published status.",
+          "actionLabel": "Close"
+        },
+        "draftError": {
+          "title": "Unable to save draft",
+          "actionLabel": "Close"
+        },
+        "publishError": {
+          "title": "Unable to publish opportunity",
+          "actionLabel": "Close"
+        }
+      }
+    },
+    "edit": {
+      "breadcrumbCurrent": "Edit investment opportunity",
+      "title": "Edit investment opportunity",
+      "description": "You can edit investment opportunity data by updating the required fields, then saving it to update data in the system.",
+      "submitLabel": "Save changes",
+      "cancelLabel": "Cancel",
+      "discardDialog": {
+        "title": "Leave page without saving?",
+        "description": "You have unsaved changes. Do you want to leave this page without saving updates?",
+        "confirmLabel": "Leave",
+        "cancelLabel": "Stay"
+      },
+      "toasts": {
+        "success": {
+          "title": "Investment opportunity updated successfully",
+          "description": "Changes to investment opportunity data were saved.",
+          "actionLabel": "Close"
+        },
+        "error": {
+          "title": "Failed to update investment opportunity",
+          "actionLabel": "Close"
+        }
+      }
+    },
+    "reviewDialog": {
+      "title": "View investment opportunity details",
+      "description": "Review investment opportunity data before publishing.",
+      "closeAria": "Close opportunity review dialog",
+      "publishLabel": "Publish opportunity",
+      "publishingLabel": "Publishing..."
+    },
+    "reviewDetails": {
+      "propertyType": {
+        "commercial": "Commercial property",
+        "residential": "Residential property"
+      },
+      "units": {
+        "floors": "floors",
+        "totalArea": "m² total area"
+      },
+      "metrics": {
+        "expectedNetReturn": "Expected net return",
+        "expectedReturn": "Expected return",
+        "shareCount": "Number of shares",
+        "sharePrice": "Share price",
+        "propertyPrice": "Property price"
+      },
+      "investmentSettings": {
+        "startDate": "Investment start date",
+        "scheduleStart": "Schedule investment start",
+        "yes": "Yes",
+        "no": "No"
+      }
+    },
+    "form": {
+      "breadcrumbAria": "Page breadcrumb",
+      "sections": {
+        "propertyDetails": "Property details",
+        "operatorDetails": "Operator details",
+        "financialInfo": "Financial information",
+        "investmentSettings": "Investment settings"
+      },
+      "options": {
+        "propertyType": {
+          "residential": "Residential",
+          "commercial": "Commercial"
+        },
+        "yesNo": {
+          "yes": "Yes",
+          "no": "No"
+        },
+        "returnFrequency": {
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "semiAnnual": "Semi-annual",
+          "annual": "Annual"
+        },
+        "investmentDuration": {
+          "6": "6 months",
+          "12": "1 year",
+          "24": "2 years",
+          "36": "3 years"
+        }
+      },
+      "fields": {
+        "referenceCode": {
+          "label": "Reference code",
+          "placeholder": "Enter opportunity reference code"
+        },
+        "titleAr": {
+          "label": "Title in Arabic",
+          "placeholder": "Enter title in Arabic"
+        },
+        "titleEn": {
+          "label": "Title in English",
+          "placeholder": "Enter title in English"
+        },
+        "cityId": {
+          "label": "City",
+          "placeholder": "Select city"
+        },
+        "neighborhood": {
+          "label": "Neighborhood",
+          "placeholder": "Neighborhood is selected from map"
+        },
+        "propertyType": {
+          "label": "Property type",
+          "placeholder": "Select property type"
+        },
+        "propertyArea": {
+          "label": "Property area (m²)",
+          "placeholder": "Enter property area"
+        },
+        "floorCount": {
+          "label": "Number of floors",
+          "placeholder": "Enter number of floors"
+        },
+        "buildYear": {
+          "label": "Build year",
+          "placeholder": "Enter build year"
+        },
+        "propertyLocation": {
+          "label": "Property location",
+          "placeholder": "Select property location"
+        },
+        "propertyDocuments": {
+          "label": "Available documents",
+          "placeholder": "Add available property documents"
+        },
+        "propertyImages": {
+          "label": "Property images"
+        },
+        "virtualTour": {
+          "label": "360 image",
+          "placeholder": "Upload 360 image (optional)"
+        },
+        "developerNameAr": {
+          "label": "Developer name in Arabic",
+          "placeholder": "Enter developer name in Arabic"
+        },
+        "developerNameEn": {
+          "label": "Developer name in English",
+          "placeholder": "Enter developer name in English"
+        },
+        "developerDescriptionAr": {
+          "label": "Developer description in Arabic",
+          "placeholder": "Enter Arabic description"
+        },
+        "developerDescriptionEn": {
+          "label": "Developer description in English",
+          "placeholder": "Enter English description"
+        },
+        "developerEmail": {
+          "label": "Email",
+          "placeholder": "Enter email"
+        },
+        "developerLogo": {
+          "label": "Logo",
+          "placeholder": "Upload developer logo"
+        },
+        "developerPhone": {
+          "label": "Mobile number",
+          "placeholder": "Enter mobile number"
+        },
+        "developerLocation": {
+          "label": "Developer location",
+          "placeholder": "Select developer location"
+        },
+        "propertyPrice": {
+          "label": "Property price",
+          "placeholder": "Enter total price"
+        },
+        "currency": {
+          "label": "Currency",
+          "placeholder": "Currency code"
+        },
+        "shareCount": {
+          "label": "Number of shares",
+          "placeholder": "Enter number of shares"
+        },
+        "sharePrice": {
+          "label": "Share price",
+          "placeholder": "Enter share price"
+        },
+        "minInvestmentShares": {
+          "label": "Minimum shares",
+          "placeholder": "Enter minimum shares"
+        },
+        "maxSharesPerUser": {
+          "label": "Maximum shares per user",
+          "placeholder": "Enter maximum shares"
+        },
+        "maxUserOwnershipPct": {
+          "label": "Maximum ownership (%)",
+          "placeholder": "Enter percentage"
+        },
+        "expectedNetReturn": {
+          "label": "Expected net return",
+          "placeholder": "Enter expected net return"
+        },
+        "expectedReturn": {
+          "label": "Expected return (%)",
+          "placeholder": "Enter expected return percentage"
+        },
+        "returnFrequency": {
+          "label": "Return frequency",
+          "placeholder": "Select return distribution frequency"
+        },
+        "investmentDurationMonths": {
+          "label": "Investment duration",
+          "placeholder": "Select investment duration"
+        },
+        "scheduleInvestmentStart": {
+          "label": "Schedule investment start",
+          "placeholder": "Do you want to schedule investment start?"
+        },
+        "investmentStartDate": {
+          "label": "Investment start date",
+          "placeholder": "Select investment start date"
+        }
+      },
+      "files": {
+        "summary": {
+          "selectedCount": "Selected {{count}} files",
+          "loadingFile": "Preparing file...",
+          "loadingImages": "Preparing images...",
+          "listSeparator": ", "
+        },
+        "common": {
+          "removeAria": "Remove {{name}}"
+        },
+        "picker": {
+          "uploadMoreAria": "Upload additional file",
+          "viewUploadedAria": "View uploaded files"
+        },
+        "uploadedModal": {
+          "closeAria": "Close files dialog",
+          "title": "Available documents",
+          "description": "View and review uploaded files",
+          "previewAria": "Preview {{name}}",
+          "uploadButton": "Upload file"
+        },
+        "previewModal": {
+          "closeAria": "Close file preview",
+          "backAria": "Back to files list",
+          "description": "Preview selected file content",
+          "unsupportedTitle": "Unable to preview this file",
+          "unsupportedBody": "You can open the file locally for review."
+        },
+        "dropzone": {
+          "clickOrDrag": "Click to upload or drag and drop",
+          "uploadedImages": "Images uploaded",
+          "imagesCount": "{{count}} image(s)",
+          "loadingUploadedImages": "Preparing uploaded images...",
+          "specHint": "SVG or PNG or JPG or GIF (max 800x400 px)"
+        }
+      }
+    }
+  },
   "cities": "Cities",
   "citiesPage": {
     "description": "Manage cities available in the admin panel.",
