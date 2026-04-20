@@ -644,10 +644,12 @@ describe('InvestmentOpportunitiesPage route', () => {
     expect(
       screen.getByRole('link', { name: 'توزيعات الأرباح' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'تعديل' })).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: /حذف|delete/i }),
-    ).toBeInTheDocument()
+      screen.queryByRole('button', { name: /تعديل|edit/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /حذف|delete/i }),
+    ).not.toBeInTheDocument()
     expect(await screen.findByText('4,800,000')).toBeInTheDocument()
     expect(screen.getByText('اعدادات الاستثمار')).toBeInTheDocument()
     expect(screen.getByText('تفاصيل المشغل')).toBeInTheDocument()
@@ -662,6 +664,11 @@ describe('InvestmentOpportunitiesPage route', () => {
   })
 
   it('navigates from the details edit button to the populated edit page', async () => {
+    vi.mocked(getOpportunityById).mockResolvedValue({
+      ...opportunityDetailsFixture,
+      status: 'draft',
+    })
+
     const { router } = renderInvestmentOpportunitiesRoute({
       initialEntries: [
         buildInvestmentOpportunityDetailsPath('investment-riyadh-001'),
@@ -686,9 +693,9 @@ describe('InvestmentOpportunitiesPage route', () => {
   it('opens, cancels, and confirms the delete modal without calling an API', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
-    vi.mocked(getOpportunityById).mockResolvedValueOnce({
+    vi.mocked(getOpportunityById).mockResolvedValue({
       ...opportunityDetailsFixture,
-      status: 'published',
+      status: 'draft',
     })
     const detailsPath = buildInvestmentOpportunityDetailsPath(
       'investment-riyadh-001',
@@ -744,10 +751,10 @@ describe('InvestmentOpportunitiesPage route', () => {
     ).toBeInTheDocument()
   })
 
-  it('hides edit and delete actions on details page when opportunity status is draft', async () => {
+  it('hides edit and delete actions on details page when opportunity status is not draft', async () => {
     vi.mocked(getOpportunityById).mockResolvedValueOnce({
       ...opportunityDetailsFixture,
-      status: 'draft',
+      status: 'published',
     })
 
     renderInvestmentOpportunitiesRoute({

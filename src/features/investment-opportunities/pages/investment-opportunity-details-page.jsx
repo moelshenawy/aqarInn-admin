@@ -63,8 +63,8 @@ export default function InvestmentOpportunityDetailsPage() {
   ])
   const isDraftOpportunity =
     String(opportunity?.status ?? '').toLowerCase() === 'draft'
-  const canEditOpportunity = hasEditPermission && !isDraftOpportunity
-  const canDeleteOpportunity = hasDeletePermission && !isDraftOpportunity
+  const canEditOpportunity = hasEditPermission && isDraftOpportunity
+  const canDeleteOpportunity = hasDeletePermission && isDraftOpportunity
 
   const details = useMemo(
     () =>
