@@ -346,13 +346,15 @@
         "nameEn": "English name",
         "latitude": "Latitude",
         "longitude": "Longitude",
+        "code": "City code",
         "coverImage": "Cover image"
       },
       "placeholders": {
         "nameAr": "Example: Riyadh",
         "nameEn": "Example: Riyadh",
         "latitude": "24.7136",
-        "longitude": "46.6753"
+        "longitude": "46.6753",
+        "code": "Example: RUH"
       }
     }
   },

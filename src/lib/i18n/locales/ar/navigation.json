@@ -54,13 +54,15 @@
         "nameEn": "الاسم بالإنجليزي",
         "latitude": "خط العرض",
         "longitude": "خط الطول",
-        "coverImage": "صورة الغلاف"
+        "coverImage": "صورة الغلاف",
+        "code": "رمز المدينة"
       },
       "placeholders": {
         "nameAr": "مثال: الرياض",
         "nameEn": "Example: Riyadh",
         "latitude": "24.7136",
-        "longitude": "46.6753"
+        "longitude": "46.6753",
+        "code": "مثال: RUH"
       }
     },
     "deleteCityConfirmTitle": "حذف المدينة",

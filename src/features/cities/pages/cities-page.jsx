@@ -526,125 +526,123 @@ export default function CitiesPage() {
           </DialogHeader>
 
           <form className="space-y-5 px-6 py-6" onSubmit={handleFormSubmit}>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_220px] md:items-start">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city-name-ar">
+                    {t('citiesPage.form.fields.nameAr')}
+                  </Label>
+                  <Input
+                    id="city-name-ar"
+                    value={formValues.nameAr}
+                    onChange={(event) =>
+                      updateField('nameAr', event.currentTarget.value)
+                    }
+                    aria-invalid={!!errors.nameAr}
+                    placeholder={t('citiesPage.form.placeholders.nameAr')}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city-name-en">
+                    {t('citiesPage.form.fields.nameEn')}
+                  </Label>
+                  <Input
+                    id="city-name-en"
+                    value={formValues.nameEn}
+                    onChange={(event) =>
+                      updateField('nameEn', event.currentTarget.value)
+                    }
+                    aria-invalid={!!errors.nameEn}
+                    placeholder={t('citiesPage.form.placeholders.nameEn')}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city-latitude">
+                    {t('citiesPage.form.fields.latitude')}
+                  </Label>
+                  <Input
+                    id="city-latitude"
+                    value={formValues.latitude}
+                    onChange={(event) =>
+                      updateField('latitude', event.currentTarget.value)
+                    }
+                    aria-invalid={!!errors.latitude}
+                    placeholder={t('citiesPage.form.placeholders.latitude')}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city-longitude">
+                    {t('citiesPage.form.fields.longitude')}
+                  </Label>
+                  <Input
+                    id="city-longitude"
+                    value={formValues.longitude}
+                    onChange={(event) =>
+                      updateField('longitude', event.currentTarget.value)
+                    }
+                    aria-invalid={!!errors.longitude}
+                    placeholder={t('citiesPage.form.placeholders.longitude')}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="city-code">
+                    {t('citiesPage.form.fields.code')}
+                  </Label>
+                  <Input
+                    id="city-code"
+                    value={formValues.code}
+                    onChange={(event) => {
+                      // Keep only English letters, uppercase, max 3
+                      const raw = String(event.currentTarget.value || '')
+                      const cleaned = raw
+                        .replace(/[^A-Za-z]/g, '')
+                        .toUpperCase()
+                        .slice(0, 3)
+                      updateField('code', cleaned)
+                    }}
+                    placeholder={t('citiesPage.form.placeholders.code')}
+                    maxLength={3}
+                    required={!editingCity}
+                    aria-invalid={!!errors.code}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label htmlFor="city-name-ar">
-                  {t('citiesPage.form.fields.nameAr')}
+                <Label htmlFor="city-cover-image">
+                  {t('citiesPage.form.fields.coverImage')}
                 </Label>
                 <Input
-                  id="city-name-ar"
-                  value={formValues.nameAr}
+                  id="city-cover-image"
+                  type="file"
+                  accept="image/*"
                   onChange={(event) =>
-                    updateField('nameAr', event.currentTarget.value)
+                    setCoverImageFile(event.currentTarget.files?.[0] ?? null)
                   }
-                  aria-invalid={!!errors.nameAr}
-                  placeholder={t('citiesPage.form.placeholders.nameAr')}
-                  required
                 />
+                {(editingCity?.cover_image_absolute_url ||
+                  editingCity?.cover_image_url) &&
+                !coverImageFile ? (
+                  <img
+                    src={
+                      editingCity.cover_image_absolute_url ||
+                      editingCity.cover_image_url
+                    }
+                    alt={
+                      editingCity.name_ar || editingCity.name_en || 'City cover'
+                    }
+                    className="mt-2 h-[150px] w-[120px] rounded-lg object-cover"
+                  />
+                ) : null}
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city-name-en">
-                  {t('citiesPage.form.fields.nameEn')}
-                </Label>
-                <Input
-                  id="city-name-en"
-                  value={formValues.nameEn}
-                  onChange={(event) =>
-                    updateField('nameEn', event.currentTarget.value)
-                  }
-                  aria-invalid={!!errors.nameEn}
-                  placeholder={t('citiesPage.form.placeholders.nameEn')}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city-latitude">
-                  {t('citiesPage.form.fields.latitude')}
-                </Label>
-                <Input
-                  id="city-latitude"
-                  value={formValues.latitude}
-                  onChange={(event) =>
-                    updateField('latitude', event.currentTarget.value)
-                  }
-                  aria-invalid={!!errors.latitude}
-                  placeholder={t('citiesPage.form.placeholders.latitude')}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city-longitude">
-                  {t('citiesPage.form.fields.longitude')}
-                </Label>
-                <Input
-                  id="city-longitude"
-                  value={formValues.longitude}
-                  onChange={(event) =>
-                    updateField('longitude', event.currentTarget.value)
-                  }
-                  aria-invalid={!!errors.longitude}
-                  placeholder={t('citiesPage.form.placeholders.longitude')}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city-code">
-                  {t('citiesPage.form.fields.code')}
-                </Label>
-                <Input
-                  id="city-code"
-                  value={formValues.code}
-                  onChange={(event) => {
-                    // Keep only English letters, uppercase, max 3
-                    const raw = String(event.currentTarget.value || '')
-                    const cleaned = raw
-                      .replace(/[^A-Za-z]/g, '')
-                      .toUpperCase()
-                      .slice(0, 3)
-                    updateField('code', cleaned)
-                  }}
-                  placeholder={t('citiesPage.form.placeholders.code')}
-                  maxLength={3}
-                  required={!editingCity}
-                  aria-invalid={!!errors.code}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="city-cover-image">
-                {t('citiesPage.form.fields.coverImage')}
-              </Label>
-              <Input
-                id="city-cover-image"
-                type="file"
-                accept="image/*"
-                onChange={(event) =>
-                  setCoverImageFile(event.currentTarget.files?.[0] ?? null)
-                }
-              />
-              {(editingCity?.cover_image_absolute_url ||
-                editingCity?.cover_image_url) &&
-              !coverImageFile ? (
-                <img
-                  src={
-                    editingCity.cover_image_absolute_url ||
-                    editingCity.cover_image_url
-                  }
-                  alt={
-                    editingCity.name_ar || editingCity.name_en || 'City cover'
-                  }
-                  className="mt-2 h-20 w-36 rounded-lg object-cover"
-                />
-              ) : null}
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
