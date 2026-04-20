@@ -1,0 +1,45 @@
+{
+  "transactionsOverview": {
+    "title": "نظرة عامة على المعاملات",
+    "description": "تابع الاستثمارات وطلبات السحب والتوزيعات عبر نطاقات الوقت والفلاتر التشغيلية.",
+    "rangePresets": {
+      "today": "اليوم",
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوماً",
+      "custom": "مخصص"
+    },
+    "filters": {
+      "dateRange": "النطاق الزمني",
+      "io": "الفرصة الاستثمارية",
+      "status": "الحالة",
+      "city": "المدينة",
+      "startDate": "من تاريخ",
+      "endDate": "إلى تاريخ",
+      "all": "All",
+      "ioOptions": {
+        "riyadhResidences": "مجمع الرياض السكني",
+        "jeddahCorniche": "واجهة جدة البحرية",
+        "dammamHeights": "أبراج الدمام"
+      },
+      "statusOptions": {
+        "in_progress": "قيد التنفيذ",
+        "deposit_made": "تم الإيداع"
+      },
+      "cityOptions": {
+        "riyadh": "الرياض",
+        "jeddah": "جدة",
+        "dammam": "الدمام"
+      }
+    },
+    "cards": {
+      "investments": "الاستثمارات",
+      "withdrawals": "طلبات السحب",
+      "distributions": "التوزيعات"
+    },
+    "metrics": {
+      "count": "العدد",
+      "totalAmount": "إجمالي المبلغ",
+      "statusBreakdown": "حسب الحالة"
+    }
+  }
+}

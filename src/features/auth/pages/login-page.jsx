@@ -127,16 +127,7 @@ export default function LoginPage() {
           />
 
           <div className="flex flex-wrap items-center justify-between gap-4 py-1 text-[#876647]">
-            <LocalizedLink
-              to={ROUTE_PATHS.forgotPassword}
-              className="text-base leading-6 font-medium transition-opacity hover:opacity-85"
-            >
-              {t('loginPage.forgotPassword')}
-            </LocalizedLink>
-
             <label className="flex cursor-pointer items-center gap-[10px] text-base leading-6 font-medium">
-              <span>{t('loginPage.rememberMe')}</span>
-
               <span className="relative inline-flex size-[22px] shrink-0 items-center justify-center">
                 <input
                   type="checkbox"
@@ -154,7 +145,15 @@ export default function LoginPage() {
                   aria-hidden="true"
                 />
               </span>
+              <span>{t('loginPage.rememberMe')}</span>
             </label>
+
+            <LocalizedLink
+              to={ROUTE_PATHS.forgotPassword}
+              className="text-base leading-6 font-medium transition-opacity hover:opacity-85"
+            >
+              {t('loginPage.forgotPassword')}
+            </LocalizedLink>
           </div>
 
           <AuthPrimaryButton className="mt-[17px]" disabled={isSubmitting}>

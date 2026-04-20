@@ -551,7 +551,7 @@ function UsersManagementTable() {
       className="overflow-hidden rounded-xl border border-[#eae5d7] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]"
     >
       <header className="flex h-[77px] items-start border-b border-[#eae5d7] bg-[#eae5d7] px-6 pt-5">
-        <div className="flex w-full items-start gap-2">
+        <div className="flex w-full items-center gap-2">
           <MoreVertical
             className="size-5 shrink-0 stroke-[1.8] text-[#9d7e55]"
             aria-hidden="true"
@@ -610,7 +610,7 @@ function UsersManagementTable() {
                   <span className="whitespace-nowrap">
                     {copy.fullNameHeader}
                   </span>
-                  <UserRowCheckbox label={copy.selectAllUsers} />
+                  {/* <UserRowCheckbox label={copy.selectAllUsers} />  */}
                 </div>
               </th>
               <th className="px-6 font-bold">{copy.identifierHeader}</th>
@@ -647,13 +647,13 @@ function UsersManagementTable() {
                       className="flex min-w-0 items-center justify-start gap-3"
                       dir={isArabic ? 'rtl' : 'ltr'}
                     >
-                      <UserRowCheckbox
+                      {/* <UserRowCheckbox
                         label={`${copy.selectUser} ${row.fullName}`}
-                      />
+                      /> */}
                       <UserAvatarIcon />
                       <span
                         title={row.fullName}
-                        className="block min-w-0 flex-1 whitespace-normal break-words [overflow-wrap:anywhere]"
+                        className="block min-w-0 flex-1 [overflow-wrap:anywhere] break-words whitespace-normal"
                       >
                         {row.fullName}
                       </span>
@@ -662,10 +662,10 @@ function UsersManagementTable() {
                   <td className="px-6 py-3 align-top font-normal whitespace-nowrap">
                     {row.identifier}
                   </td>
-                  <td className="px-6 py-3 align-top text-center font-medium">
+                  <td className="px-6 py-3 text-center align-top font-medium">
                     <span
                       title={row.role}
-                      className="block whitespace-normal break-words [overflow-wrap:anywhere]"
+                      className="block [overflow-wrap:anywhere] break-words whitespace-normal"
                     >
                       {row.role}
                     </span>
@@ -674,7 +674,7 @@ function UsersManagementTable() {
                     <span
                       dir="ltr"
                       title={row.email}
-                      className="block text-start whitespace-normal break-words [overflow-wrap:anywhere]"
+                      className="block text-start [overflow-wrap:anywhere] break-words whitespace-normal"
                     >
                       {row.email}
                     </span>
@@ -683,7 +683,7 @@ function UsersManagementTable() {
                     <span
                       dir="ltr"
                       title={row.phone}
-                      className="block text-start whitespace-normal break-words [overflow-wrap:anywhere]"
+                      className="block text-start [overflow-wrap:anywhere] break-words whitespace-normal"
                     >
                       {row.phone}
                     </span>

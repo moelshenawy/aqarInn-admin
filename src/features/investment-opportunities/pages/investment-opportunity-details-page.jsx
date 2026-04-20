@@ -56,10 +56,7 @@ export default function InvestmentOpportunityDetailsPage() {
     createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.edit),
   ])
   const hasDeletePermission = hasAllPermissions([
-    createPermission(
-      APP_RESOURCES.investmentOpportunities,
-      APP_ACTIONS.delete,
-    ),
+    createPermission(APP_RESOURCES.investmentOpportunities, APP_ACTIONS.delete),
   ])
   const isDraftOpportunity =
     String(opportunity?.status ?? '').toLowerCase() === 'draft'
@@ -173,7 +170,7 @@ export default function InvestmentOpportunityDetailsPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         title="حذف الفرصة الاستثمارية"
-        description="هل أنت متأكد من حذف الفرصة الاستثمارية؟ لا يمكن التراجع عن هذا الإجراء."
+        description="هل أنت متأكد من رغبتك في حذف فرصة الاستثمار هذه؟ سيتم إزالة جميع البيانات المرتبطة بها بشكل دائم، ولن تتمكن من استعادتها لاحقًا."
         confirmLabel="حذف"
         cancelLabel="إلغاء"
         confirmVariant="destructive"

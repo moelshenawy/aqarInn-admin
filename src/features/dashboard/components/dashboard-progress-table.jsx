@@ -9,7 +9,7 @@
   return (
     <section
       dir={dir}
-      className="rounded-xl border border-[color:var(--dashboard-border)] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]"
+      className="overflow-hidden rounded-xl border border-[color:var(--dashboard-border)] bg-[#f8f3e8] shadow-[var(--dashboard-shadow)]"
     >
       <div className="flex items-center justify-between gap-4 bg-[#EAE5D7] px-6 py-4">
         <h2 className="text-start text-lg font-semibold text-[color:var(--dashboard-text)]">

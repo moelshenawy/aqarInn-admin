@@ -137,7 +137,7 @@ export default function InvestmentOpportunitiesPage() {
     })
 
     return [
-      { key: 'all', label: 'الكل', count: opportunitiesPayload?.total ?? 0 },
+      { key: 'all', label: 'All', count: opportunitiesPayload?.total ?? 0 },
       ...Array.from(cityCounts.values()),
     ]
   }, [opportunities, opportunitiesPayload?.total])
@@ -204,6 +204,7 @@ export default function InvestmentOpportunitiesPage() {
               <DashboardOpportunityCard
                 referenceCode={opportunity.code}
                 key={opportunity.id}
+                status={opportunity.status_label}
                 {...opportunity}
                 to={buildInvestmentOpportunityDetailsPath(
                   opportunity.id,
