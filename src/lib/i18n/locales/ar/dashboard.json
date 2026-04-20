@@ -1,4 +1,9 @@
 {
+  "investmentOpportunities": {
+    "cards": {
+      "soldShares": "حصة مباعة"
+    }
+  },
   "transactionsOverview": {
     "title": "نظرة عامة على المعاملات",
     "description": "تابع الاستثمارات وطلبات السحب والتوزيعات عبر نطاقات الوقت والفلاتر التشغيلية.",

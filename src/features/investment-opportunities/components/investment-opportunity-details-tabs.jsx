@@ -35,10 +35,7 @@ const tabs = [
   },
 ]
 
-export function InvestmentOpportunityDetailsTabs({
-  opportunityId,
-  activeTab,
-}) {
+export function InvestmentOpportunityDetailsTabs({ opportunityId, activeTab }) {
   const { i18n } = useTranslation()
   const { dir } = useDirection()
   const isEnglish = i18n.resolvedLanguage === 'en'
@@ -66,7 +63,7 @@ export function InvestmentOpportunityDetailsTabs({
             to={tab.buildPath(opportunityId, i18n.resolvedLanguage)}
             end={tab.key === 'details'}
             className={cn(
-              'flex min-w-0 flex-1 items-center justify-center rounded-xl px-5 py-[13px] text-center text-lg leading-7 font-semibold transition-colors',
+              'flex min-w-0 flex-1 items-center justify-center rounded-xl px-3 py-[13px] text-center text-sm leading-5 font-semibold transition-colors md:px-5 md:text-lg md:leading-7',
               isActive
                 ? 'bg-[#402f28] text-[#f8f3e8]'
                 : 'text-[#ac9063] hover:bg-[#f8f3e8]/70',

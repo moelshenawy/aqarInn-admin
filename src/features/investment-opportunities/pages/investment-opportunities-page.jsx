@@ -46,7 +46,7 @@ function formatPrice(value) {
   }).format(toNumber(value))
 }
 
-function buildCardOpportunity(opportunity, index, language) {
+function buildCardOpportunity(opportunity, index, language, soldSharesLabel) {
   const fundedShares = toNumber(opportunity.funded_shares)
   const totalShares = toNumber(opportunity.total_shares)
   const progress =
@@ -57,7 +57,7 @@ function buildCardOpportunity(opportunity, index, language) {
     id: opportunity.id,
     code: opportunity.reference_code || opportunity.code || opportunity.id,
     title: opportunity.title,
-    soldShares: `${new Intl.NumberFormat('en-US').format(fundedShares)} حصة مباعة`,
+    soldShares: `${new Intl.NumberFormat('en-US').format(fundedShares)} ${soldSharesLabel}`,
     price: formatPrice(opportunity.property_price),
     status:
       opportunity.states_label ??
@@ -111,9 +111,14 @@ export default function InvestmentOpportunitiesPage() {
   const opportunities = useMemo(
     () =>
       (opportunitiesPayload?.data ?? []).map((opportunity, index) =>
-        buildCardOpportunity(opportunity, index, i18n.resolvedLanguage),
+        buildCardOpportunity(
+          opportunity,
+          index,
+          i18n.resolvedLanguage,
+          t('investmentOpportunities.cards.soldShares', { ns: 'dashboard' }),
+        ),
       ),
-    [opportunitiesPayload?.data, i18n.resolvedLanguage],
+    [opportunitiesPayload?.data, i18n.resolvedLanguage, t],
   )
 
   const locationFilters = useMemo(() => {

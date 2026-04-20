@@ -1,4 +1,9 @@
 {
+  "investmentOpportunities": {
+    "cards": {
+      "soldShares": "shares sold"
+    }
+  },
   "transactionsOverview": {
     "title": "Transactions Overview",
     "description": "Track investments, withdrawals, and distributions across time and operational filters.",

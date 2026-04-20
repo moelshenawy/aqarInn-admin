@@ -56,13 +56,9 @@ export function DashboardTransactionsSummaryV2Section({
   )
 
   const filters =
-    transactionsOverview?.filters ??
-    liveTransactionsOverview?.filters ??
-    []
+    transactionsOverview?.filters ?? liveTransactionsOverview?.filters ?? []
   const cards =
-    liveTransactionsOverview?.cards ??
-    transactionsOverview?.cards ??
-    []
+    liveTransactionsOverview?.cards ?? transactionsOverview?.cards ?? []
   const sortedCards = sortTransactionsCards(cards)
   const activeFilter = selectedFilter ?? transactionsOverview?.selected_filter
 
@@ -72,16 +68,18 @@ export function DashboardTransactionsSummaryV2Section({
       dir={dir}
       className="space-y-6"
     >
-      <div className="flex items-start justify-between gap-6">
+      <div className="flex flex-col items-start justify-start gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
         <h3 className="text-start text-lg leading-7 font-semibold text-[#181927]">
           {transactionsOverview?.title}
         </h3>
+
         <div
           data-slot="dashboard-transactions-summary-v2-tabs"
-          className="flex items-center gap-1"
+          className="flex w-full flex-wrap items-center gap-1 md:w-auto"
         >
           {filters.map((filter) => {
             const isActive = filter.key === activeFilter
+
             return (
               <button
                 key={filter.key}
@@ -105,7 +103,7 @@ export function DashboardTransactionsSummaryV2Section({
 
       <div
         data-slot="dashboard-transactions-summary-v2-cards"
-        className="flex items-start justify-end gap-5"
+        className="flex flex-col items-stretch justify-start gap-5 md:flex-row md:items-start md:justify-end"
       >
         {sortedCards.map((card) => {
           const iconSrc = transactionCardIcons[card.key]
@@ -116,7 +114,7 @@ export function DashboardTransactionsSummaryV2Section({
               key={card.key}
               data-slot="dashboard-transactions-summary-v2-card"
               data-card-key={card.key}
-              className="flex h-[164px] min-w-0 flex-1 flex-col gap-[7px] overflow-hidden rounded-[10px] bg-[#eae5d7] px-[17px] py-[19px]"
+              className="flex h-[164px] w-full min-w-0 flex-none flex-col gap-[7px] overflow-hidden rounded-[10px] bg-[#eae5d7] px-[17px] py-[19px] md:flex-1"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
@@ -135,6 +133,7 @@ export function DashboardTransactionsSummaryV2Section({
                     </div>
                   ) : null}
                 </div>
+
                 <div className="flex size-[34px] items-center justify-center">
                   {iconSrc ? (
                     <img
@@ -150,6 +149,7 @@ export function DashboardTransactionsSummaryV2Section({
               <div className="flex min-h-0 flex-1 items-end">
                 <div className="flex w-full items-center justify-end gap-2.5">
                   <RiyalIcon className="text-[36px] leading-[54px] text-[#ac9063]" />
+
                   <p className="flex-1 text-start text-[45px] leading-11 font-medium text-[#6d4f3b]">
                     {numberFormatter.format(card.amount ?? 0)}
                   </p>

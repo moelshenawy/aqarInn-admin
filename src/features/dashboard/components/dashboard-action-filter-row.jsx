@@ -21,7 +21,7 @@ export function DashboardActionFilterRow({
       dir={dir}
       role="group"
       data-slot="dashboard-action-filter-row"
-      className="flex w-full min-w-0 items-center gap-3"
+      className="flex w-full min-w-0 flex-col flex-wrap items-start gap-3 md:flex-row md:items-center"
     >
       <div
         dir={dir}
@@ -79,8 +79,8 @@ export function DashboardActionFilterRow({
       {hasAction ? (
         <div
           aria-hidden="true"
-          data-slot="dashboard-action-filter-divider"
-          className="h-[18px] w-px shrink-0 bg-[#d6cbb2]"
+          data-slot="dashboard-action-filter-divider "
+          className="hidden h-[18px] w-px shrink-0 bg-[#d6cbb2] md:flex"
         />
       ) : null}
 
