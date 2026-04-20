@@ -8,6 +8,27 @@ const DEFAULT_MANAGED_FILES = {
 }
 
 const MULTI_UPLOAD_FIELDS = new Set(['propertyDocuments', 'propertyImages'])
+const IMAGE_EXTENSIONS = new Set([
+  'png',
+  'jpg',
+  'jpeg',
+  'webp',
+  'heic',
+  'heif',
+  'gif',
+  'bmp',
+  'svg',
+])
+const PDF_EXTENSIONS = new Set(['pdf'])
+
+function isExistingManagedFile(file) {
+  return Boolean(file?.isExistingUpload)
+}
+
+function getExistingManagedFileUrl(file) {
+  const existingUrl = String(file?.existingUrl ?? '').trim()
+  return existingUrl
+}
 
 function normalizeFiles(value) {
   if (!value) {
@@ -70,6 +91,11 @@ function getFileExtension(fileName) {
 }
 
 function getPreviewKind(file) {
+  const explicitPreviewKind = String(file?.previewKind ?? '').trim().toLowerCase()
+  if (explicitPreviewKind === 'image' || explicitPreviewKind === 'pdf') {
+    return explicitPreviewKind
+  }
+
   const mimeType = String(file?.type ?? '').toLowerCase()
 
   if (mimeType.startsWith('image/')) {
@@ -77,6 +103,15 @@ function getPreviewKind(file) {
   }
 
   if (mimeType === 'application/pdf') {
+    return 'pdf'
+  }
+
+  const extension = getFileExtension(file?.name)
+  if (IMAGE_EXTENSIONS.has(extension)) {
+    return 'image'
+  }
+
+  if (PDF_EXTENSIONS.has(extension)) {
     return 'pdf'
   }
 
@@ -90,6 +125,7 @@ function toPreviewItem(file, index) {
     name: file?.name ?? '',
     extension: getFileExtension(file?.name),
     previewKind: getPreviewKind(file),
+    previewUrl: getExistingManagedFileUrl(file),
   }
 }
 
@@ -144,11 +180,28 @@ export function useInvestmentOpportunityFileUploadState({
       return
     }
 
-    const nextPreviewUrls = imageFiles.map((file) => createObjectUrlSafe(file))
-    setPropertyImagePreviewUrls(nextPreviewUrls)
+    const previewUrlEntries = imageFiles.map((file) => {
+      const existingUrl = getExistingManagedFileUrl(file)
+      if (existingUrl) {
+        return { url: existingUrl, shouldRevoke: false }
+      }
+
+      const objectUrl = createObjectUrlSafe(file)
+      return {
+        url: objectUrl,
+        shouldRevoke: Boolean(objectUrl),
+      }
+    })
+    setPropertyImagePreviewUrls(previewUrlEntries.map((entry) => entry.url))
 
     return () => {
-      nextPreviewUrls.forEach((url) => revokeObjectUrlSafe(url))
+      previewUrlEntries.forEach((entry) => {
+        if (!entry.shouldRevoke) {
+          return
+        }
+
+        revokeObjectUrlSafe(entry.url)
+      })
     }
   }, [managedFiles.propertyImages])
 
@@ -181,7 +234,16 @@ export function useInvestmentOpportunityFileUploadState({
   }, [managedFiles.propertyDocuments, selectedDocumentPreviewIndex])
 
   const updateManagedFilesForField = useCallback(
-    (fieldName, files, { append = false } = {}) => {
+    (
+      fieldName,
+      files,
+      {
+        append = false,
+        shouldDirty = true,
+        shouldValidate = true,
+        clearFieldErrors = true,
+      } = {},
+    ) => {
       const normalizedIncomingFiles = normalizeFiles(files)
       const currentManagedFiles = managedFilesRef.current
       const currentFieldFiles = normalizeFiles(currentManagedFiles[fieldName])
@@ -200,12 +262,61 @@ export function useInvestmentOpportunityFileUploadState({
       managedFilesRef.current = nextManagedFiles
       setManagedFiles(nextManagedFiles)
       setValue(fieldName, nextFieldFiles, {
-        shouldDirty: true,
-        shouldValidate: true,
+        shouldDirty,
+        shouldValidate,
       })
-      clearErrors(fieldName)
+      if (clearFieldErrors) {
+        clearErrors(fieldName)
+      }
 
       return nextFieldFiles
+    },
+    [clearErrors, setValue],
+  )
+
+  const hydrateManagedFiles = useCallback(
+    (nextManagedFiles = {}) => {
+      const hydratedManagedFiles = {
+        propertyDocuments: normalizeFiles(
+          nextManagedFiles.propertyDocuments ??
+            managedFilesRef.current.propertyDocuments,
+        ),
+        propertyImages: normalizeFiles(
+          nextManagedFiles.propertyImages ?? managedFilesRef.current.propertyImages,
+        ),
+        virtualTour: normalizeFiles(
+          nextManagedFiles.virtualTour ?? managedFilesRef.current.virtualTour,
+        ),
+        developerLogo: normalizeFiles(
+          nextManagedFiles.developerLogo ?? managedFilesRef.current.developerLogo,
+        ),
+      }
+
+      managedFilesRef.current = hydratedManagedFiles
+      setManagedFiles(hydratedManagedFiles)
+
+      setValue('propertyDocuments', hydratedManagedFiles.propertyDocuments, {
+        shouldDirty: false,
+        shouldValidate: false,
+      })
+      setValue('propertyImages', hydratedManagedFiles.propertyImages, {
+        shouldDirty: false,
+        shouldValidate: false,
+      })
+      setValue('virtualTour', hydratedManagedFiles.virtualTour, {
+        shouldDirty: false,
+        shouldValidate: false,
+      })
+      setValue('developerLogo', hydratedManagedFiles.developerLogo, {
+        shouldDirty: false,
+        shouldValidate: false,
+      })
+      clearErrors([
+        'propertyDocuments',
+        'propertyImages',
+        'virtualTour',
+        'developerLogo',
+      ])
     },
     [clearErrors, setValue],
   )
@@ -258,9 +369,18 @@ export function useInvestmentOpportunityFileUploadState({
 
   const removeSelectedFile = useCallback(
     (fieldName, index) => {
+      const normalizedIndex = Number(index)
+      if (Number.isNaN(normalizedIndex)) {
+        return
+      }
+
       const currentFiles = normalizeFiles(managedFilesRef.current[fieldName])
+      if (isExistingManagedFile(currentFiles[normalizedIndex])) {
+        return
+      }
+
       const nextFiles = currentFiles.filter(
-        (_, fileIndex) => fileIndex !== Number(index),
+        (_, fileIndex) => fileIndex !== normalizedIndex,
       )
 
       updateManagedFilesForField(fieldName, nextFiles)
@@ -275,11 +395,11 @@ export function useInvestmentOpportunityFileUploadState({
             return null
           }
 
-          if (currentIndex === index) {
+          if (currentIndex === normalizedIndex) {
             return null
           }
 
-          if (currentIndex > index) {
+          if (currentIndex > normalizedIndex) {
             return currentIndex - 1
           }
 
@@ -369,6 +489,21 @@ export function useInvestmentOpportunityFileUploadState({
     [registerFileField],
   )
 
+  const canRemoveSelectedFile = useCallback((fieldName, index) => {
+    const normalizedIndex = Number(index)
+    if (Number.isNaN(normalizedIndex)) {
+      return false
+    }
+
+    const currentFiles = normalizeFiles(managedFilesRef.current[fieldName])
+    const targetFile = currentFiles[normalizedIndex]
+    if (!targetFile) {
+      return false
+    }
+
+    return !isExistingManagedFile(targetFile)
+  }, [])
+
   const fileUploadState = useMemo(
     () => ({
       propertyDocuments: {
@@ -378,6 +513,8 @@ export function useInvestmentOpportunityFileUploadState({
         isFilesModalOpen: isDocumentsModalOpen,
         isPreviewModalOpen: isDocumentPreviewOpen,
         isLoading: Boolean(uploadingFields.propertyDocuments),
+        canRemoveFile: (index) =>
+          canRemoveSelectedFile('propertyDocuments', index),
         onRemoveFile: (index) => removeSelectedFile('propertyDocuments', index),
         onOpenFilesModal: openDocumentsFilesModal,
         onCloseFilesModal: closeDocumentsFilesModal,
@@ -390,20 +527,24 @@ export function useInvestmentOpportunityFileUploadState({
         files: managedFiles.propertyImages,
         imagePreviewUrls: propertyImagePreviewUrls,
         isLoading: Boolean(uploadingFields.propertyImages),
+        canRemoveFile: (index) => canRemoveSelectedFile('propertyImages', index),
         onRemoveFile: (index) => removeSelectedFile('propertyImages', index),
       },
       virtualTour: {
         files: managedFiles.virtualTour,
         isLoading: Boolean(uploadingFields.virtualTour),
+        canRemoveFile: (index) => canRemoveSelectedFile('virtualTour', index),
         onRemoveFile: (index) => removeSelectedFile('virtualTour', index),
       },
       developerLogo: {
         files: managedFiles.developerLogo,
         isLoading: Boolean(uploadingFields.developerLogo),
+        canRemoveFile: (index) => canRemoveSelectedFile('developerLogo', index),
         onRemoveFile: (index) => removeSelectedFile('developerLogo', index),
       },
     }),
     [
+      canRemoveSelectedFile,
       backToDocumentsFilesModal,
       closeDocumentPreview,
       closeDocumentsFilesModal,
@@ -431,6 +572,7 @@ export function useInvestmentOpportunityFileUploadState({
     fileFields,
     fileUploadState,
     managedFiles,
+    hydrateManagedFiles,
     getManagedFilesSnapshot,
     setManagedFilesForField: updateManagedFilesForField,
     triggerUploadForField,

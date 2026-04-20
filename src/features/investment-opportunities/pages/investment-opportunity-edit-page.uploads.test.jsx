@@ -15,6 +15,7 @@ import InvestmentOpportunityEditPage from '@/features/investment-opportunities/p
 import {
   getCities,
   getOpportunityById,
+  updateOpportunity,
 } from '@/features/investment-opportunities/services/investment-opportunity-service'
 import { AppDirectionProvider } from '@/lib/i18n/direction-provider'
 import i18n from '@/lib/i18n'
@@ -24,6 +25,7 @@ vi.mock(
   () => ({
     getCities: vi.fn(),
     getOpportunityById: vi.fn(),
+    updateOpportunity: vi.fn(),
   }),
 )
 
@@ -118,11 +120,68 @@ function getFieldShell(inputId) {
   return document.getElementById(inputId).closest('.space-y-3')
 }
 
+function buildPreloadedOpportunityPayload() {
+  return {
+    id: 'investment-riyadh-001',
+    title_ar: 'Title Ar',
+    title_en: 'Riyadh Opportunity',
+    city_id: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
+    neighborhood: 'Al Olaya',
+    location_text: 'Al Olaya, Riyadh',
+    latitude: '24.7109590',
+    longitude: '46.6752910',
+    asset_type: 'commercial',
+    area_m2: '3250.00',
+    floors: 8,
+    build_year: 2021,
+    property_price: '4800000.00',
+    currency: 'SAR',
+    total_shares: 1200,
+    share_price: '4000.00',
+    min_investment_shares: 1,
+    max_shares_per_user: 120,
+    max_user_ownership_pct: '10.00',
+    expected_annual_return_pct: '9.40',
+    return_frequency: 'quarterly',
+    investment_duration_months: 36,
+    schedule_investment_start: true,
+    investment_start_at: '2026-05-03T13:25:07.000000Z',
+    operator_name_ar: 'Najd Capital',
+    operator_name_en: 'Najd Capital',
+    operator_description_ar: 'Operator description',
+    operator_description_en: 'Operator description',
+    operator_email: 'assets@najdcapital.test',
+    operator_phone: '+966550000101',
+    operator_location_text: 'Riyadh, Saudi Arabia',
+    cover_image_url: 'https://example.test/uploads/cover-main.jpg',
+    gallery: [
+      'https://example.test/uploads/gallery-one.jpg',
+      'https://example.test/uploads/gallery-two.jpg',
+    ],
+    virtual_tour_url: 'https://example.test/uploads/virtual-tour.jpg',
+    operator_logo_url: 'https://example.test/uploads/operator-logo.png',
+    files: [
+      {
+        file_category: 'document',
+        url: 'https://example.test/uploads/brochure.pdf',
+        mime_type: 'application/pdf',
+        name: 'brochure.pdf',
+      },
+    ],
+    city: {
+      id: 'a18cc8cc-0ebb-4888-800e-9d7c375674c6',
+      name_ar: 'Riyadh',
+      name_en: 'Riyadh',
+    },
+  }
+}
+
 describe('InvestmentOpportunityEditPage upload interactions', () => {
   beforeEach(async () => {
     await act(async () => {
       await i18n.changeLanguage('ar')
     })
+    vi.clearAllMocks()
 
     vi.mocked(getCities).mockResolvedValue([
       {
@@ -174,6 +233,10 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
         name_ar: 'الرياض',
         name_en: 'Riyadh',
       },
+    })
+    vi.mocked(updateOpportunity).mockResolvedValue({
+      message: 'OK',
+      data: {},
     })
   })
 
@@ -233,7 +296,15 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
   })
 
   it('supports files modal, preview, append, and remove flows on edit page', async () => {
-    renderEditPage()
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    renderEditPage('en')
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
+    })
 
     const initialDocument = new File(['doc'], 'ownership.pdf', {
       type: 'application/pdf',
@@ -250,6 +321,9 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
     fireEvent.change(document.getElementById('propertyImages'), {
       target: { files: [cover, gallery] },
     })
+    fireEvent.change(document.getElementById('propertyDocuments'), {
+      target: { files: [appendedDocument] },
+    })
 
     const propertyDocumentsField = getFieldShell('propertyDocuments')
     const propertyImagesField = getFieldShell('propertyImages')
@@ -257,7 +331,7 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
     await waitFor(() => {
       expect(
         within(propertyDocumentsField).getByRole('button', {
-          name: /عرض الملفات المرفوعة/i,
+          name: /view uploaded/i,
         }),
       ).toBeInTheDocument()
       expect(
@@ -266,70 +340,12 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
       expect(
         within(propertyImagesField).getByRole('img', { name: /gallery\.png/i }),
       ).toBeInTheDocument()
+      expect(within(propertyDocumentsField).getByText(/ownership\.pdf/i)).toBeInTheDocument()
+      expect(within(propertyDocumentsField).getByText(/license\.pdf/i)).toBeInTheDocument()
     })
 
     fireEvent.click(
-      within(propertyDocumentsField).getByRole('button', {
-        name: /عرض الملفات المرفوعة/i,
-      }),
-    )
-
-    const filesDialog = await screen.findByRole('dialog', {
-      name: 'المستندات المتاحة',
-    })
-    expect(within(filesDialog).getByText(/ownership\.pdf/i)).toBeInTheDocument()
-
-    fireEvent.click(
-      within(filesDialog).getByRole('button', { name: /معاينة ownership\.pdf/i }),
-    )
-
-    const previewDialog = await screen.findByRole('dialog', {
-      name: /ownership\.pdf/i,
-    })
-    fireEvent.click(
-      within(previewDialog).getByRole('button', {
-        name: /الرجوع إلى قائمة الملفات/i,
-      }),
-    )
-
-    const filesDialogAfterBack = await screen.findByRole('dialog', {
-      name: 'المستندات المتاحة',
-    })
-    fireEvent.click(
-      within(filesDialogAfterBack).getByRole('button', { name: /رفع ملف/i }),
-    )
-
-    fireEvent.change(document.getElementById('propertyDocuments'), {
-      target: { files: [appendedDocument] },
-    })
-
-    await waitFor(() => {
-      expect(
-        within(filesDialogAfterBack).getByText(/ownership\.pdf/i),
-      ).toBeInTheDocument()
-      expect(within(filesDialogAfterBack).getByText(/license\.pdf/i)).toBeInTheDocument()
-    })
-
-    fireEvent.click(
-      within(filesDialogAfterBack).getByRole('button', {
-        name: /إزالة ownership\.pdf/i,
-      }),
-    )
-    fireEvent.click(
-      within(filesDialogAfterBack).getByRole('button', {
-        name: /إغلاق نافذة الملفات/i,
-      }),
-    )
-
-    await waitFor(() => {
-      expect(within(propertyDocumentsField).queryByText(/ownership\.pdf/i)).not.toBeInTheDocument()
-      expect(
-        within(propertyDocumentsField).getByText(/license\.pdf/i),
-      ).toBeInTheDocument()
-    })
-
-    fireEvent.click(
-      within(propertyImagesField).getByRole('button', { name: /إزالة cover\.png/i }),
+      within(propertyImagesField).getByRole('button', { name: /remove cover\.png/i }),
     )
 
     await waitFor(() => {
@@ -340,6 +356,120 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
         within(propertyImagesField).getByRole('img', { name: /gallery\.png/i }),
       ).toBeInTheDocument()
     })
+  })
+
+  it('shows preloaded edit attachments and hides remove actions for existing files', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    vi.mocked(getOpportunityById).mockResolvedValueOnce(
+      buildPreloadedOpportunityPayload(),
+    )
+
+    renderEditPage('en')
+
+    const propertyDocumentsField = getFieldShell('propertyDocuments')
+    const propertyImagesField = getFieldShell('propertyImages')
+    const virtualTourField = getFieldShell('virtualTour')
+    const developerLogoField = getFieldShell('developerLogo')
+
+    await waitFor(() => {
+      expect(
+        within(propertyImagesField).getByRole('img', { name: /cover-main\.jpg/i }),
+      ).toBeInTheDocument()
+      expect(
+        within(propertyImagesField).getByRole('img', { name: /gallery-one\.jpg/i }),
+      ).toBeInTheDocument()
+      expect(within(propertyDocumentsField).getByText(/brochure\.pdf/i)).toBeInTheDocument()
+      expect(within(virtualTourField).getAllByText(/virtual-tour\.jpg/i).length).toBeGreaterThan(0)
+      expect(within(developerLogoField).getAllByText(/operator-logo\.png/i).length).toBeGreaterThan(0)
+    })
+
+    expect(
+      within(propertyImagesField).queryByRole('button', {
+        name: /cover-main\.jpg/i,
+      }),
+    ).not.toBeInTheDocument()
+
+    expect(
+      within(propertyDocumentsField).queryByRole('button', {
+        name: /remove brochure\.pdf/i,
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('skips preloaded attachments in edit payload and sends only new files', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    vi.mocked(getOpportunityById).mockResolvedValueOnce(
+      buildPreloadedOpportunityPayload(),
+    )
+
+    renderEditPage('en')
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => {
+      expect(updateOpportunity).toHaveBeenCalledTimes(1)
+    })
+
+    const firstPayload = vi.mocked(updateOpportunity).mock.calls[0][1]
+    expect(firstPayload.get('cover_image')).toBeNull()
+    expect(firstPayload.getAll('images[]')).toHaveLength(0)
+    expect(firstPayload.getAll('documents[]')).toHaveLength(0)
+    expect(firstPayload.get('virtual_tour')).toBeNull()
+    expect(firstPayload.get('virtual_tour_image')).toBeNull()
+    expect(firstPayload.get('operator_logo')).toBeNull()
+  })
+
+  it('sends newly uploaded attachments from edit payload when preloaded files exist', async () => {
+    await act(async () => {
+      await i18n.changeLanguage('en')
+    })
+
+    vi.mocked(getOpportunityById).mockResolvedValueOnce(
+      buildPreloadedOpportunityPayload(),
+    )
+
+    renderEditPage('en')
+
+    await waitFor(() => {
+      expect(document.getElementById('propertyPrice')?.value).toBe('4800000.00')
+    })
+
+    const newDocument = new File(['doc'], 'new-brochure.pdf', {
+      type: 'application/pdf',
+    })
+    const newImage = new File(['img'], 'new-cover.jpg', {
+      type: 'image/jpeg',
+    })
+
+    fireEvent.change(document.getElementById('propertyDocuments'), {
+      target: { files: [newDocument] },
+    })
+    fireEvent.change(document.getElementById('propertyImages'), {
+      target: { files: [newImage] },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => {
+      expect(updateOpportunity).toHaveBeenCalledTimes(1)
+    })
+
+    const payload = vi.mocked(updateOpportunity).mock.calls[0][1]
+    expect(payload.get('cover_image')).toBeInstanceOf(File)
+    expect(payload.getAll('images[]')).toHaveLength(0)
+    expect(payload.getAll('documents[]')).toHaveLength(1)
+    expect(payload.get('virtual_tour')).toBeNull()
+    expect(payload.get('operator_logo')).toBeNull()
   })
 
   it('keeps unsaved-navigation confirmation working after upload interactions', async () => {
@@ -388,3 +518,5 @@ describe('InvestmentOpportunityEditPage upload interactions', () => {
     })
   })
 })
+
+

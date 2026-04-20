@@ -89,12 +89,21 @@ function normalizeFiles(value) {
   return []
 }
 
+function isFileRemovable(index, canRemoveFile) {
+  if (typeof canRemoveFile !== 'function') {
+    return true
+  }
+
+  return Boolean(canRemoveFile(index))
+}
+
 function FileSelectionSummary({
   selectedFiles,
   isLoading = false,
   idleMessage,
   loadingMessage,
   onRemoveFile,
+  canRemoveFile,
 }) {
   const { t } = useTranslation('navigation')
   const files = normalizeFiles(selectedFiles)
@@ -142,14 +151,16 @@ function FileSelectionSummary({
             key={`${file.name}-${index}`}
             className="inline-flex max-w-full items-center gap-2 rounded-full border border-[#d6cbb2] bg-[#f7f4ec] px-3 py-1 text-[#6d4f3b]"
           >
-            <button
-              type="button"
-              onClick={() => onRemoveFile?.(index)}
-              className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[#9d7e55] transition hover:text-[#402f28] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-              aria-label={removeFileAriaLabel(file.name)}
-            >
-              <X className="size-3 stroke-[2.2]" aria-hidden="true" />
-            </button>
+            {isFileRemovable(index, canRemoveFile) ? (
+              <button
+                type="button"
+                onClick={() => onRemoveFile?.(index)}
+                className="inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[#9d7e55] transition hover:text-[#402f28] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
+                aria-label={removeFileAriaLabel(file.name)}
+              >
+                <X className="size-3 stroke-[2.2]" aria-hidden="true" />
+              </button>
+            ) : null}
             <span className="truncate">{file.name}</span>
           </div>
         ))}
@@ -233,6 +244,19 @@ function getPreviewKind(previewItem) {
     return 'pdf'
   }
 
+  const extension = getFileExtension(previewItem?.name ?? previewItem?.file?.name)
+  if (
+    ['png', 'jpg', 'jpeg', 'webp', 'heic', 'heif', 'gif', 'bmp', 'svg'].includes(
+      extension,
+    )
+  ) {
+    return 'image'
+  }
+
+  if (extension === 'pdf') {
+    return 'pdf'
+  }
+
   return 'unsupported'
 }
 
@@ -243,6 +267,7 @@ function buildPreviewItemFromFile(file, index) {
     name: file?.name ?? '',
     extension: getFileExtension(file?.name),
     previewKind: getPreviewKind({ file }),
+    previewUrl: String(file?.existingUrl ?? '').trim(),
   }
 }
 
@@ -288,6 +313,7 @@ function InvestmentOpportunityUploadedFilesModal({
   onOpenFilePreview,
   onUploadMore,
   onRemoveFile,
+  canRemoveFile,
 }) {
   const { t } = useTranslation('navigation')
   const { dir } = useDirection()
@@ -347,17 +373,19 @@ function InvestmentOpportunityUploadedFilesModal({
                 >
                   <Eye className="size-[18px] stroke-[1.8]" aria-hidden="true" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => onRemoveFile?.(previewItem.index)}
-                  className="inline-flex size-8 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f5f1e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-                  aria-label={t(
-                    'investmentOpportunity.form.files.common.removeAria',
-                    { name: previewItem.name },
-                  )}
-                >
-                  <X className="size-[18px] stroke-[2]" aria-hidden="true" />
-                </button>
+                {isFileRemovable(previewItem.index, canRemoveFile) ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveFile?.(previewItem.index)}
+                    className="inline-flex size-8 items-center justify-center rounded-md text-[#6d4f3b] transition hover:bg-[#f5f1e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
+                    aria-label={t(
+                      'investmentOpportunity.form.files.common.removeAria',
+                      { name: previewItem.name },
+                    )}
+                  >
+                    <X className="size-[18px] stroke-[2]" aria-hidden="true" />
+                  </button>
+                ) : null}
               </div>
             </div>
           ))}
@@ -386,9 +414,20 @@ function InvestmentOpportunitySingleFilePreviewModal({
   const [previewUrl, setPreviewUrl] = useState('')
   const previewKind = getPreviewKind(selectedPreviewItem)
   const selectedFileName = selectedPreviewItem?.name ?? ''
+  const directPreviewUrl = String(selectedPreviewItem?.previewUrl ?? '').trim()
 
   useEffect(() => {
-    if (!selectedPreviewItem?.file || previewKind === 'unsupported') {
+    if (previewKind === 'unsupported') {
+      setPreviewUrl('')
+      return
+    }
+
+    if (directPreviewUrl) {
+      setPreviewUrl(directPreviewUrl)
+      return
+    }
+
+    if (!selectedPreviewItem?.file) {
       setPreviewUrl('')
       return
     }
@@ -399,7 +438,7 @@ function InvestmentOpportunitySingleFilePreviewModal({
     return () => {
       revokeObjectUrlSafe(nextPreviewUrl)
     }
-  }, [previewKind, selectedPreviewItem])
+  }, [directPreviewUrl, previewKind, selectedPreviewItem])
 
   return (
     <Dialog
@@ -748,6 +787,7 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
       selectedFiles,
       isLoading = false,
       onRemoveFile,
+      canRemoveFile,
       enableFilesModal = false,
       previewItems = [],
       selectedPreviewItem = null,
@@ -838,6 +878,7 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
               onOpenFilePreview={onOpenFilePreview}
               onUploadMore={onUploadMore}
               onRemoveFile={onRemoveFile}
+              canRemoveFile={canRemoveFile}
             />
             <InvestmentOpportunitySingleFilePreviewModal
               open={isPreviewModalOpen}
@@ -877,6 +918,7 @@ export const InvestmentOpportunityFilePickerField = forwardRef(
                 'investmentOpportunity.form.files.summary.loadingFile',
               )}
               onRemoveFile={onRemoveFile}
+              canRemoveFile={canRemoveFile}
             />
           </>
         )}
@@ -896,6 +938,7 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
       imagePreviewUrls = [],
       isLoading = false,
       onRemoveFile,
+      canRemoveFile,
       ...props
     },
     ref,
@@ -937,19 +980,21 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
                     </span>
                   </div>
                 )}
-                <button
-                  type="button"
-                  onClick={() => onRemoveFile?.(galleryItem.index)}
-                  className="absolute top-2 left-2 inline-flex size-6 items-center justify-center rounded-full bg-[#f8f3e8]/95 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.08)] transition hover:bg-[#f8f3e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
-                  aria-label={t(
-                    'investmentOpportunity.form.files.common.removeAria',
-                    {
-                      name: galleryItem.file.name,
-                    },
-                  )}
-                >
-                  <X className="size-4 stroke-[2]" aria-hidden="true" />
-                </button>
+                {isFileRemovable(galleryItem.index, canRemoveFile) ? (
+                  <button
+                    type="button"
+                    onClick={() => onRemoveFile?.(galleryItem.index)}
+                    className="absolute top-2 left-2 inline-flex size-6 items-center justify-center rounded-full bg-[#f8f3e8]/95 text-[#402f28] shadow-[0_1px_2px_rgba(10,13,18,0.08)] transition hover:bg-[#f8f3e8] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/30 focus-visible:outline-none"
+                    aria-label={t(
+                      'investmentOpportunity.form.files.common.removeAria',
+                      {
+                        name: galleryItem.file.name,
+                      },
+                    )}
+                  >
+                    <X className="size-4 stroke-[2]" aria-hidden="true" />
+                  </button>
+                ) : null}
               </div>
             ))}
             <label
@@ -1027,6 +1072,7 @@ export const InvestmentOpportunityDropzoneField = forwardRef(
                 'investmentOpportunity.form.files.summary.loadingImages',
               )}
               onRemoveFile={onRemoveFile}
+              canRemoveFile={canRemoveFile}
             />
           </>
         )}

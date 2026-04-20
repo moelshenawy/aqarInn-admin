@@ -74,6 +74,204 @@ function normalizeSaudiMobileInput(value) {
   return digitsOnly
 }
 
+function getAttachmentUrl(value) {
+  return String(value ?? '').trim()
+}
+
+function getFileExtension(fileName) {
+  const normalizedName = String(fileName ?? '').trim()
+  const extension = normalizedName.split('.').pop()?.trim().toLowerCase()
+
+  if (!extension || extension === normalizedName.toLowerCase()) {
+    return ''
+  }
+
+  return extension
+}
+
+function getMimeTypeFromFileName(fileName) {
+  const extension = getFileExtension(fileName)
+  const mimeTypeByExtension = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+    gif: 'image/gif',
+    bmp: 'image/bmp',
+    svg: 'image/svg+xml',
+    pdf: 'application/pdf',
+  }
+
+  return mimeTypeByExtension[extension] ?? ''
+}
+
+function getFileNameFromUrl(url, fallbackName = 'attachment') {
+  const normalizedUrl = getAttachmentUrl(url)
+  if (!normalizedUrl) {
+    return fallbackName
+  }
+
+  try {
+    const parsedUrl = new URL(normalizedUrl)
+    const pathnameSegments = parsedUrl.pathname.split('/').filter(Boolean)
+    const rawName = pathnameSegments[pathnameSegments.length - 1]
+
+    if (!rawName) {
+      return fallbackName
+    }
+
+    return decodeURIComponent(rawName)
+  } catch {
+    const pathname = normalizedUrl.split('?')[0]
+    const pathnameSegments = pathname.split('/').filter(Boolean)
+    const rawName = pathnameSegments[pathnameSegments.length - 1]
+
+    if (!rawName) {
+      return fallbackName
+    }
+
+    return decodeURIComponent(rawName)
+  }
+}
+
+function createExistingUploadFile(
+  url,
+  { name = '', type = '', previewKind = '' } = {},
+) {
+  const normalizedUrl = getAttachmentUrl(url)
+  if (!normalizedUrl) {
+    return null
+  }
+
+  const resolvedName = name || getFileNameFromUrl(normalizedUrl)
+  const resolvedType = type || getMimeTypeFromFileName(resolvedName)
+
+  return {
+    name: resolvedName,
+    type: resolvedType,
+    existingUrl: normalizedUrl,
+    isExistingUpload: true,
+    previewKind,
+  }
+}
+
+function extractFileUrl(file) {
+  if (!file || typeof file !== 'object') {
+    return ''
+  }
+
+  return getAttachmentUrl(file.url || file.file_url || file.path)
+}
+
+function isImageFileEntry(file) {
+  const category = String(file?.file_category ?? '').trim().toLowerCase()
+  const mimeType = String(file?.mime_type ?? '').trim().toLowerCase()
+
+  if (category === 'image') {
+    return true
+  }
+
+  return mimeType.startsWith('image/')
+}
+
+function isDocumentFileEntry(file) {
+  const category = String(file?.file_category ?? '').trim().toLowerCase()
+  const mimeType = String(file?.mime_type ?? '').trim().toLowerCase()
+
+  if (category === 'document') {
+    return true
+  }
+
+  if (mimeType === 'application/pdf') {
+    return true
+  }
+
+  return false
+}
+
+function extractPropertyImagesAsExistingUploads(opportunity) {
+  const galleryUrls = Array.isArray(opportunity?.gallery)
+    ? opportunity.gallery
+        .map((galleryItem) => {
+          if (typeof galleryItem === 'string') {
+            return getAttachmentUrl(galleryItem)
+          }
+
+          if (!galleryItem || typeof galleryItem !== 'object') {
+            return ''
+          }
+
+          return getAttachmentUrl(
+            galleryItem.url || galleryItem.file_url || galleryItem.path,
+          )
+        })
+        .filter(Boolean)
+    : []
+
+  const fileImageUrls = Array.isArray(opportunity?.files)
+    ? opportunity.files
+        .filter((file) => isImageFileEntry(file))
+        .map((file) => extractFileUrl(file))
+        .filter(Boolean)
+    : []
+
+  const uniqueImageUrls = Array.from(
+    new Set([opportunity?.cover_image_url, ...galleryUrls, ...fileImageUrls]),
+  )
+
+  return uniqueImageUrls
+    .map((imageUrl, index) =>
+      createExistingUploadFile(imageUrl, {
+        name: getFileNameFromUrl(imageUrl, `image-${index + 1}`),
+        previewKind: 'image',
+      }),
+    )
+    .filter(Boolean)
+}
+
+function extractPropertyDocumentsAsExistingUploads(opportunity) {
+  if (!Array.isArray(opportunity?.files)) {
+    return []
+  }
+
+  return opportunity.files
+    .filter((file) => isDocumentFileEntry(file))
+    .map((file, index) => {
+      const fileUrl = extractFileUrl(file)
+      const fileName =
+        String(
+          file.name ??
+            file.file_name ??
+            file.original_name ??
+            file.display_name ??
+            '',
+        ).trim() || getFileNameFromUrl(fileUrl, `document-${index + 1}`)
+      const fileType = String(file.mime_type ?? file.type ?? '').trim()
+
+      return createExistingUploadFile(fileUrl, {
+        name: fileName,
+        type: fileType,
+      })
+    })
+    .filter(Boolean)
+}
+
+function extractSingleExistingUpload(url, fallbackName, previewKind = '') {
+  const normalizedUrl = getAttachmentUrl(url)
+  if (!normalizedUrl) {
+    return []
+  }
+
+  const existingFile = createExistingUploadFile(normalizedUrl, {
+    name: getFileNameFromUrl(normalizedUrl, fallbackName),
+    previewKind,
+  })
+
+  return existingFile ? [existingFile] : []
+}
+
 function buildSubmissionValues(values, managedFiles) {
   return {
     ...values,
@@ -114,6 +312,7 @@ export default function InvestmentOpportunityEditPage() {
   const { data: opportunity = null } = useOpportunityDetailsQuery(opportunityId)
   const updateOpportunityMutation = useUpdateOpportunityMutation()
   const allowNavigationRef = useRef(false)
+  const hydratedUploadOpportunityIdRef = useRef(null)
 
   const defaultValues = useMemo(
     () => createInvestmentOpportunityFormValues(opportunity),
@@ -130,7 +329,7 @@ export default function InvestmentOpportunityEditPage() {
     reset,
     formState: { errors, isDirty },
   } = useForm({ defaultValues })
-  const { fileFields, fileUploadState, getManagedFilesSnapshot } =
+  const { fileFields, fileUploadState, getManagedFilesSnapshot, hydrateManagedFiles } =
     useInvestmentOpportunityFileUploadState({
       register,
       setValue,
@@ -173,6 +372,38 @@ export default function InvestmentOpportunityEditPage() {
     setSelectedCityIdForMap(defaultValues.cityId || '')
     allowNavigationRef.current = false
   }, [defaultValues, reset])
+
+  useEffect(() => {
+    hydratedUploadOpportunityIdRef.current = null
+  }, [opportunityId])
+
+  useEffect(() => {
+    const resolvedOpportunityId = String(opportunity?.id ?? '').trim()
+    if (!resolvedOpportunityId) {
+      return
+    }
+
+    if (hydratedUploadOpportunityIdRef.current === resolvedOpportunityId) {
+      return
+    }
+
+    const preloadedManagedFiles = {
+      propertyDocuments: extractPropertyDocumentsAsExistingUploads(opportunity),
+      propertyImages: extractPropertyImagesAsExistingUploads(opportunity),
+      virtualTour: extractSingleExistingUpload(
+        opportunity?.virtual_tour_url,
+        'virtual-tour',
+      ),
+      developerLogo: extractSingleExistingUpload(
+        opportunity?.operator_logo_url,
+        'operator-logo',
+        'image',
+      ),
+    }
+
+    hydrateManagedFiles(preloadedManagedFiles)
+    hydratedUploadOpportunityIdRef.current = resolvedOpportunityId
+  }, [hydrateManagedFiles, opportunity])
 
   useEffect(() => {
     const parsedPrice = parseNumber(propertyPrice)

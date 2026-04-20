@@ -82,6 +82,24 @@ function getFileList(value) {
   return []
 }
 
+function isExistingManagedUpload(value) {
+  return Boolean(value?.isExistingUpload)
+}
+
+function getUploadableFiles(value) {
+  return getFileList(value).filter((file) => {
+    if (isExistingManagedUpload(file)) {
+      return false
+    }
+
+    if (typeof Blob === 'undefined') {
+      return true
+    }
+
+    return file instanceof Blob
+  })
+}
+
 /**
  * @typedef {Object} CreateOpportunityPayloadForm
  * @property {string} titleAr
@@ -189,18 +207,18 @@ export function buildOpportunityFormData(
   )
   appendIfValue(formData, 'operator_location_text', values.developerLocation)
 
-  const developerLogoFiles = getFileList(values.developerLogo)
+  const developerLogoFiles = getUploadableFiles(values.developerLogo)
   if (developerLogoFiles[0]) {
     formData.append('operator_logo', developerLogoFiles[0])
   }
 
-  const virtualTourFiles = getFileList(values.virtualTour)
+  const virtualTourFiles = getUploadableFiles(values.virtualTour)
   if (virtualTourFiles[0]) {
     formData.append('virtual_tour', virtualTourFiles[0])
     formData.append('virtual_tour_image', virtualTourFiles[0])
   }
 
-  const propertyImages = getFileList(values.propertyImages)
+  const propertyImages = getUploadableFiles(values.propertyImages)
   if (propertyImages[0]) {
     formData.append('cover_image', propertyImages[0])
   }
@@ -211,7 +229,7 @@ export function buildOpportunityFormData(
     })
   }
 
-  const propertyDocuments = getFileList(values.propertyDocuments)
+  const propertyDocuments = getUploadableFiles(values.propertyDocuments)
   propertyDocuments.forEach((documentFile) => {
     formData.append('documents[]', documentFile)
   })

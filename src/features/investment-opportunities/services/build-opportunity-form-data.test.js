@@ -130,4 +130,52 @@ describe('buildOpportunityFormData city_id handling', () => {
 
     expect(formData.get('operator_phone')).toBe('+966550000101')
   })
+
+  it('does not re-upload existing managed attachments in payload', () => {
+    const values = createValues({
+      developerLogo: [
+        {
+          name: 'existing-logo.png',
+          type: 'image/png',
+          existingUrl: 'https://example.test/existing-logo.png',
+          isExistingUpload: true,
+        },
+      ],
+      virtualTour: [
+        {
+          name: 'existing-tour.jpg',
+          type: 'image/jpeg',
+          existingUrl: 'https://example.test/existing-tour.jpg',
+          isExistingUpload: true,
+        },
+      ],
+      propertyImages: [
+        {
+          name: 'existing-cover.jpg',
+          type: 'image/jpeg',
+          existingUrl: 'https://example.test/existing-cover.jpg',
+          isExistingUpload: true,
+        },
+        new File(['new-gallery'], 'new-gallery.jpg', { type: 'image/jpeg' }),
+      ],
+      propertyDocuments: [
+        {
+          name: 'existing-brochure.pdf',
+          type: 'application/pdf',
+          existingUrl: 'https://example.test/existing-brochure.pdf',
+          isExistingUpload: true,
+        },
+        new File(['new-doc'], 'new-doc.pdf', { type: 'application/pdf' }),
+      ],
+    })
+
+    const formData = buildOpportunityFormData(values, { mode: 'publish' })
+
+    expect(formData.get('operator_logo')).toBeNull()
+    expect(formData.get('virtual_tour')).toBeNull()
+    expect(formData.get('virtual_tour_image')).toBeNull()
+    expect(formData.get('cover_image')).toBeInstanceOf(File)
+    expect(formData.getAll('images[]')).toHaveLength(0)
+    expect(formData.getAll('documents[]')).toHaveLength(1)
+  })
 })

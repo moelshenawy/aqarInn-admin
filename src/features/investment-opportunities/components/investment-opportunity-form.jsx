@@ -228,6 +228,7 @@ export function InvestmentOpportunityForm({
               selectedFiles={fileUploadState.propertyDocuments?.files}
               isLoading={fileUploadState.propertyDocuments?.isLoading}
               onRemoveFile={fileUploadState.propertyDocuments?.onRemoveFile}
+              canRemoveFile={fileUploadState.propertyDocuments?.canRemoveFile}
               enableFilesModal
               previewItems={fileUploadState.propertyDocuments?.previewItems}
               selectedPreviewItem={
@@ -263,6 +264,7 @@ export function InvestmentOpportunityForm({
               imagePreviewUrls={fileUploadState.propertyImages?.imagePreviewUrls}
               isLoading={fileUploadState.propertyImages?.isLoading}
               onRemoveFile={fileUploadState.propertyImages?.onRemoveFile}
+              canRemoveFile={fileUploadState.propertyImages?.canRemoveFile}
               {...(fileFields.propertyImages ?? register('propertyImages'))}
             />
             <InvestmentOpportunityFilePickerField
@@ -274,6 +276,7 @@ export function InvestmentOpportunityForm({
               selectedFiles={fileUploadState.virtualTour?.files}
               isLoading={fileUploadState.virtualTour?.isLoading}
               onRemoveFile={fileUploadState.virtualTour?.onRemoveFile}
+              canRemoveFile={fileUploadState.virtualTour?.canRemoveFile}
               {...(fileFields.virtualTour ?? register('virtualTour'))}
             />
           </InvestmentOpportunityFormGrid>
@@ -329,6 +332,7 @@ export function InvestmentOpportunityForm({
               selectedFiles={fileUploadState.developerLogo?.files}
               isLoading={fileUploadState.developerLogo?.isLoading}
               onRemoveFile={fileUploadState.developerLogo?.onRemoveFile}
+              canRemoveFile={fileUploadState.developerLogo?.canRemoveFile}
               {...(fileFields.developerLogo ?? register('developerLogo'))}
             />
             <InvestmentOpportunityTextField
