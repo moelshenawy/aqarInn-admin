@@ -6,6 +6,7 @@ import { RiyalIcon } from '@/components/ui/riyal-icon'
 import { investmentOpportunityDistributionDetailDefaults } from '@/features/investment-opportunities/constants/investment-opportunity-details-ui'
 import { cn } from '@/lib/utils'
 import { SideModalShell } from '@/shared/components/side-modal-shell'
+import { useDirection } from '@/lib/i18n/direction-provider'
 
 function UserAvatarIcon({ className, iconClassName }) {
   return (
@@ -206,7 +207,7 @@ export function InvestmentOpportunityDistributionDetailsModal({
 }) {
   const details =
     distribution ?? investmentOpportunityDistributionDetailDefaults
-
+  const { dir } = useDirection()
   return (
     <SideModalShell
       open={open}
@@ -214,6 +215,7 @@ export function InvestmentOpportunityDistributionDetailsModal({
       title={details.title}
       closeLabel="إغلاق تفاصيل التوزيع"
       contentClassName="h-dvh overflow-visible"
+      dir={dir}
       closeButtonClassName="max-sm:right-auto max-sm:left-4"
       className="flex h-full min-h-full flex-col items-end gap-[30px] overflow-x-hidden overflow-y-auto px-6 py-8 text-start sm:px-8 sm:py-[38px]"
     >
@@ -226,7 +228,7 @@ export function InvestmentOpportunityDistributionDetailsModal({
         <>
           <section className="flex w-full flex-col items-start gap-[30px]">
             <div className="flex w-full flex-col items-start gap-5">
-              <header className="flex w-full items-center justify-end py-5">
+              <header className="flex w-full items-center justify-start py-5">
                 <h2 className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]">
                   {details.title}
                 </h2>

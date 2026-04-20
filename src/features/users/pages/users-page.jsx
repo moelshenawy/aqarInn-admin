@@ -69,7 +69,7 @@ const usersCopy = {
       fixedSuperAdminCannotDeleteTitle: 'لا يمكن حذف السوبر أدمن الثابت',
       fixedSuperAdminCannotDeleteDescription:
         'هذا المستخدم أساسي في النظام ولا يمكن حذفه.',
-      systemUserCannotDeleteTitle: 'لا يمكن حذف المستخدم الحرج',
+      systemUserCannotDeleteTitle: 'لا يمكن حذف المستخدم السوبر ادمن',
       systemUserCannotDeleteDescription:
         'هذا المستخدم مرتبط بمهام نظامية ولا يمكن حذفه.',
       actionLabel: 'إغلاق',
@@ -298,12 +298,12 @@ function UsersPagination({ copy, currentPage, totalPages, onPageChange }) {
     >
       <button
         type="button"
-        disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
         className="inline-flex items-center gap-1.5 text-sm leading-5 font-semibold text-[#402f28] transition disabled:cursor-not-allowed disabled:opacity-45"
       >
-        <span>{copy.previousPage}</span>
-        <ArrowLeft className="size-4 stroke-[1.9]" aria-hidden="true" />
+        <ArrowRight className="size-4 stroke-[1.9]" aria-hidden="true" />
+        <span>{copy.nextPage}</span>
       </button>
 
       <div className="flex flex-wrap items-center justify-center gap-1.5">
@@ -342,12 +342,12 @@ function UsersPagination({ copy, currentPage, totalPages, onPageChange }) {
 
       <button
         type="button"
-        disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
         className="inline-flex items-center gap-1.5 text-sm leading-5 font-semibold text-[#402f28] transition disabled:cursor-not-allowed disabled:opacity-45"
       >
-        <ArrowRight className="size-4 stroke-[1.9]" aria-hidden="true" />
-        <span>{copy.nextPage}</span>
+        <span>{copy.previousPage}</span>
+        <ArrowLeft className="size-4 stroke-[1.9]" aria-hidden="true" />
       </button>
     </nav>
   )

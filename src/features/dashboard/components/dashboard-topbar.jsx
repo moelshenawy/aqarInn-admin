@@ -35,6 +35,21 @@ const OPPORTUNITY_STATUS_OPTIONS = [
   { value: 'cancelled', labelAr: 'ملغاة', labelEn: 'Cancelled' },
 ]
 
+const DASHBOARD_PAGE_TITLES_EN = {
+  dashboard: 'Dashboard',
+  'investment-opportunities': 'Investment Opportunities',
+  'investment-opportunity-add': 'Investment Opportunities',
+  'investment-opportunity-details': 'Investment Opportunities',
+  'investment-opportunity-edit': 'Investment Opportunities',
+  'investment-opportunity-profit-distributions': 'Investment Opportunities',
+  notifications: 'Notifications',
+  'profit-distributions': 'Profit Distributions',
+  'activity-logs': 'Activity Logs',
+  users: 'Users Management',
+  'users-add': 'Users Management',
+  cities: 'All Cities',
+}
+
 function DashboardUtilityTile({ icon, label, className }) {
   const IconComponent = icon
 
@@ -159,6 +174,7 @@ export function DashboardMobileSidebarUtilities({ user, onNavigate }) {
 
 export function DashboardTopbar({
   title,
+  pageTitleKey,
   user,
   onOpenSidebar,
   opportunitySearchQuery,
@@ -240,6 +256,10 @@ export function DashboardTopbar({
       })),
     [i18n.resolvedLanguage],
   )
+  const localizedPageTitle =
+    i18n.resolvedLanguage === 'en'
+      ? DASHBOARD_PAGE_TITLES_EN[pageTitleKey] ?? title
+      : title
 
   function handleNotificationSelect(notification) {
     markNotificationAsRead(notification.id)
@@ -301,7 +321,7 @@ export function DashboardTopbar({
     <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap">
       <div className="flex h-[69px] min-w-0 flex-1 items-center justify-end gap-3 rounded-xl bg-[color:var(--dashboard-surface)] px-4 py-[13px] shadow-[var(--dashboard-shadow)]">
         <p className="min-w-0 flex-1 truncate text-start text-lg leading-7 font-semibold text-[color:var(--dashboard-text)]">
-          {title}
+          {localizedPageTitle}
         </p>
 
         <Button

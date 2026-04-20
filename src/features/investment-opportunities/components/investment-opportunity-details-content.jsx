@@ -262,6 +262,8 @@ export function InvestmentOpportunityDetailsBody({ details }) {
           ))}
         </div>
 
+        {console.log(details, 'gallery')}
+
         {gallery.length ? (
           <div
             dir={dir}

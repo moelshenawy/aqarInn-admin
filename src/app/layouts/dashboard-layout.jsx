@@ -264,9 +264,9 @@ export function DashboardLayout() {
     )
   }
 
+  const activeRouteKey = activeRoute?.handle?.key
   const pageTitle =
-    dashboardRouteTitles[activeRoute?.handle?.key] ??
-    dashboardRouteTitles.dashboard
+    dashboardRouteTitles[activeRouteKey] ?? dashboardRouteTitles.dashboard
 
   const handleToggleDesktopSidebar = () => {
     setIsSidebarCollapsed((current) => {
@@ -321,6 +321,7 @@ export function DashboardLayout() {
           <main className="min-w-0">
             <DashboardTopbar
               title={pageTitle}
+              pageTitleKey={activeRouteKey}
               user={dashboardTopbarUser}
               onOpenSidebar={() => setSidebarOpen(true)}
               opportunitySearchQuery={opportunitySearchQuery}
