@@ -59,7 +59,11 @@ function buildCardOpportunity(opportunity, index, language) {
     title: opportunity.title,
     soldShares: `${new Intl.NumberFormat('en-US').format(fundedShares)} حصة مباعة`,
     price: formatPrice(opportunity.property_price),
-    status: STATUS_LABELS[opportunity.status] ?? opportunity.status,
+    status:
+      opportunity.states_label ??
+      opportunity.status_label ??
+      STATUS_LABELS[opportunity.status] ??
+      opportunity.status,
     progress: clampedProgress,
     cityId: opportunity.city_id,
     cityLabel:
@@ -137,10 +141,14 @@ export default function InvestmentOpportunitiesPage() {
     })
 
     return [
-      { key: 'all', label: 'All', count: opportunitiesPayload?.total ?? 0 },
+      {
+        key: 'all',
+        label: t('transactionsOverview.filters.all', { ns: 'dashboard' }),
+        count: opportunitiesPayload?.total ?? 0,
+      },
       ...Array.from(cityCounts.values()),
     ]
-  }, [opportunities, opportunitiesPayload?.total])
+  }, [opportunities, opportunitiesPayload?.total, t])
 
   const filteredOpportunities = useMemo(() => {
     if (selectedFilter === 'all') {
@@ -204,7 +212,6 @@ export default function InvestmentOpportunitiesPage() {
               <DashboardOpportunityCard
                 referenceCode={opportunity.code}
                 key={opportunity.id}
-                status={opportunity.status_label}
                 {...opportunity}
                 to={buildInvestmentOpportunityDetailsPath(
                   opportunity.id,

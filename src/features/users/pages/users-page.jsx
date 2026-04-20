@@ -793,7 +793,7 @@ export default function UsersPage() {
   return (
     <div
       dir={isArabic ? 'rtl' : 'ltr'}
-      className="-mt-[31px] flex flex-col gap-6 px-[26px] py-5 pb-8"
+      className="-mt-[31px] flex flex-col gap-6 pt-4 pb-8 sm:p-5"
     >
       <UsersManagementTable />
     </div>
