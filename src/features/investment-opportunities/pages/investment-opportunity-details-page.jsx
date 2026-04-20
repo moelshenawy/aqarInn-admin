@@ -120,7 +120,9 @@ export default function InvestmentOpportunityDetailsPage() {
               dir={dir}
               className="min-w-0 flex-1 text-start text-2xl leading-8 font-semibold text-[#181927]"
             >
-              عرض تفاصيل الفرصة الاستثمارية
+              {i18n.resolvedLanguage === 'en'
+                ? 'View investment opportunity details'
+                : 'عرض تفاصيل الفرصة الاستثمارية'}
             </h1>
             <InvestmentOpportunityDetailsActions
               showDelete={canDeleteOpportunity}

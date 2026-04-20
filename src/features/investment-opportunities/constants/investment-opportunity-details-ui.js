@@ -231,15 +231,29 @@ function formatIsoDate(value, fallbackValue) {
 function mapAssetType(
   assetType,
   fallbackAssetType = investmentOpportunityDefaultDetails.propertyType,
+  language = 'ar',
 ) {
-  const mapping = {
-    residential: 'عقار سكني',
-    commercial: 'عقار تجاري',
-    office: 'عقار مكتبي',
-    land: 'أرض',
+  const mappingByLanguage = {
+    ar: {
+      residential: 'عقار سكني',
+      commercial: 'عقار تجاري',
+      office: 'عقار مكتبي',
+      land: 'أرض',
+    },
+    en: {
+      residential: 'Residential property',
+      commercial: 'Commercial property',
+      office: 'Office property',
+      land: 'Land',
+    },
   }
+  const isEnglish = language === 'en'
+  const mapping = isEnglish ? mappingByLanguage.en : mappingByLanguage.ar
+  const localizedFallback = isEnglish
+    ? mapping.residential
+    : fallbackAssetType
 
-  return mapping[assetType] ?? assetType ?? fallbackAssetType
+  return mapping[assetType] ?? assetType ?? localizedFallback
 }
 
 /**
@@ -304,12 +318,9 @@ export function mapOpportunityApiToDetails(
     [opportunity.neighborhood, cityName].filter(Boolean).join('، ') ||
     fallbackDetails.location
 
-  const floorsUnitLabel = investmentOpportunityDefaultDetails.floors
-    .replace(/[\d.,]+/g, '')
-    .trim()
-  const totalAreaUnitLabel = investmentOpportunityDefaultDetails.totalArea
-    .replace(/^[\d.,]+\s*/, '')
-    .trim()
+  const floorsUnitLabel = language === 'en' ? 'floors' : 'ادوار'
+  const totalAreaUnitLabel =
+    language === 'en' ? 'm² total area' : 'م² مساحة اجمالية'
   const hasFloors = hasValue(opportunity.floors)
   const hasArea = hasValue(opportunity.area_m2)
 
@@ -319,7 +330,11 @@ export function mapOpportunityApiToDetails(
     title,
     titleAr,
     titleEn,
-    propertyType: mapAssetType(opportunity.asset_type, fallbackDetails.propertyType),
+    propertyType: mapAssetType(
+      opportunity.asset_type,
+      fallbackDetails.propertyType,
+      language,
+    ),
     floors: hasFloors
       ? `${formatNumber(opportunity.floors, 0)} ${floorsUnitLabel}`.trim()
       : fallbackDetails.floors,

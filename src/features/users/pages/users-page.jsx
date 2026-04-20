@@ -637,39 +637,63 @@ function UsersManagementTable() {
                 <tr
                   key={row.id}
                   className={cn(
-                    'h-[72px] cursor-pointer border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0',
+                    'min-h-[72px] cursor-pointer border-b border-[#eae5d7] text-sm leading-5 text-[#402f28] last:border-b-0',
                     row.highlighted && 'bg-[#eae5d7]',
                   )}
                   onClick={() => handleOpenUserDetails(row)}
                 >
-                  <td className="px-6 font-medium whitespace-nowrap text-[#181927]">
+                  <td className="px-6 py-3 align-top font-medium text-[#181927]">
                     <div
-                      className="flex items-center justify-start gap-3"
+                      className="flex min-w-0 items-center justify-start gap-3"
                       dir={isArabic ? 'rtl' : 'ltr'}
                     >
                       <UserRowCheckbox
                         label={`${copy.selectUser} ${row.fullName}`}
                       />
                       <UserAvatarIcon />
-                      <span className="whitespace-nowrap">{row.fullName}</span>
+                      <span
+                        title={row.fullName}
+                        className="block min-w-0 flex-1 whitespace-normal break-words [overflow-wrap:anywhere]"
+                      >
+                        {row.fullName}
+                      </span>
                     </div>
                   </td>
-                  <td className="px-6 font-normal whitespace-nowrap">
+                  <td className="px-6 py-3 align-top font-normal whitespace-nowrap">
                     {row.identifier}
                   </td>
-                  <td className="px-6 text-center font-medium">{row.role}</td>
-                  <td className="px-6 font-normal whitespace-nowrap">
-                    {row.email}
+                  <td className="px-6 py-3 align-top text-center font-medium">
+                    <span
+                      title={row.role}
+                      className="block whitespace-normal break-words [overflow-wrap:anywhere]"
+                    >
+                      {row.role}
+                    </span>
                   </td>
-                  <td className="px-6 font-normal whitespace-nowrap">
-                    {row.phone}
+                  <td className="px-6 py-3 align-top font-normal">
+                    <span
+                      dir="ltr"
+                      title={row.email}
+                      className="block text-start whitespace-normal break-words [overflow-wrap:anywhere]"
+                    >
+                      {row.email}
+                    </span>
                   </td>
-                  <td className="px-6">
+                  <td className="px-6 py-3 align-top font-normal">
+                    <span
+                      dir="ltr"
+                      title={row.phone}
+                      className="block text-start whitespace-normal break-words [overflow-wrap:anywhere]"
+                    >
+                      {row.phone}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 align-top">
                     <UserStatusBadge status={row.originalUser?.status}>
                       {row.status}
                     </UserStatusBadge>
                   </td>
-                  <td className="px-4">
+                  <td className="px-4 py-3 align-top">
                     <Can
                       allOf={[
                         createPermission(APP_RESOURCES.users, APP_ACTIONS.edit),

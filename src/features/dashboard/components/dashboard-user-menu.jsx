@@ -222,10 +222,10 @@ export function DashboardUserMenu({
                 type="button"
                 disabled={isLoggingOut}
                 data-slot="dashboard-user-menu-logout"
-                className="flex w-full items-center justify-between rounded-[12px] border border-[#d6cbb2] bg-white px-4 py-3 text-sm leading-5 font-semibold text-[#402f28] shadow-[var(--dashboard-shadow)] transition hover:bg-[#f1eadc] focus-visible:ring-2 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-between rounded-[12px] border border-[#d6cbb2] bg-[#f1eadc] px-4 py-3 text-sm leading-5 font-semibold text-[#b42318] shadow-[var(--dashboard-shadow)] transition focus-visible:ring-2 focus-visible:ring-[#9d7e55]/25 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={handleRequestLogout}
               >
-                <span>{t('auth:logout')}</span>
+                <span className="">{t('auth:logout')}</span>
                 <LogOut className="size-4 stroke-[2]" aria-hidden="true" />
               </button>
             </div>
